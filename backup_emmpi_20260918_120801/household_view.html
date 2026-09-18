@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block crumb %}پروندهٔ خانوار{% endblock %}
+{% block body %}
+
+{# ── Page head ───────────────────────────────────────── #}
+<div class="page-head">
+  <div class="ph-text">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+      <div style="width:54px; height:54px; border-radius:14px; background:linear-gradient(135deg, var(--p-ll), var(--p-l)); color:var(--p-dd); display:grid; place-items:center; font-weight:700; font-size:22px; flex-shrink:0">
+        {{ (h.identity.name or hid)[:1] }}
+      </div>
+      <div>
+        <h1 style="margin:0; display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+          {{ h.identity.name or 'خانوار' }}
+          <span class="mono small" style="background:var(--bg-2); padding:2px 8px; border-radius:6px; color:var(--mut)">{{ hid }}</span>
+          {% if res %}<span class="badge {{ res.operational_priority }}"><span class="dot"></span>{{ res.operational_priority }}</span>{% endif %}
+        </h1>
+        <p class="sub" style="margin-top:4px">
+          {% if h.identity.location %}📍 {{ h.identity.location }} · {% endif %}
+          {% if h.identity.members %}👥 {{ h.identity.members }} عضو · {% endif %}
+          {% if h.identity.contact %}📞 {{ h.identity.contact }}{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('assess', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      ارزیابی (لایه ۲)
+    </a>
+    {% if res and res.basket and res.basket.total > 0 %}
+    <a class="btn sec sm" href="{{ url_for('intervention_basket', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      سبد مداخله <span class="tag" style="margin-inline-start:4px">{{ res.basket.total }}</span>
+    </a>
+    {% endif %}
+    <a class="btn sec sm" href="{{ url_for('refer', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>
+      ارجاع
+    </a>
+    <a class="btn sec sm" href="{{ url_for('profile', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      پروفایل
+    </a>
+    {% if res and res.layer3_required %}
+    <a class="btn warn sm" href="{{ url_for('layer3', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      لایهٔ ۳
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{# ── EM-MPI card ─────────────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>
+      کارت EM-MPI
+    </h2>
+    {% if h.em_input.em_date %}<span class="tag">{{ h.em_input.em_date }}</span>{% endif %}
+  </div>
+  <div class="kvs">
+    <div class="item">
+      <span class="k">سطح محرومیت</span>
+      <span class="v">
+        {% if h.em_input.level == 'شدید' %}<span class="badge P0"><span class="dot"></span>شدید</span>
+        {% elif h.em_input.level == 'متوسط' %}<span class="badge P1"><span class="dot"></span>متوسط</span>
+        {% elif h.em_input.level == 'خفیف' %}<span class="badge P3"><span class="dot"></span>خفیف</span>
+        {% else %}—{% endif %}
+      </span>
+    </div>
+    <div class="item"><span class="k">ابعاد غالب</span><span class="v">{% for d in h.em_input.em_dims %}<span class="tag teal" style="margin-inline-end:4px">{{ emlabels.get(d, d) }}</span>{% else %}—{% endfor %}</span></div>
+    <div class="item"><span class="k">پرچم‌های قرمز</span><span class="v">{% for rf in h.em_input.redflags %}<span class="badge P1" style="margin:1px"><span class="dot"></span>{{ redlabels.get(rf, rf) }}</span>{% else %}—{% endfor %}</span></div>
+  </div>
+  {% if h.em_input.services_received %}
+  <div style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--line-2)">
+    <div class="small" style="margin-bottom:6px; color:var(--mut)">خدمات ثبت‌شده:</div>
+    {% for s in h.em_input.services_received %}<span class="tag" style="margin:2px">{{ s }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if not res %}
+<div class="card">
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="e-title">محورهای فعال‌شده‌ای ثبت نشده است</div>
+    <div class="e-sub">برای ادامه، یک ارزیابی لایهٔ ۲ انجام دهید.</div>
+  </div>
+</div>
+{% else %}
+
+{# ── Priority summary ─────────────────────────────────── #}
+<div class="card" style="border-inline-start:4px solid var(--p)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="4"/></svg>
+      نتیجهٔ محاسبهٔ CDI — پیشنهاد سامانه
+    </h2>
+    <span class="small">سطح اطمینان: <b style="color:var(--ink-2)">{{ res.confidence }}</b> — {{ res.confidence_note }}</span>
+  </div>
+
+  <div class="kvs" style="margin-bottom:14px">
+    <div class="item">
+      <span class="k">اولویت عملیاتی</span>
+      <span class="v"><span class="badge {{ res.operational_priority }}"><span class="dot"></span>{{ res.operational_priority }}</span> {{ res.priority_class.label }}</span>
+    </div>
+    <div class="item"><span class="k">زمان پاسخ</span><span class="v">{{ res.priority_class.response }}</span></div>
+    <div class="item"><span class="k">حلقهٔ اجرایی</span><span class="v">{{ res.priority_class.ring }}</span></div>
+    <div class="item"><span class="k">وضعیت مداخله</span><span class="v">{{ res.stage }}</span></div>
+    <div class="item"><span class="k">برنامهٔ پایش</span><span class="v">{{ res.monitoring }}</span></div>
+    {% if res.peh is defined %}
+    <div class="item">
+      <span class="k">امتیاز PEH</span>
+      <span class="v"><b style="color:var(--p-d);font-size:14px">{{ res.peh }}</b><span class="small">/۱۰۰</span></span>
+    </div>
+    {% endif %}
+    {% if res.basket and res.basket.total > 0 %}
+    <div class="item">
+      <span class="k">اقدامات در سبد</span>
+      <span class="v"><b>{{ res.basket.total }}</b> <span class="small">({{ res.basket.counts.A }}A، {{ res.basket.counts.B }}B، {{ res.basket.counts.C }}C، {{ res.basket.counts.D }}D، {{ res.basket.counts.E }}E)</span></span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if res.layer3_required %}
+  <div class="alert red">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div><b>ورود به لایهٔ ۳ لازم است.</b>
+      <ul>{% for r in res.layer3_reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="small" style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--line-2)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; vertical-align:middle; color:var(--amber)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    این خروجی «پیشنهاد» است؛ تأیید/اصلاح نهایی با مددکار خانواده (بند ۹ـ۲).
+  </div>
+</div>
+
+{# ── Active axes table ────────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      محورهای فعال و توالی درون‌خانوار
+    </h2>
+    <span class="tag teal">{{ res.active_axes|length }} محور</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>محور</th><th>بُعد</th><th>شدت</th><th>اولویت</th>
+        <th>رتبه</th><th>PIM</th><th>زمان پاسخ</th><th>ثبت‌کننده</th><th>هشدار</th>
+      </tr></thead>
+      <tbody>
+      {% for i in res.rows %}
+        {% set basket_item = res.basket.actions | selectattr('code', 'equalto', i.code) | first if res.basket else none %}
+        <tr>
+          <td><b>{{ i.title }}</b> <span class="small mono" style="display:block; color:var(--mut-2)">{{ i.code }}</span></td>
+          <td><span class="tag">{{ i.dim }}</span></td>
+          <td>
+            {% if i.gap %}<span class="badge dim"><span class="dot"></span>بدون پاسخ</span>
+            {% else %}<span class="badge P{% if i.severity == 'high' %}0{% elif i.severity == 'medium' %}1{% elif i.severity == 'low' %}2{% else %}4{% endif %}">{{ i.severity_label }}</span>{% endif %}
+          </td>
+          <td>{% if i.p %}<span class="badge {{ i.p }}"><span class="dot"></span>{{ i.p }}</span>{% else %}—{% endif %}</td>
+          <td>{% if basket_item and basket_item.rank %}
+            <span class="badge {% if basket_item.rank == 'A' %}P0{% elif basket_item.rank == 'B' %}P1{% elif basket_item.rank == 'C' %}P2{% elif basket_item.rank == 'D' %}P3{% else %}P4{% endif %}" style="font-weight:800">{{ basket_item.rank }}</span>
+            <div class="tiny" style="margin-top:2px">{{ action_ranks[basket_item.rank].deadline }}</div>
+            {% else %}—{% endif %}</td>
+          <td>{% if basket_item %}<b class="mono">{{ basket_item.pim }}</b>{% else %}—{% endif %}</td>
+          <td><span class="small">{{ i.response or '—' }}</span></td>
+          <td><span class="small">{{ roles.get(i.by, {}).label if i.by else '—' }}</span></td>
+          <td>
+            {% if i.sensitive %}<span class="badge sensitive" style="margin:1px"><span class="dot"></span>حساس</span>{% endif %}
+            {% if i.conflict %}<span class="badge P1" style="margin:1px"><span class="dot"></span>تعارض</span>{% endif %}
+            {% if i.alert %}<span class="badge P0" style="margin:1px"><span class="dot"></span>هشدار همیار</span>{% endif %}
+            {% if not i.sensitive and not i.conflict and not i.alert %}<span class="small" style="color:var(--mut-2)">—</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:20px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--p)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    توالی اولویت درون‌خانوار (بند ۶ـ۳)
+  </h3>
+  {% for s in res.sequence %}
+    <div class="seq">
+      <span class="step">گام {{ s.step }} — {{ s.title }}</span>
+      {% for x in s.rows %}<span class="badge {{ x.p }}" style="margin:2px"><span class="dot"></span>{{ x.title }}</span>{% endfor %}
+    </div>
+  {% endfor %}
+
+  <h3>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--p)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    گلوگاه‌های اصلی <span class="small" style="font-weight:400; color:var(--mut)">(حداکثر ۳)</span>
+  </h3>
+  <ol style="margin:0 18px; line-height:2">
+    {% for b in res.bottlenecks %}
+    <li style="margin-bottom:4px"><b>{{ b.title }}</b> <span class="badge {{ b.p }}" style="margin-inline-start:6px"><span class="dot"></span>{{ b.p }}</span></li>
+    {% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+{# ── Referrals in progress ─────────────────────────────── #}
+{% if pending %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>
+      ارجاع‌های در جریان
+    </h2>
+    <span class="tag teal">{{ pending|length }} مورد</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>به</th><th>محور</th><th>یادداشت</th><th>پاسخ</th></tr></thead>
+      <tbody>
+      {% for r in pending %}
+        <tr>
+          <td><b>{{ roles.get(r.to, {}).label or r.to }}</b></td>
+          <td><span class="mono small">{{ r.axis }}</span></td>
+          <td><span class="small">{{ r.note }}</span></td>
+          <td>
+            {% if r.to == u.role or u.role == 'worker' %}
+            <form method="post" action="{{ url_for('referral_result', hid=hid, idx=loop.index0) }}" style="display:flex; gap:6px">
+              <input type="text" name="result" placeholder="نتیجهٔ بررسی" style="padding:6px 10px; font-size:12px">
+              <button class="btn sec sm">ثبت</button>
+            </form>
+            {% else %}<span class="badge dim"><span class="dot"></span>در انتظار</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── System suggestions ───────────────────────────────── #}
+{% if sugg %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.447c-.347.29-.548.656-.548 1.066v1.248a1 1 0 11-2 0v-1.248c0-.41-.2-.776-.548-1.066l-.547-.447z"/></svg>
+      پیشنهادهای سامانه <span class="small" style="font-weight:400">(با دلیل و قابل اصلاح)</span>
+    </h2>
+    <span class="tag" style="background:var(--purple-bg); color:var(--purple); border-color:var(--purple-line)">هوش مصنوعی</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>محور</th><th>پیشنهاد</th><th>دلیل</th><th>ارجاع</th><th>هشدار</th></tr></thead>
+      <tbody>
+      {% for s in sugg %}
+        <tr>
+          <td>
+            {% if s.axis %}<b>{{ s.title }}</b> <span class="small mono" style="display:block;color:var(--mut-2)">{{ s.axis }}</span>
+            {% else %}<span class="badge {{ s.type }}">{{ s.type }}</span>{% endif %}
+          </td>
+          <td>{{ s.suggestion }}</td>
+          <td><span class="small">{{ s.reason }}</span></td>
+          <td><span class="small">{{ s.referral_hint or '—' }}</span></td>
+          <td>{% if s.warning %}<span class="small" style="color:var(--red)">{{ s.warning }}</span>{% else %}<span class="small" style="color:var(--mut-2)">—</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── Decision (worker only) ──────────────────────────── #}
+{% if u.role == 'worker' %}
+<div class="card" style="border-inline-start:4px solid var(--p)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      تصمیم مددکار خانواده <span class="small" style="font-weight:400">(مالک پرونده)</span>
+    </h2>
+  </div>
+  <form method="post" action="{{ url_for('decide', hid=hid) }}">
+    <div class="grid">
+      <div>
+        <label>اولویت عملیاتی نهایی</label>
+        <select name="priority">
+          {% for pk in ['P0','P1','P2','P3','P4'] %}
+          <option value="{{ pk }}">{{ pk }} — {{ priority_classes[pk].label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="chk" style="margin-top:12px">
+      <label><input type="checkbox" name="confirm"> تأیید پیشنهاد سامانه</label>
+      <label><input type="checkbox" name="g3"> دستور ورود به لایهٔ ۳</label>
+    </div>
+    <label style="margin-top:12px">یادداشت</label>
+    <textarea name="note" placeholder="یادداشت یا توضیحات تصمیم..."></textarea>
+    <button class="btn" style="margin-top:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      ثبت تصمیم
+    </button>
+  </form>
+  {% if h.decisions %}
+  <h3 style="margin-top:18px">تصمیم‌های ثبت‌شده</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>زمان</th><th>اولویت</th><th>یادداشت</th></tr></thead>
+      <tbody>
+      {% for d in h.decisions %}
+        <tr><td><span class="small mono">{{ d.at }}</span></td><td><span class="badge {{ d.priority }}"><span class="dot"></span>{{ d.priority }}</span></td><td><span class="small">{{ d.note }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── History ─────────────────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      تاریخچهٔ پرونده
+    </h2>
+    <span class="tag teal">{{ h.history|length }} رویداد</span>
+  </div>
+  {% if h.history %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>زمان</th><th>بازیگر</th><th>رویداد</th></tr></thead>
+      <tbody>
+      {% for e in h.history %}
+        <tr>
+          <td><span class="small mono">{{ e.at }}</span></td>
+          <td><span class="tag">{{ roles.get(e.by, {}).label or e.by }}</span></td>
+          <td><span class="small" style="color:var(--ink-2)">{{ e.action }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">هنوز رویدادی ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+{% endblock %}

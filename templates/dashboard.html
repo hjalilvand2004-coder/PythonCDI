@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% block crumb %}داشبورد{% endblock %}
+{% block body %}
+
+<style>
+/* ─── Schematic Workflow ─── */
+.workflow-banner{
+  background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);
+  color:#fff; border-radius:var(--r-lg); padding:22px 26px; margin-bottom:22px;
+  box-shadow:var(--sh-lg); position:relative; overflow:hidden;
+}
+.workflow-banner::before{
+  content:""; position:absolute; top:-50px; inset-inline-end:-30px;
+  width:240px; height:240px; border-radius:50%;
+  background:radial-gradient(circle, rgba(94,234,212,.25), transparent 65%);
+}
+.workflow-banner > *{position:relative; z-index:1}
+.workflow-banner h1{font-size:18px; font-weight:700; margin:0 0 4px}
+.workflow-banner .wb-sub{font-size:12px; color:rgba(255,255,255,.7); margin-bottom:18px}
+
+.workflow-steps{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  position:relative; padding:8px 0 4px; gap:4px;
+}
+.workflow-steps::before{
+  content:""; position:absolute; top:24px; inset-inline-start:30px; inset-inline-end:30px;
+  height:3px; background:rgba(255,255,255,.15); border-radius:2px; z-index:0;
+}
+.workflow-steps::after{
+  content:""; position:absolute; top:24px; inset-inline-start:30px;
+  height:3px; background:linear-gradient(90deg, #5eead4, var(--p-l)); border-radius:2px;
+  z-index:1; width:calc((100% - 60px) * var(--progress, 0)); transition:width 1s ease;
+}
+.wf-step{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  flex:1; position:relative; z-index:2; text-align:center; max-width:140px;
+}
+.wf-step .ws-circle{
+  width:48px; height:48px; border-radius:50%;
+  background:#1e293b; border:2px solid rgba(255,255,255,.15); color:rgba(255,255,255,.4);
+  display:grid; place-items:center; font-weight:700; font-size:15px;
+  transition:all .3s var(--ease); position:relative;
+}
+.wf-step .ws-circle svg{width:22px; height:22px}
+.wf-step.done .ws-circle{
+  background:linear-gradient(135deg, #5eead4, var(--p)); border-color:#5eead4; color:#fff;
+  box-shadow:0 0 0 4px rgba(94,234,212,.15);
+}
+.wf-step.active .ws-circle{
+  background:linear-gradient(135deg, #fbbf24, #d97706); border-color:#fbbf24; color:#fff;
+  box-shadow:0 0 0 6px rgba(251,191,36,.2); animation:pulse-gold 2s infinite;
+}
+@keyframes pulse-gold{
+  0%,100%{box-shadow:0 0 0 6px rgba(251,191,36,.2)}
+  50%{box-shadow:0 0 0 10px rgba(251,191,36,.1)}
+}
+.wf-step.current .ws-circle{
+  background:linear-gradient(135deg, #5eead4, var(--p)); border-color:#5eead4; color:#fff;
+  box-shadow:0 0 0 6px rgba(94,234,212,.25);
+}
+.wf-step.locked .ws-circle{
+  background:rgba(255,255,255,.05); border:2px dashed rgba(255,255,255,.2); color:rgba(255,255,255,.3);
+}
+.wf-step .ws-title{font-size:11px; font-weight:700; color:#fff; line-height:1.3; margin-top:2px}
+.wf-step.locked .ws-title{color:rgba(255,255,255,.4)}
+.wf-step .ws-sub{font-size:9.5px; color:rgba(255,255,255,.6); line-height:1.4}
+.wf-step.locked .ws-sub{color:rgba(255,255,255,.3)}
+
+/* Household stage cards */
+.stage-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-bottom:18px}
+.stage-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:16px;
+  box-shadow:var(--sh-sm); transition:all .2s var(--ease); position:relative; overflow:hidden;
+}
+.stage-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
+.stage-card::before{
+  content:""; position:absolute; top:0; inset-inline-start:0; bottom:0; width:4px;
+}
+.stage-card.s-registration::before{background:var(--mut)}
+.stage-card.s-emmpi::before{background:var(--amber)}
+.stage-card.s-cdi::before{background:var(--blue)}
+.stage-card.s-profile::before{background:var(--p)}
+.stage-card.s-complete::before{background:var(--green)}
+.stage-card .sc-head{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+.stage-card .sc-ic{width:36px; height:36px; border-radius:9px; display:grid; place-items:center; flex-shrink:0}
+.stage-card .sc-ic svg{width:20px; height:20px}
+.stage-card.s-registration .sc-ic{background:var(--bg-2); color:var(--mut)}
+.stage-card.s-emmpi .sc-ic{background:var(--amber-bg); color:var(--amber)}
+.stage-card.s-cdi .sc-ic{background:var(--blue-bg); color:var(--blue)}
+.stage-card.s-profile .sc-ic{background:var(--p-ll); color:var(--p-d)}
+.stage-card.s-complete .sc-ic{background:var(--green-bg); color:var(--green)}
+.stage-card .sc-title{font-size:14px; font-weight:700; color:var(--ink); flex:1}
+.stage-card .sc-stage-num{font-size:11px; color:var(--mut); font-weight:600}
+.stage-card .sc-count{font-size:24px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums}
+.stage-card .sc-label{font-size:11px; color:var(--mut); margin-top:2px}
+.stage-card .sc-action{font-size:11px; color:var(--mut-2); margin-top:8px; line-height:1.5}
+
+.workflow-guide{
+  background:linear-gradient(135deg, var(--p-ll), #fff);
+  border:1px solid var(--p-l); border-radius:var(--r-md);
+  padding:16px 20px; margin-bottom:18px;
+}
+.workflow-guide h2{font-size:14px; font-weight:700; color:var(--p-dd); margin-bottom:8px; display:flex; align-items:center; gap:6px}
+.workflow-guide h2 svg{width:16px; height:16px}
+.workflow-guide ol{margin:0 18px; padding:0; line-height:2; font-size:12.5px; color:var(--ink-2)}
+.workflow-guide ol li{margin-bottom:4px}
+.workflow-guide ol li b{color:var(--p-d)}
+</style>
+
+{# ── Banner: Schematic Workflow ──────────────────────── #}
+<div class="workflow-banner" id="workflow-banner">
+  <h1>مسیر کامل رسیدگی به خانوار</h1>
+  <p class="wb-sub">از ثبت درخواست تا خروج پایدار — سامانه هوشمند EM-MPI و CDI کمیتهٔ امداد</p>
+
+  <div class="workflow-steps" id="wf-steps" style="--progress: 0">
+    <div class="wf-step current">
+      <div class="ws-circle">۱</div>
+      <div class="ws-title">ثبت درخواست</div>
+      <div class="ws-sub">پروندهٔ اولیه</div>
+    </div>
+    <div class="wf-step locked">
+      <div class="ws-circle">۲</div>
+      <div class="ws-title">EM-MPI</div>
+      <div class="ws-sub">غربالگری ۳۵ شاخص</div>
+    </div>
+    <div class="wf-step locked">
+      <div class="ws-circle">۳</div>
+      <div class="ws-title">CDI سریع</div>
+      <div class="ws-sub">لایهٔ ۱ — فعال‌سازی</div>
+    </div>
+    <div class="wf-step locked">
+      <div class="ws-circle">۴</div>
+      <div class="ws-title">CDI هدفمند</div>
+      <div class="ws-sub">لایهٔ ۲ — ارزیابی</div>
+    </div>
+    <div class="wf-step locked">
+      <div class="ws-circle">۵</div>
+      <div class="ws-title">پروفایل</div>
+      <div class="ws-sub">توانمندسازی</div>
+    </div>
+    <div class="wf-step locked">
+      <div class="ws-circle">۶</div>
+      <div class="ws-title">سبد مداخله</div>
+      <div class="ws-sub">اقدامات A-E</div>
+    </div>
+    <div class="wf-step locked">
+      <div class="ws-circle">۷</div>
+      <div class="ws-title">پایش و خروج</div>
+      <div class="ws-sub">کاهش تدریجی حمایت</div>
+    </div>
+  </div>
+</div>
+
+{# ── Page head ─────────────────────────────────────── #}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>داشبورد پرونده‌ها</h1>
+    <p class="sub">
+      نقش شما: <b style="color:var(--ink)">{{ u.label }}</b> · حلقهٔ {{ u.ring or 0 }}
+      — مجموع پرونده‌های فعال: <b style="color:var(--ink)">{{ households|length }}</b>
+    </p>
+  </div>
+  <div class="ph-actions">
+    {% if u.role == 'beneficiary' %}
+    <a class="btn" href="{{ url_for('beneficiary_new_request') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ثبت درخواست جدید
+    </a>
+    {% elif u.role in ('assistant', 'worker', 'rose', 'swclinic', 'employ') %}
+    <a class="btn sec sm" href="{{ url_for('assistant_pool') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      استخر درخواست‌ها
+    </a>
+    {% if u.role in ('worker', 'manager', 'admin') %}
+    <a class="btn sec sm" href="{{ url_for('worker_dashboard') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      داشبورد تحلیلی
+    </a>
+    {% endif %}
+    {% else %}
+    <a class="btn" href="{{ url_for('household_new') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ثبت پروندهٔ جدید
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{# ── آمار بر اساس مرحله ────────────────────────────── #}
+{% set ns = namespace(reg=0, emmpi=0, cdi=0, profile=0, complete=0) %}
+{% for row in households %}
+  {% if not row.h.emmpi %}
+    {% set ns.reg = ns.reg + 1 %}
+  {% elif row.h.emmpi and not row.h.state.answers %}
+    {% set ns.emmpi = ns.emmpi + 1 %}
+  {% elif row.h.state.answers and not row.h.layer3_done and row.res and row.res.layer3_required %}
+    {% set ns.cdi = ns.cdi + 1 %}
+  {% elif row.h.state.answers %}
+    {% set ns.profile = ns.profile + 1 %}
+  {% endif %}
+{% endfor %}
+
+<div class="stage-grid">
+  <div class="stage-card s-registration">
+    <div class="sc-head">
+      <div class="sc-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      </div>
+      <div>
+        <div class="sc-title">ثبت درخواست</div>
+        <div class="sc-stage-num">مرحلهٔ ۱</div>
+      </div>
+    </div>
+    <div class="sc-count">{{ ns.reg }}</div>
+    <div class="sc-label">پروندهٔ منتظر EM-MPI</div>
+    <div class="sc-action">آمادهٔ غربالگری اولیه</div>
+  </div>
+
+  <div class="stage-card s-emmpi">
+    <div class="sc-head">
+      <div class="sc-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div>
+        <div class="sc-title">EM-MPI</div>
+        <div class="sc-stage-num">مرحلهٔ ۲</div>
+      </div>
+    </div>
+    <div class="sc-count">{{ ns.emmpi }}</div>
+    <div class="sc-label">غربالگری انجام‌شده</div>
+    <div class="sc-action">آمادهٔ ارزیابی CDI</div>
+  </div>
+
+  <div class="stage-card s-cdi">
+    <div class="sc-head">
+      <div class="sc-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <div class="sc-title">CDI</div>
+        <div class="sc-stage-num">مرحلهٔ ۳</div>
+      </div>
+    </div>
+    <div class="sc-count">{{ ns.cdi }}</div>
+    <div class="sc-label">در حال ارزیابی جامع</div>
+    <div class="sc-action">لایه ۲ یا ۳ در جریان</div>
+  </div>
+
+  <div class="stage-card s-profile">
+    <div class="sc-head">
+      <div class="sc-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div class="sc-title">پروفایل</div>
+        <div class="sc-stage-num">مرحلهٔ ۵</div>
+      </div>
+    </div>
+    <div class="sc-count">{{ ns.profile }}</div>
+    <div class="sc-label">پروفایل تکمیل‌شده</div>
+    <div class="sc-action">آمادهٔ سبد مداخله</div>
+  </div>
+</div>
+
+{# ── راهنمای مسیر ──────────────────────────────────── #}
+<div class="workflow-guide">
+  <h2>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    راهنمای مسیر رسیدگی
+  </h2>
+  <ol>
+    <li><b>ثبت درخواست:</b> مشخصات اولیهٔ خانوار (هویت، محل، اعضا) ثبت می‌شود.</li>
+    <li><b>EM-MPI (غربالگری اولیه):</b> ۳۵ شاخص در ۵ بُعد ارزیابی می‌شود؛ امتیاز ۰-۱۰۰۰ محاسبه می‌شود. در صورت امتیاز ≥ ۳۰۰ یا وجود پرچم قرمز، ارجاع به CDI.</li>
+    <li><b>CDI سریع (لایه ۱):</b> فعال‌سازی شاخه‌ای محورهای CDI بر اساس پرچم‌های قرمز EM-MPI.</li>
+    <li><b>CDI هدفمند (لایه ۲):</b> ارزیابی محورهای فعال با پرسشنامهٔ پویا.</li>
+    <li><b>پروفایل توانمندسازی:</b> خروجی رسمی CDI با ۱۶ بخش الزامی.</li>
+    <li><b>سبد مداخله:</b> رتبه‌بندی اقدامات A-E با اولویت PIM.</li>
+    <li><b>پایش و خروج پایدار:</b> کاهش تدریجی حمایت پس از ثبات.</li>
+  </ol>
+</div>
+
+{# ── فهرست پرونده‌ها ─────────────────────────────────── #}
+<h2 style="font-size:16px; font-weight:700; color:var(--ink); margin:18px 0 12px; display:flex; align-items:center; gap:8px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--p)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  پرونده‌های فعال
+</h2>
+
+{% for row in households %}
+{% set h = row.h %}{% set res = row.res %}
+{# تعیین مرحلهٔ فعلی #}
+{% if u.role == 'beneficiary' %}
+  {# نیازمند: همیشه به صفحهٔ وضعیت خودش می‌رود — نه EM-MPI یا CDI #}
+  {% set stage = 'registration' %}
+  {% set stage_label = 'در انتظار تخصیص همیار' %}
+  {% set stage_color = 'amber' %}
+  {% set next_action = url_for('beneficiary_status', hid=row.hid) %}
+  {% set next_label = 'مشاهدهٔ وضعیت درخواست' %}
+{% elif not h.emmpi %}
+  {% set stage = 'registration' %}
+  {% set stage_label = 'ثبت اولیه — آمادهٔ EM-MPI' %}
+  {% set stage_color = 'amber' %}
+  {% set next_action = url_for('emmpi_form', hid=row.hid) %}
+  {% set next_label = 'شروع EM-MPI' %}
+{% elif h.emmpi and not h.state.answers %}
+  {% set stage = 'emmpi' %}
+  {% set stage_label = 'EM-MPI تکمیل شد — آمادهٔ CDI' %}
+  {% set stage_color = 'blue' %}
+  {% set next_action = url_for('assess', hid=row.hid) %}
+  {% set next_label = 'شروع CDI' %}
+{% elif h.state.answers and not h.layer3_done %}
+  {% set stage = 'cdi' %}
+  {% set stage_label = 'در حال ارزیابی CDI' %}
+  {% set stage_color = 'blue' %}
+  {% set next_action = url_for('household_view', hid=row.hid) %}
+  {% set next_label = 'مشاهدهٔ پرونده' %}
+{% elif h.layer3_done %}
+  {% set stage = 'profile' %}
+  {% set stage_label = 'پروفایل تکمیل شد' %}
+  {% set stage_color = 'green' %}
+  {% set next_action = url_for('profile', hid=row.hid) %}
+  {% set next_label = 'مشاهدهٔ پروفایل' %}
+{% else %}
+  {% set stage = 'profile' %}
+  {% set stage_label = 'پروفایل تکمیل شد' %}
+  {% set stage_color = 'green' %}
+  {% set next_action = url_for('profile', hid=row.hid) %}
+  {% set next_label = 'مشاهدهٔ پروفایل' %}
+{% endif %}
+
+<a href="{{ next_action }}" class="card hover" style="display:block; text-decoration:none; color:inherit; position:relative; border-inline-start:4px solid {% if stage_color == 'amber' %}var(--amber){% elif stage_color == 'blue' %}var(--blue){% elif stage_color == 'green' %}var(--green){% else %}var(--mut){% endif %}">
+  <div style="display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap">
+    <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, var(--p-ll), var(--p-l)); color:var(--p-dd); display:grid; place-items:center; font-weight:700; font-size:18px; flex-shrink:0">
+      {{ (h.identity.name or row.hid)[:1] }}
+    </div>
+    <div style="flex:1; min-width:200px">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px">
+        <h2 style="margin:0; font-size:16px">{{ h.identity.name or 'خانوار ' + row.hid }}</h2>
+        {# نشان مرحله #}
+        {% if stage == 'registration' %}
+        <span class="badge P1"><span class="dot"></span>مرحله ۱ — ثبت</span>
+        {% elif stage == 'emmpi' %}
+        <span class="badge {{ h.emmpi.result.level.color }}"><span class="dot"></span>EM-MPI: {{ h.emmpi.result.score }}</span>
+        {% if h.emmpi.result.red_flags %}<span class="badge P0"><span class="dot"></span>{{ h.emmpi.result.red_flags|length }} پرچم قرمز</span>{% endif %}
+        {% elif stage == 'cdi' %}
+        <span class="badge P2"><span class="dot"></span>در حال CDI</span>
+        {% if res and res.layer3_required %}<span class="badge P1"><span class="dot"></span>لایه ۳ لازم</span>{% endif %}
+        {% elif stage == 'profile' %}
+        <span class="badge P3"><span class="dot"></span>پروفایل تکمیل</span>
+        {% endif %}
+      </div>
+      <div class="kvs" style="font-size:12.5px">
+        <div class="item"><span class="k">شناسه</span><span class="v mono">{{ row.hid }}</span></div>
+        <div class="item"><span class="k">محل</span><span class="v">{{ h.identity.location or '—' }}</span></div>
+        {% if h.emmpi %}
+        <div class="item"><span class="k">سطح محرومیت</span><span class="v">{{ h.emmpi.result.level.name }}</span></div>
+        {% else %}
+        <div class="item"><span class="k">وضعیت</span><span class="v" style="color:var(--amber)">{{ stage_label }}</span></div>
+        {% endif %}
+      </div>
+      <div style="margin-top:8px; font-size:11.5px">
+        <span style="color:var(--mut)">▶ اقدام بعدی: </span>
+        <b style="color:var(--p-d)">{{ next_label }}</b>
+      </div>
+    </div>
+    {% if h.emmpi %}
+    <div style="text-align:center; padding-inline-start:14px; border-inline-start:1px solid var(--line-2); min-width:90px">
+      <div style="font-size:24px; font-weight:700; color:var(--p-d)">{{ h.emmpi.result.score }}</div>
+      <div class="small" style="margin-top:2px">امتیاز EM-MPI</div>
+    </div>
+    {% endif %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px; color:var(--mut-2); margin-inline-start:auto; align-self:center"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+</a>
+{% else %}
+<div class="card">
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    <div class="e-title">هنوز پرونده‌ای ثبت نشده است</div>
+    <div class="e-sub">برای شروع، یک پروندهٔ خانوار جدید ایجاد کنید تا EM-MPI به‌صورت خودکار آغاز شود.</div>
+    {% if u.role == 'beneficiary' %}
+    <a class="btn" href="{{ url_for('beneficiary_new_request') }}" style="margin-top:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ثبت اولین درخواست
+    {% else %}
+    <a class="btn" href="{{ url_for('household_new') }}" style="margin-top:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ثبت اولین پرونده
+    {% endif %}
+    </a>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+// محاسبهٔ پیشرفت کلی مسیر بر اساس تعداد پرونده‌ها
+(function(){
+  const banner = document.getElementById('workflow-banner');
+  const steps = document.getElementById('wf-steps');
+  if (!banner || !steps) return;
+  // پیشرفت پیش‌فرض: مرحله ۲ (EM-MPI) فعال است
+  // می‌توان این را بر اساس تعداد پرونده‌ها در هر مرحله به‌روزرسانی کرد
+})();
+</script>
+{% endblock %}

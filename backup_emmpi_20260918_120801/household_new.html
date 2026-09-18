@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block crumb %}ایجاد پرونده{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>ایجاد پرونده و لایهٔ ۱ — CDI سریع</h1>
+    <p class="sub">طبق بند ۱: EM-MPI شدت اولیه، فوریت، پرچم‌های قرمز و مسیر ارجاع را تعیین می‌کند؛ سامانه فقط محورهای لازم از ۴۱ محور را فعال می‌کند (فعال‌سازی شاخه‌ای).</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert red">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div>{{ error }}</div>
+</div>
+{% endif %}
+
+<form method="post">
+
+{# ── ۱. شناسهٔ خانوار ─────────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      شناسهٔ خانوار
+    </h2>
+    <span class="tag teal">بخش ۱ از ۳</span>
+  </div>
+  <p class="card-desc">اطلاعات هویتی پایه و ترکیب خانوار را ثبت کنید. فیلدهای ستاره‌دار الزامی هستند.</p>
+  <div class="grid">
+    <div><label>شناسهٔ خانوار *</label><input type="text" name="hid" required placeholder="مثال: H-1403-001"></div>
+    <div><label>نام سرپرست خانوار</label><input type="text" name="name" placeholder="نام و نام خانوادگی"></div>
+    <div><label>محل سکونت</label><input type="text" name="location" placeholder="استان، شهر، محله"></div>
+    <div><label>تعداد اعضا</label><input type="text" name="members" placeholder="عدد"></div>
+    <div><label>راه ارتباطی</label><input type="text" name="contact" placeholder="تلفن یا نشانی"></div>
+    <div><label>افراد در معرض خطر</label><input type="text" name="at_risk" placeholder="کودکان، سالمندان، بیماران..."></div>
+  </div>
+</div>
+
+{# ── ۲. کارت EM-MPI ─────────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>
+      کارت ورودی EM-MPI
+    </h2>
+    <span class="tag teal">بخش ۲ از ۳</span>
+  </div>
+  <p class="card-desc">شاخص محرومیت چندبُعدی؛ این سطح به‌عنوان پایهٔ اولویت‌بندی استفاده می‌شود.</p>
+  <div class="grid">
+    <div>
+      <label>سطح محرومیت اولیه</label>
+      <select name="em_level">
+        <option value="">— انتخاب کنید —</option>
+        <option value="شدید">شدید</option>
+        <option value="متوسط">متوسط</option>
+        <option value="خفیف">خفیف</option>
+      </select>
+    </div>
+    <div>
+      <label>ابعاد غالب EM-MPI</label>
+      <div class="chk">
+        <label><input type="checkbox" name="em_dims" value="health"> سلامت</label>
+        <label><input type="checkbox" name="em_dims" value="education"> آموزش</label>
+        <label><input type="checkbox" name="em_dims" value="living"> شرایط زندگی</label>
+        <label><input type="checkbox" name="em_dims" value="work"> اشتغال</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── ۳. پرچم‌های قرمز ─────────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      پرچم‌های قرمز
+    </h2>
+    <span class="tag" style="background:var(--red-bg); color:var(--red); border-color:var(--red-line)">تعیین‌کنندهٔ محورهای فعال</span>
+  </div>
+  <p class="card-desc">انتخاب هر پرچم، محورهای CDI مرتبط را در لایهٔ ۲ به‌صورت خودکار فعال می‌کند.</p>
+
+  <fieldset>
+    <legend>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      نیازهای حیاتی و حفاظت
+    </legend>
+    <div class="chk">
+      <label><input type="checkbox" name="redflags" value="food"> ناامنی غذایی</label>
+      <label><input type="checkbox" name="redflags" value="housing"> ناامنی مسکن</label>
+      <label><input type="checkbox" name="redflags" value="health"> بحران سلامت</label>
+      <label><input type="checkbox" name="redflags" value="caregiving"> بار مراقبتی</label>
+      <label><input type="checkbox" name="redflags" value="safety"> خشونت / خطر حفاظتی</label>
+      <label><input type="checkbox" name="redflags" value="utilities"> قطع خدمات حیاتی</label>
+      <label><input type="checkbox" name="redflags" value="shock"> ریسک شوک</label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      دسترسی به خدمات
+    </legend>
+    <div class="chk">
+      <label><input type="checkbox" name="redflags" value="education"> خطر ترک تحصیل</label>
+      <label><input type="checkbox" name="redflags" value="identity"> فقدان مدارک</label>
+      <label><input type="checkbox" name="redflags" value="transport"> مانع رفت‌وآمد</label>
+      <label><input type="checkbox" name="redflags" value="digital"> محرومیت دیجیتال</label>
+      <label><input type="checkbox" name="redflags" value="service_qual"> کیفیت خدمت</label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      اقتصاد و ظرفیت
+    </legend>
+    <div class="chk">
+      <label><input type="checkbox" name="redflags" value="employment"> بیکاری / اشتغال ناپایدار</label>
+      <label><input type="checkbox" name="redflags" value="debt"> بدهی بحرانی</label>
+      <label><input type="checkbox" name="redflags" value="insurance"> فقدان بیمه</label>
+      <label><input type="checkbox" name="redflags" value="literacy"> ضعف سواد پایه</label>
+      <label><input type="checkbox" name="redflags" value="mental"> فشار روانی شدید</label>
+      <label><input type="checkbox" name="redflags" value="physical"> محدودیت جسمی</label>
+      <label><input type="checkbox" name="redflags" value="motivation"> افت انگیزه</label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      محیط و شبکه
+    </legend>
+    <div class="chk">
+      <label><input type="checkbox" name="redflags" value="network"> ضعف شبکه حمایت</label>
+      <label><input type="checkbox" name="redflags" value="isolation"> انزوای اجتماعی</label>
+      <label><input type="checkbox" name="redflags" value="discrimination"> تبعیض / طرد</label>
+      <label><input type="checkbox" name="redflags" value="geography"> مانع جغرافیایی</label>
+      <label><input type="checkbox" name="redflags" value="legal"> مانع حقوقی</label>
+    </div>
+  </fieldset>
+</div>
+
+{# ── ۴. خدمات و یادداشت ──────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      خدمات و یادداشت
+    </h2>
+    <span class="tag teal">بخش ۳ از ۳</span>
+  </div>
+  <p class="card-desc">ثبت خدمات قبلی برای کشف تکرار خدمت و رجوع بعدی.</p>
+
+  <label>خدمات قبلی/جاری <span class="small">(با «،» جدا کنید)</span></label>
+  <input type="text" name="services" placeholder="مثال: کمک غیرنقدی، وام خوداشتغالی، بیمه درمان">
+
+  <div class="grid" style="margin-top:14px">
+    <div><label>تاریخ EM-MPI</label><input type="text" name="em_date" placeholder="۱۴۰۵/۰۶/۲۵"></div>
+    <div><label>یادداشت</label><input type="text" name="em_note" placeholder="توضیحات اضافی"></div>
+  </div>
+</div>
+
+{# ── Submit ──────────────────────────────────────────── #}
+<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px">
+  <a class="btn sec" href="{{ url_for('index') }}">انصراف</a>
+  <button class="btn lg" type="submit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    ایجاد پرونده و فعال‌سازی محورها
+  </button>
+</div>
+</form>
+{% endblock %}

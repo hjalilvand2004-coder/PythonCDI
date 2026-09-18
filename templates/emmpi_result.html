@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block crumb %}نتیجه EM-MPI{% endblock %}
+{% block body %}
+{% set r = result %}
+
+<style>
+/* Hero score */
+.score-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);color:#fff;border-radius:var(--r-lg);padding:28px 32px;margin-bottom:18px;box-shadow:var(--sh-lg)}
+.score-hero::before{content:"";position:absolute;top:-50px;inset-inline-end:-30px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(94,234,212,.25),transparent 65%)}
+.score-hero::after{content:"";position:absolute;bottom:-80px;inset-inline-start:30%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,.35),transparent 70%)}
+.score-hero > *{position:relative;z-index:1}
+.score-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.score-ring{width:140px;height:140px;flex-shrink:0;position:relative}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .ring-bg{stroke:rgba(255,255,255,.15);fill:none;stroke-width:10}
+.score-ring .ring-fg{stroke:#5eead4;fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.score-ring .ring-val{position:absolute;inset:0;display:grid;place-items:center}
+.score-ring .ring-num{font-size:36px;font-weight:800;color:#fff;line-height:1}
+.score-ring .ring-max{font-size:12px;color:rgba(255,255,255,.7)}
+.score-info{flex:1;min-width:240px}
+.score-info h1{font-size:24px;font-weight:700;margin:0 0 6px}
+.score-info .level-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--r-full);font-weight:700;font-size:13px;margin-bottom:10px}
+.score-info .level-badge.P0{background:rgba(220,38,38,.25);color:#fca5a5;border:1px solid rgba(220,38,38,.4)}
+.score-info .level-badge.P1{background:rgba(217,119,6,.25);color:#fbbf24;border:1px solid rgba(217,119,6,.4)}
+.score-info .level-badge.P2{background:rgba(37,99,235,.25);color:#93c5fd;border:1px solid rgba(37,99,235,.4)}
+.score-info .level-badge.P3{background:rgba(22,163,74,.25);color:#86efac;border:1px solid rgba(22,163,74,.4)}
+.score-info .level-badge.P4{background:rgba(100,116,139,.25);color:#cbd5e1;border:1px solid rgba(100,116,139,.4)}
+.score-info .approach{font-size:13px;color:rgba(255,255,255,.85);line-height:1.7}
+
+.referral-banner{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.15);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.referral-banner .rb-icon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;flex-shrink:0}
+.referral-banner .rb-icon svg{width:22px;height:22px;color:#5eead4}
+.referral-banner .rb-info{flex:1;min-width:200px}
+.referral-banner .rb-title{font-size:11px;color:rgba(255,255,255,.65);font-weight:600}
+.referral-banner .rb-name{font-size:16px;font-weight:700;color:#fff;margin:2px 0}
+.referral-banner .rb-cond{font-size:12px;color:rgba(255,255,255,.8)}
+.referral-banner .rb-action{font-size:12px;color:rgba(255,255,255,.85);margin-top:6px;line-height:1.6}
+.referral-banner .rb-actions{display:flex;gap:8px;flex-wrap:wrap}
+.referral-banner .btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff}
+.referral-banner .btn:hover{background:rgba(255,255,255,.2)}
+.referral-banner .btn.warn{background:var(--red);border-color:var(--red)}
+
+/* Dimension bars */
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.dim-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;transition:all .2s var(--ease)}
+.dim-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.dim-card .dc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dim-card .dc-ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--p-ll);color:var(--p-d);flex-shrink:0}
+.dim-card .dc-ic svg{width:18px;height:18px}
+.dim-card .dc-name{font-size:13px;font-weight:700;color:var(--ink);flex:1;line-height:1.4}
+.dim-card .dc-score{font-size:11px;color:var(--mut);font-weight:500}
+.dim-card .dc-bar-wrap{height:10px;background:var(--bg-2);border-radius:5px;overflow:hidden;margin-bottom:8px}
+.dim-card .dc-bar{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--green),var(--amber) 50%,var(--red));transition:width .8s var(--ease)}
+.dim-card .dc-stats{display:flex;justify-content:space-between;font-size:11px}
+.dim-card .dc-num{font-weight:700;color:var(--ink);font-size:14px}
+.dim-card .dc-pct{color:var(--mut)}
+
+/* Red flags */
+.rf-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.rf-card{background:var(--red-bg);border:1px solid var(--red-line);border-radius:var(--r-md);padding:12px 14px;border-inline-start:4px solid var(--red);display:flex;gap:10px;align-items:flex-start}
+.rf-card .rf-ic{width:30px;height:30px;border-radius:8px;background:var(--red);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.rf-card .rf-ic svg{width:16px;height:16px}
+.rf-card .rf-body .rf-code{font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:var(--red)}
+.rf-card .rf-body .rf-title{font-size:13px;font-weight:700;color:var(--ink);margin:2px 0 4px}
+.rf-card .rf-body .rf-action{font-size:11.5px;color:var(--red);font-weight:600}
+.rf-card .rf-body .rf-sources{font-size:10.5px;color:var(--mut);margin-top:4px}
+
+/* Effective indicators */
+.ei-table{width:100%;border-collapse:collapse;font-size:12px}
+.ei-table thead th{background:var(--bg-2);color:var(--ink-2);text-align:right;padding:8px 10px;font-weight:600;font-size:11px;border-bottom:1px solid var(--line)}
+.ei-table tbody td{padding:9px 10px;border-bottom:1px solid var(--line-2);color:var(--ink-2)}
+.ei-table tbody tr:hover td{background:#fafbfc}
+.ei-table .ei-sev{display:inline-block;width:24px;height:24px;border-radius:6px;color:#fff;font-weight:700;font-size:11px;text-align:center;line-height:24px}
+.ei-table .ei-sev.s0{background:var(--green)}
+.ei-table .ei-sev.s05{background:var(--amber)}
+.ei-table .ei-sev.s1{background:var(--red)}
+.ei-table .ei-score-bar{display:inline-block;height:6px;background:linear-gradient(90deg,var(--p),var(--p-l));border-radius:3px;vertical-align:middle;margin-inline-end:6px}
+</style>
+
+{# ── HERO: امتیاز کل و سطح ──────────────────────────── #}
+<div class="score-hero">
+  <div class="score-row">
+    <div class="score-ring">
+      <svg width="140" height="140">
+        <circle class="ring-bg" cx="70" cy="70" r="60"/>
+        <circle class="ring-fg" cx="70" cy="70" r="60"
+          stroke-dasharray="{{ 2 * 3.14159 * 60 }}"
+          stroke-dashoffset="{{ 2 * 3.14159 * 60 * (1 - r.score / 1000) }}"/>
+      </svg>
+      <div class="ring-val">
+        <div class="ring-num">{{ r.score }}</div>
+        <div class="ring-max">از ۱۰۰۰</div>
+      </div>
+    </div>
+    <div class="score-info">
+      <h1>نتیجه غربالگری EM-MPI</h1>
+      <span class="level-badge {{ r.level.color }}">
+        <span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span>
+        {{ r.level.name }}
+      </span>
+      <div class="approach">
+        <b style="color:#5eead4">رویکرد پیشنهادی:</b> {{ r.level.approach }}
+      </div>
+    </div>
+  </div>
+
+  {# مسیر ارجاع #}
+  <div class="referral-banner">
+    <div class="rb-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>
+    </div>
+    <div class="rb-info">
+      <div class="rb-title">مسیر ارجاع پیشنهادی</div>
+      <div class="rb-name">{{ r.referral_path.name }}</div>
+      <div class="rb-cond">شرط: {{ r.referral_path.condition }}</div>
+      <div class="rb-action">اقدام: {{ r.referral_path.action }}</div>
+    </div>
+    <div class="rb-actions">
+      {# دکمهٔ تخصیص همیار (جدید — مانند اسنپ) #}
+      <a class="btn" href="{{ url_for('assistant_match', hid=hid) }}" style="background:linear-gradient(135deg,var(--purple),#7c3aed);border-color:var(--purple)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        {% if h.assigned_assistant %}همیار تخصیص‌یافته{% else %}تخصیص همیار{% endif %}
+      </a>
+      {% if r.needs_cdi %}
+      <a class="btn warn" href="{{ url_for('household_view', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+        {% if r.referral_path_code == 'P6' %}ارجاع فوری به CDI{% else %}شروع CDI (لایه ۱){% endif %}
+      </a>
+      {% else %}
+      <a class="btn" href="{{ url_for('household_view', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        مشاهدهٔ پرونده
+      </a>
+      {% endif %}
+      <a class="btn sec" href="{{ url_for('emmpi_form', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        ویرایش ارزیابی
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ── پرچم‌های قرمز ───────────────────────────────────── #}
+{% if r.red_flags %}
+<div class="card" style="border-inline-start:4px solid var(--red)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      پرچم‌های قرمز فعال
+    </h2>
+    <span class="tag" style="background:var(--red-bg);color:var(--red);border-color:var(--red-line)">{{ r.red_flags|length }} مورد</span>
+  </div>
+  <p class="card-desc" style="color:var(--red)">
+    ⚠ وجود هر پرچم قرمز، مسیر ارجاع فوری و مستقل از امتیاز را فعال می‌کند (بند ۱۱).
+  </p>
+  <div class="rf-list">
+    {% for rf in r.red_flags %}
+    <div class="rf-card">
+      <div class="rf-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="rf-body">
+        <div class="rf-code">{{ rf.code }}</div>
+        <div class="rf-title">{{ rf.title }}</div>
+        <div class="rf-action">⚡ {{ rf.action }}</div>
+        <div class="rf-sources">منشأ: {{ rf.triggered_by | join('، ') }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ─ـ امتیاز پنج بُعد ───────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      امتیاز پنج بُعد
+    </h2>
+  </div>
+  <div class="dim-grid">
+    {% for dim_key, dim_info in DIMENSIONS.items() %}
+    {% set ds = r.dimension_scores[dim_key] %}
+    <div class="dim-card">
+      <div class="dc-head">
+        <div class="dc-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ dim_info.icon }}"/></svg>
+        </div>
+        <div>
+          <div class="dc-name">بُعد {{ dim_key }}: {{ dim_info.name }}</div>
+          <div class="dc-score">سقف: {{ dim_info.max }} امتیاز</div>
+        </div>
+      </div>
+      <div class="dc-bar-wrap">
+        <div class="dc-bar" style="width:{{ ds.pct }}%"></div>
+      </div>
+      <div class="dc-stats">
+        <span class="dc-num">{{ ds.score }}</span>
+        <span class="dc-pct">{{ ds.pct }}٪ از سقف</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── ابعاد غالب ─────────────────────────────────────── #}
+{% if r.domin_dims %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>
+      ابعاد غالب محرومیت
+    </h2>
+    <span class="tag teal">۳ بُعد با بالاترین درصد</span>
+  </div>
+  <div class="kvs">
+    {% for d in r.dominant_dims %}
+    <div class="item">
+      <span class="k">بُعد {{ d.code }} — {{ d.name }}</span>
+      <span class="v"><b style="font-size:14px">{{ d.score }}</b> / {{ d.max }} <span class="small">({{ d.pct }}٪)</span></span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ─ـ شاخص‌های مؤثر ──────────────────────────────────── #}
+{% if r.effective_indicators %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      شاخص‌های مؤثر در امتیاز
+    </h2>
+    <span class="tag teal">{{ r.effective_indicators|length }} شاخص</span>
+  </div>
+  <div class="table-wrap">
+    <table class="ei-table">
+      <thead>
+        <tr><th>کد</th><th>بُعد</th><th>شاخص</th><th>شدت</th><th>وزن</th><th>امتیاز</th><th>سهم</th></tr>
+      </thead>
+      <tbody>
+        {% for ind in r.effective_indicators %}
+        <tr>
+          <td><b class="mono">{{ ind.code }}</b></td>
+          <td><span class="tag">{{ ind.dim }}</span></td>
+          <td>{{ ind.title }}</td>
+          <td><span class="ei-sev s{{ ind.severity | replace('.', '') }}">{{ ind.severity }}</span></td>
+          <td><b class="mono">{{ ind.weight }}</b></td>
+          <td><b class="mono">{{ ind.score }}</b></td>
+          <td>
+            <span class="ei-score-bar" style="width:{{ (ind.score / r.score * 100) if r.score > 0 else 0 }}px;max-width:80px"></span>
+            <span class="small">{{ (ind.score / r.score * 100) | round(1) if r.score > 0 else 0 }}٪</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── پیشنهاد تخصیص مددکار ─────────────────────────────── #}
+{% if assistant_suggestions %}
+<div class="card" style="border-inline-start:4px solid var(--p)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      پیشنهاد تخصیص مددکار یا همیار
+    </h2>
+    <span class="tag teal">بند ۹</span>
+  </div>
+  <div class="rf-list">
+    {% for sug in assistant_suggestions %}
+    <div style="background:var(--p-ll);border:1px solid var(--p-l);border-radius:var(--r);padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
+      <div style="width:30px;height:30px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--p-dd)">{{ sug.label }}</div>
+        <div style="font-size:11.5px;color:var(--ink-2);margin:3px 0">{{ sug.reason }}</div>
+        <div style="font-size:10.5px;color:var(--mut)">اولویت: {{ sug.priority }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── خط قرمزها ──────────────────────────────────────── #}
+<div class="card" style="border-inline-start:4px solid var(--red);background:linear-gradient(135deg,var(--red-bg) 0%,#fff 60%)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      خط قرمزهای هوش مصنوعی
+    </h2>
+    <span class="tag" style="background:var(--red-bg);color:var(--red);border-color:var(--red-line)">بند ۱۴</span>
+  </div>
+  <ul style="margin:0 18px;line-height:2">
+    {% for line in ai_red_lines %}
+    <li style="font-size:12px;color:var(--ink-2);margin-bottom:4px">{{ line }}</li>
+    {% endfor %}
+  </ul>
+  <div class="alert amber" style="margin-top:12px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>این خروجی <b>«پیشنهاد سامانه»</b> است؛ تأیید/اصلاح نهایی با مددکار خانواده است.</div>
+  </div>
+</div>
+
+{% endblock %}

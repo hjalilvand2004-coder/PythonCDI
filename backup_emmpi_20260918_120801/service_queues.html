@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block crumb %}صف‌های خدمت{% endblock %}
+{% block body %}
+
+<style>
+.queue-fam{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:18px 22px;margin-bottom:14px;box-shadow:var(--sh-sm);border-top:4px solid}
+.queue-fam.q-P0{border-top-color:var(--red)}
+.queue-fam.q-P1{border-top-color:var(--amber)}
+.queue-fam.q-P2{border-top-color:var(--blue)}
+.queue-fam.q-P3{border-top-color:var(--green)}
+.queue-fam.q-P4{border-top-color:var(--mut)}
+.qf-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.qf-code{font-family:ui-monospace,monospace;font-weight:700;font-size:13px;color:var(--p-d);background:var(--p-ll);padding:4px 10px;border-radius:6px}
+.qf-name{font-size:16px;font-weight:700;color:var(--ink);flex:1}
+.qf-count{font-size:11px;color:var(--mut);font-weight:500}
+.qf-services{font-size:11.5px;color:var(--mut);line-height:1.7;margin-bottom:14px;padding:8px 12px;background:var(--bg-2);border-radius:6px;border-inline-start:3px solid var(--p-l)}
+
+.qi-table{width:100%;border-collapse:collapse;font-size:12px}
+.qi-table thead th{background:var(--bg-2);color:var(--ink-2);text-align:right;padding:8px 10px;font-weight:600;font-size:11px;border-bottom:1px solid var(--line);white-space:nowrap}
+.qi-table tbody td{padding:9px 10px;border-bottom:1px solid var(--line-2);vertical-align:top;color:var(--ink-2)}
+.qi-table tbody tr:hover td{background:#fafbfc}
+.qi-table tbody tr:last-child td{border-bottom:none}
+.qi-table .qi-rank{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;color:#fff;font-weight:700;font-size:11px}
+.qi-table .qi-rank.A{background:var(--red)}
+.qi-table .qi-rank.B{background:var(--amber)}
+.qi-table .qi-rank.C{background:var(--blue)}
+.qi-table .qi-rank.D{background:var(--green)}
+.qi-table .qi-rank.E{background:var(--purple)}
+
+.qi-peh-bar{width:80px;height:6px;background:var(--bg-2);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-inline-end:6px}
+.qi-peh-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--red))}
+
+.empty-q{text-align:center;padding:30px 20px;color:var(--mut)}
+.empty-q svg{width:40px;height:40px;color:var(--mut-3);margin-bottom:8px}
+</style>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>صف‌های تخصصی خدمات</h1>
+    <p class="sub">
+      ۹ خانوادهٔ صف خدمت — هر خانوار می‌تواند در بیش از یک صف قرار گیرد (بند ۲ـ۱۲).
+      مرتب‌سازی بر اساس: طبقهٔ P، سپس رتبهٔ A-E، سپس PIM.
+    </p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('catalog') }}#service-queues">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      راهنمای صف‌ها
+    </a>
+  </div>
+</div>
+
+{# ── آمار کلی ────────────────────────────────────────── #}
+{% set ns = namespace(total=0, P0=0, P1=0, P2=0, P3=0, P4=0) %}
+{% for q in queues %}
+  {% for item in q.actions %}
+    {% set ns.total = ns.total + 1 %}
+    {% if item.p == 'P0' %}{% set ns.P0 = ns.P0 + 1 %}{% elif item.p == 'P1' %}{% set ns.P1 = ns.P1 + 1 %}{% elif item.p == 'P2' %}{% set ns.P2 = ns.P2 + 1 %}{% elif item.p == 'P3' %}{% set ns.P3 = ns.P3 + 1 %}{% elif item.p == 'P4' %}{% set ns.P4 = ns.P4 + 1 %}{% endif %}
+  {% endfor %}
+{% endfor %}
+
+<div class="stat-grid">
+  <div class="stat teal">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+    <div class="num">{{ ns.total }}</div>
+    <div class="lbl">مجموع اقدامات در صف‌ها</div>
+  </div>
+  <div class="stat red">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div class="num">{{ ns.P0 }}</div>
+    <div class="lbl">اقدامات P0 (بحرانی)</div>
+  </div>
+  <div class="stat amber">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div class="num">{{ ns.P1 }}</div>
+    <div class="lbl">اقدامات P1 (فوری)</div>
+  </div>
+  <div class="stat blue">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+    <div class="num">{{ ns.P2 }}</div>
+    <div class="lbl">اقدامات P2 (اولویت‌دار)</div>
+  </div>
+  <div class="stat green">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg></div>
+    <div class="num">{{ ns.P3 }}</div>
+    <div class="lbl">اقدامات P3 (توانمندساز)</div>
+  </div>
+</div>
+
+{# ── ۹ خانواده صف ──────────────────────────────────────── #}
+{% for q in queues %}
+<div class="queue-fam q-{{ q.info.color }}">
+  <div class="qf-head">
+    <span class="qf-code">{{ q.info.code }}</span>
+    <span class="qf-name">{{ q.info.name }}</span>
+    <span class="badge {{ q.info.color }}"><span class="dot"></span>{{ q.info.color }}</span>
+    <span class="qf-count">{{ q.actions|length }} اقدام در صف</span>
+  </div>
+  <div class="qf-services">
+    <b style="color:var(--ink-2)">خدمات اصلی:</b> {{ q.info.services }}
+  </div>
+
+  {% if q.actions %}
+  <div class="table-wrap">
+    <table class="qi-table">
+      <thead>
+        <tr>
+          <th>رتبه</th>
+          <th>خانوار</th>
+          <th>محور</th>
+          <th>طبقه</th>
+          <th>PEH</th>
+          <th>PIM</th>
+          <th>مهلت</th>
+          <th>مسئول</th>
+          <th>اقدام</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in q.actions %}
+        <tr>
+          <td><span class="qi-rank {{ it.rank }}">{{ it.rank }}</span></td>
+          <td>
+            <a href="{{ url_for('household_view', hid=it.hid) }}" style="font-weight:600;color:var(--ink)">{{ it.name }}</a>
+            <div class="small mono">{{ it.hid }}</div>
+          </td>
+          <td>
+            <b>{{ it.title }}</b>
+            <div class="small mono">{{ it.code }}</div>
+          </td>
+          <td><span class="badge {{ it.p }}"><span class="dot"></span>{{ it.p }}</span></td>
+          <td>
+            <span class="qi-peh-bar"><span class="qi-peh-bar-fill" style="width:{{ it.peh }}%"></span></span>
+            <b>{{ it.peh }}</b>
+          </td>
+          <td><b class="mono">{{ it.pim }}</b></td>
+          <td><span class="small">{{ it.deadline }}</span></td>
+          <td><span class="small">{{ it.owner }}</span></td>
+          <td>
+            <a class="btn sec sm" href="{{ url_for('intervention_basket', hid=it.hid) }}">سبد</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-q">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+    <div class="e-sub">هیچ اقدامی در این صف ثبت نشده است.</div>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{# ── قواعد حل تساوی ────────────────────────────────────── #}
+<div class="card" style="border-inline-start:4px solid var(--p)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      قواعد حل تساوی در صف خدمت
+    </h2>
+    <span class="tag teal">بند ۲ـ۱۷</span>
+  </div>
+  <p class="card-desc">در صورت برابری امتیاز PES در یک صف تخصصی، ترتیب زیر اعمال می‌شود:</p>
+  <ol style="margin:0 18px; line-height:2.2; color:var(--ink-2); counter-reset:tie">
+    {% for r in tiebreak_rules %}
+    <li style="margin-bottom:4px;counter-increment:tie;display:flex;align-items:flex-start;gap:8px">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--p-ll);color:var(--p-d);font-size:11px;font-weight:700;flex-shrink:0">{{ loop.index }}</span>
+      <span>{{ r }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</div>
+
+{% endblock %}

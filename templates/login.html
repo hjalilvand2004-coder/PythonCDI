@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ورود به سامانه شناسایی، احراز، توانمندسازی</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#0d9488; --p-d:#0f766e; --p-dd:#134e4a; --p-l:#5eead4; --p-ll:#ccfbf1;
+  --bg:#f8fafc; --ink:#0f172a; --ink-2:#334155; --mut:#64748b; --mut-2:#94a3b8;
+  --line:#e2e8f0; --line-2:#f1f5f9;
+  --red:#dc2626; --red-bg:#fef2f2; --red-line:#fecaca;
+  --sh-lg:0 12px 40px rgba(15,23,42,.10), 0 4px 12px rgba(15,23,42,.06);
+  --r:10px; --r-md:12px; --r-lg:16px; --r-full:999px;
+}
+html,body{height:100%}
+body{
+  font-family:Vazirmatn,"Segoe UI",Tahoma,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 90% -10%, rgba(13,148,136,.15), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(94,234,212,.18), transparent 60%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  color:var(--ink); min-height:100vh; display:grid; place-items:center; padding:24px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  width:100%; max-width:920px; display:grid;
+  grid-template-columns:1.1fr 1fr; min-height:520px;
+  background:#fff; border-radius:var(--r-lg); overflow:hidden;
+  box-shadow:var(--sh-lg); border:1px solid var(--line);
+}
+@media(max-width:760px){.wrap{grid-template-columns:1fr; max-width:440px}}
+
+/* Left brand panel */
+.brand{
+  background:linear-gradient(160deg, #0f766e 0%, #0f5e57 45%, #134e4a 100%);
+  color:#fff; padding:40px 36px; position:relative; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.brand::before{
+  content:""; position:absolute; top:-40px; inset-inline-start:-40px;
+  width:200px; height:200px; border-radius:50%;
+  background:radial-gradient(circle, rgba(94,234,212,.35), transparent 60%);
+}
+.brand::after{
+  content:""; position:absolute; bottom:-60px; inset-inline-end:-60px;
+  width:240px; height:240px; border-radius:50%;
+  background:radial-gradient(circle, rgba(13,148,136,.5), transparent 60%);
+}
+.brand > *{position:relative; z-index:1}
+.brand-top{display:flex; align-items:center; gap:10px}
+.brand-logo{
+  width:42px; height:42px; border-radius:12px;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+  display:grid; place-items:center; backdrop-filter:blur(10px);
+}
+.brand-logo svg{width:22px; height:22px; color:#fff}
+.brand-name{font-weight:700; font-size:18px}
+.brand-sub{font-size:11px; color:rgba(255,255,255,.65); margin-top:1px}
+
+.brand-mid h2{
+  font-size:26px; line-height:1.35; font-weight:700; margin-bottom:14px;
+  letter-spacing:-.01em
+}
+.brand-mid p{font-size:13.5px; color:rgba(255,255,255,.78); line-height:1.85; max-width:340px}
+.brand-mid ul{margin-top:18px; display:flex; flex-direction:column; gap:10px}
+.brand-mid li{
+  list-style:none; display:flex; align-items:center; gap:8px;
+  font-size:12.5px; color:rgba(255,255,255,.85)
+}
+.brand-mid li svg{width:16px; height:16px; color:var(--p-l); flex-shrink:0}
+
+.brand-bot{font-size:11px; color:rgba(255,255,255,.55); line-height:1.7}
+
+/* Right form panel */
+.form-side{padding:40px 36px; display:flex; flex-direction:column; justify-content:center}
+.form-side h1{font-size:22px; font-weight:700; margin-bottom:6px; color:var(--ink)}
+.form-side .lead{color:var(--mut); font-size:13px; margin-bottom:26px}
+
+.field{margin-bottom:18px}
+.field label{
+  display:block; font-size:12.5px; font-weight:600; color:var(--ink-2);
+  margin-bottom:6px
+}
+.input-wrap{position:relative}
+.input-wrap svg{
+  position:absolute; inset-inline-start:12px; top:50%; transform:translateY(-50%);
+  width:18px; height:18px; color:var(--mut-2); pointer-events:none;
+}
+.input-wrap input, .input-wrap select{
+  width:100%; padding:11px 14px 11px 40px; border:1px solid var(--line);
+  border-radius:var(--r); font-size:14px; background:#fff; color:var(--ink);
+  font-family:inherit; transition:all .18s ease;
+}
+.input-wrap select{padding-inline-start:40px; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:left 14px center;
+}
+.input-wrap input:focus, .input-wrap select:focus{
+  outline:none; border-color:var(--p); box-shadow:0 0 0 3px rgba(13,148,136,.14)
+}
+
+.btn{
+  width:100%; padding:12px; border-radius:var(--r); border:none;
+  background:var(--p); color:#fff; font-size:14.5px; font-weight:600;
+  cursor:pointer; transition:all .18s ease; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  margin-top:6px;
+}
+.btn:hover{background:var(--p-d); transform:translateY(-1px); box-shadow:0 6px 16px rgba(13,148,136,.3)}
+.btn svg{width:16px; height:16px}
+
+.hint{
+  margin-top:20px; padding:12px 14px; background:var(--bg); border:1px dashed var(--line);
+  border-radius:var(--r); font-size:12px; color:var(--mut); line-height:1.7;
+}
+.hint b{color:var(--ink-2)}
+.hint code{background:var(--p-ll); color:var(--p-dd); padding:1px 6px; border-radius:4px; font-weight:600; font-family:ui-monospace,monospace}
+
+.alert{
+  border-radius:var(--r); padding:11px 14px; margin-bottom:18px;
+  background:var(--red-bg); color:#991b1b; border:1px solid var(--red-line);
+  font-size:13px; display:flex; align-items:center; gap:8px;
+}
+.alert svg{width:16px; height:16px; flex-shrink:0; color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Brand side -->
+  <div class="brand">
+    <div class="brand-top">
+      <span class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10 0-4.418-2.865-8.166-6.879-9.502A2 2 0 0013 4v6a2 2 0 01-2 2H5a2 2 0 00-1.502 3.121C4.834 19.135 8.582 22 13 22z"/><path d="M5 11h4"/><path d="M9 5v6"/></svg>
+      </span>
+      <div>
+        <div class="brand-name">سامانه شناسایی، احراز، توانمندسازی</div>
+        <div class="brand-sub">شناسایی محرومیت چندبُعدی</div>
+      </div>
+    </div>
+
+    <div class="brand-mid">
+      <h2>ارزیابی جامع، مداخلهٔ هدفمند، خروج پایدار</h2>
+      <p>این سامانه بر پایهٔ چارچوب سه‌لایهٔ CDI طراحی شده و به مددکار خانواده کمک می‌کند تا با دسترسی نقش‌محور، خانوارها را اولویت‌بندی کند.</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> فعال‌سازی شاخه‌ای ۴۱ محور</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ماتریس بازیگران و حلقه‌های اجرایی</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> خط قرمزهای هوش مصنوعی</li>
+      </ul>
+    </div>
+
+    <div class="brand-bot">
+      نمونهٔ اولیه — خروجی سامانه «پیشنهاد» است؛ تصمیم نهایی با مددکار خانواده (بند ۹ـ۲)
+    </div>
+  </div>
+
+  <!-- Form side -->
+  <div class="form-side">
+    <h1>ورود به سامانه</h1>
+    <p class="lead">نقش خود را انتخاب کنید تا وارد محیط کار شوید.</p>
+
+    {% if error %}
+    <div class="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      <div class="field">
+        <label>نقش کاربر</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <select name="uid" required>
+            {% for uid, udata in users.items() %}
+              <option value="{{ uid }}">{{ roles[uid].label }} — ({{ uid }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>گذرواژه</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" name="password" value="1234" required>
+        </div>
+      </div>
+
+      <button class="btn" type="submit">
+        ورود به سامانه
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </form>
+
+    <div class="hint">
+      <b>گذرواژهٔ همهٔ نقش‌ها در این نمونهٔ اولیه:</b> <code>1234</code><br>
+      هر نقش فقط دسترسی ماتریس بازیگران (بند ۳) را دارد.
+    </div>
+  </div>
+</div>
+</body>
+</html>

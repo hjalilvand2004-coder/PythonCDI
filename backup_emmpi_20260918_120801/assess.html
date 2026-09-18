@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block crumb %}ارزیابی لایهٔ ۲{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>لایهٔ ۲ — CDI هدفمند</h1>
+    <p class="sub">
+      خانوار: <b style="color:var(--ink)">{{ h.identity.name or hid }}</b> ·
+      فقط محورهای فعال‌شده در لایهٔ ۱ نمایش داده می‌شود؛ محورهای حساس برای همیار «فقط هشدار» هستند (CDI-1-05 و CDI-4-04 سند).
+    </p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت به پرونده
+    </a>
+  </div>
+</div>
+
+<form method="post">
+{% for it in items %}
+  <div class="card">
+    <div class="head-row">
+      <h2 style="margin:0">
+        {{ it.title }}
+        <span class="small mono" style="color:var(--mut-2); font-weight:400">{{ it.code }}</span>
+      </h2>
+      <div style="display:flex; gap:4px; flex-wrap:wrap">
+        {% if it.sensitive %}<span class="badge sensitive"><span class="dot"></span>حساس</span>{% endif %}
+        <span class="tag">بُعد {{ it.dim }}</span>
+      </div>
+    </div>
+
+    <p class="small" style="background:var(--bg-2); padding:10px 12px; border-radius:8px; border-inline-start:3px solid var(--p-l); margin-bottom:12px; line-height:1.7">
+      <b style="color:var(--ink-2)">پرسش‌های تحلیلی:</b> {{ it.questions }}
+    </p>
+
+    <div class="kvs" style="margin-bottom:14px; font-size:12px">
+      <div class="item"><span class="k">منابع</span><span class="v">{{ it.sources|join('، ') }}</span></div>
+      <div class="item"><span class="k">ثبت اولیه</span><span class="v">{{ it.register }}</span></div>
+    </div>
+
+    {% if u.role == 'assistant' and it.sensitive %}
+      <div class="alert amber">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <b>ثبت حداقلی:</b> فقط نشانهٔ خطر و یادداشت ثبت کنید — ارزیابی کامل با حلقهٔ مجاز (مددکار/کلینیک) انجام می‌شود.
+        </div>
+      </div>
+      <label>یادداشت هشدار</label>
+      <textarea name="note_{{ it.code }}" placeholder="نشانهٔ خطر، توضیح کوتاه، مسیر ارتباط امن..."></textarea>
+    {% else %}
+      <div class="grid-2" style="align-items:start">
+        <div>
+          <label>شدت مسئله</label>
+          <select name="sev_{{ it.code }}">
+            <option value="none">بدون مسئله فعال</option>
+            {% for s in severities[:-1] %}
+              <option value="{{ s }}" {% if h.state.answers.get(it.code, {}).severity == s %}selected{% endif %}>
+                {{ sev_labels[s] }}
+              </option>
+            {% endfor %}
+          </select>
+          <p class="tiny" style="margin-top:6px">
+            {% if loop.first %}شدت در اولویت‌بندی P0–P4 مؤثر است.{% endif %}
+          </p>
+        </div>
+        <div>
+          <label>یادداشت</label>
+          <textarea name="note_{{ it.code }}" placeholder="توضیحات، نشانه‌ها، منبع داده...">{{ h.state.answers.get(it.code, {}).note or '' }}</textarea>
+        </div>
+      </div>
+      <label class="chk" style="margin-top:10px">
+        <label><input type="checkbox" name="conf_{{ it.code }}" {% if h.state.answers.get(it.code, {}).conflict %}checked{% endif %}> تعارض یا ابهام در دادهٔ این محور</label>
+      </label>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<div style="position:sticky; bottom:0; background:rgba(255,255,255,.95); backdrop-filter:blur(10px); border-top:1px solid var(--line); padding:14px 0; margin-top:20px; display:flex; gap:8px; justify-content:flex-end">
+  <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">انصراف</a>
+  <button class="btn lg" type="submit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    ذخیرهٔ ارزیابی
+  </button>
+</div>
+</form>
+{% endblock %}

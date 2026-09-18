@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}سامانه شناسایی، احراز، توانمندسازی{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<style>
+/* ─────────────────────────────────────────────────────────
+   Design Tokens
+   ───────────────────────────────────────────────────────── */
+:root{
+  /* Brand palette — refined teal */
+  --p:#0d9488; --p-d:#0f766e; --p-dd:#134e4a; --p-l:#5eead4; --p-ll:#ccfbf1;
+  /* Neutrals — slate */
+  --bg:#f8fafc; --bg-2:#f1f5f9; --card:#ffffff;
+  --ink:#0f172a; --ink-2:#334155; --mut:#64748b; --mut-2:#94a3b8; --mut-3:#cbd5e1;
+  --line:#e2e8f0; --line-2:#f1f5f9;
+  /* Sidebar */
+  --sb-bg:#0f172a; --sb-bg-2:#1e293b; --sb-ink:#cbd5e1; --sb-ink-2:#94a3b8;
+  --sb-active:rgba(45,212,191,.12); --sb-active-ink:#5eead4; --sb-hover:rgba(255,255,255,.05);
+  /* Status — semantic but refined */
+  --red:#dc2626; --red-bg:#fef2f2; --red-line:#fecaca;
+  --amber:#d97706; --amber-bg:#fffbeb; --amber-line:#fde68a;
+  --green:#16a34a; --green-bg:#f0fdf4; --green-line:#bbf7d0;
+  --blue:#2563eb; --blue-bg:#eff6ff; --blue-line:#bfdbfe;
+  --purple:#9333ea; --purple-bg:#faf5ff; --purple-line:#e9d5ff;
+  /* Shadows */
+  --sh-xs:0 1px 2px rgba(15,23,42,.04);
+  --sh-sm:0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --sh-md:0 4px 12px rgba(15,23,42,.07), 0 2px 4px rgba(15,23,42,.04);
+  --sh-lg:0 12px 32px rgba(15,23,42,.10), 0 4px 8px rgba(15,23,42,.05);
+  /* Radii */
+  --r-sm:6px; --r:10px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-full:999px;
+  /* Spacing scale */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-8:32px; --s-10:40px; --s-12:48px;
+  /* Type scale */
+  --t-xs:11px; --t-sm:12px; --t-base:13.5px; --t-md:14.5px; --t-lg:16.5px; --t-xl:19px; --t-2xl:23px; --t-3xl:30px;
+  /* Motion */
+  --ease:cubic-bezier(.4,0,.2,1); --dur:180ms;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Reset & base
+   ───────────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:Vazirmatn,"IRANSans","Segoe UI",Tahoma,Arial,sans-serif;
+  background:var(--bg); color:var(--ink);
+  font-size:var(--t-base); line-height:1.75; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+a{color:var(--p-d); text-decoration:none; transition:color var(--dur) var(--ease)}
+a:hover{color:var(--p)}
+button{font-family:inherit; cursor:pointer}
+input,select,textarea,button{font-family:inherit}
+::selection{background:var(--p-ll); color:var(--p-dd)}
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-thumb{background:var(--mut-3); border-radius:8px; border:2px solid transparent; background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--mut-2); background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ─────────────────────────────────────────────────────────
+   App shell — sidebar + main
+   ───────────────────────────────────────────────────────── */
+.app{display:grid; grid-template-columns:260px 1fr; min-height:100vh}
+
+/* Sidebar */
+.sb{
+  background:var(--sb-bg); color:var(--sb-ink);
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+  border-inline-start:1px solid var(--sb-bg-2);
+}
+.sb-brand{
+  display:flex; align-items:center; gap:10px; padding:18px 20px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.sb-brand .logo{
+  width:38px; height:38px; border-radius:10px;
+  background:linear-gradient(135deg, var(--p), var(--p-dd));
+  display:grid; place-items:center; color:#fff;
+  box-shadow:0 4px 12px rgba(13,148,136,.35);
+}
+.sb-brand .logo svg{width:20px; height:20px}
+.sb-brand .name{font-weight:700; color:#fff; font-size:var(--t-md); line-height:1.2}
+.sb-brand .sub{font-size:var(--t-xs); color:var(--sb-ink-2); margin-top:1px}
+
+.sb-section{padding:14px 12px 6px}
+.sb-section .lbl{
+  font-size:var(--t-xs); color:var(--sb-ink-2); text-transform:uppercase;
+  letter-spacing:.06em; padding:0 12px 6px; font-weight:600;
+}
+.sb-nav{flex:1; overflow-y:auto; padding:0 12px 12px}
+.sb-nav a{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:var(--r); color:var(--sb-ink);
+  font-size:var(--t-md); font-weight:500; margin-bottom:2px;
+  transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.sb-nav a svg{width:18px; height:18px; color:var(--sb-ink-2); flex-shrink:0; transition:color var(--dur) var(--ease)}
+.sb-nav a:hover{background:var(--sb-hover); color:#fff}
+.sb-nav a:hover svg{color:#fff}
+.sb-nav a.active{background:var(--sb-active); color:var(--sb-active-ink); font-weight:600}
+.sb-nav a.active svg{color:var(--sb-active-ink)}
+.sb-nav a .badge-mini{
+  margin-inline-start:auto; background:var(--red); color:#fff;
+  font-size:10px; font-weight:700; padding:1px 7px; border-radius:var(--r-full); line-height:1.5
+}
+
+.sb-user{
+  margin-top:auto; padding:12px; border-top:1px solid rgba(255,255,255,.06);
+}
+.sb-user .card-user{
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  border-radius:var(--r); background:rgba(255,255,255,.04);
+}
+.sb-user .avatar{
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, var(--p-l), var(--p));
+  color:var(--p-dd); display:grid; place-items:center; font-weight:700; font-size:var(--t-sm)
+}
+.sb-user .uinfo{min-width:0; flex:1}
+.sb-user .uname{color:#fff; font-size:var(--t-sm); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.sb-user .urole{color:var(--sb-ink-2); font-size:var(--t-xs)}
+.sb-user form{display:inline}
+.sb-user .logout{
+  background:transparent; border:none; color:var(--sb-ink-2);
+  width:30px; height:30px; border-radius:var(--r-sm); display:grid; place-items:center;
+  transition:all var(--dur) var(--ease)
+}
+.sb-user .logout:hover{background:rgba(220,38,38,.15); color:#fca5a5}
+.sb-user .logout svg{width:16px; height:16px}
+
+/* Main column */
+.main{display:flex; flex-direction:column; min-width:0}
+
+/* Topbar */
+.topbar{
+  position:sticky; top:0; z-index:30;
+  background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:14px 28px; display:flex; align-items:center; gap:16px;
+}
+.topbar .crumb{display:flex; align-items:center; gap:8px; font-size:var(--t-sm); color:var(--mut)}
+.topbar .crumb svg{width:14px; height:14px}
+.topbar .crumb .last{color:var(--ink); font-weight:600}
+.topbar .tb-spacer{flex:1}
+.topbar .search{
+  position:relative; width:280px; max-width:40vw;
+}
+.topbar .search input{
+  width:100%; padding:8px 12px 8px 36px; border:1px solid var(--line);
+  border-radius:var(--r); background:var(--bg-2); font-size:var(--t-sm);
+  transition:all var(--dur) var(--ease)
+}
+.topbar .search input:focus{outline:none; border-color:var(--p-l); background:#fff; box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.topbar .search svg{position:absolute; inset-inline-start:10px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--mut-2)}
+.topbar .tb-actions{display:flex; align-items:center; gap:8px}
+.topbar .icon-btn{
+  width:36px; height:36px; border-radius:var(--r); border:1px solid var(--line);
+  background:#fff; color:var(--mut); display:grid; place-items:center;
+  transition:all var(--dur) var(--ease); position:relative
+}
+.topbar .icon-btn:hover{background:var(--bg-2); color:var(--ink); border-color:var(--mut-3)}
+.topbar .icon-btn svg{width:18px; height:18px}
+.topbar .icon-btn .dot{position:absolute; top:6px; inset-inline-end:6px; width:8px; height:8px; border-radius:50%; background:var(--red); border:2px solid #fff}
+
+/* Content */
+.content{padding:28px; max-width:1280px; width:100%; margin:0 auto; flex:1}
+.page-head{margin-bottom:24px; display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap}
+.page-head .ph-text{flex:1; min-width:240px}
+.page-head h1{font-size:var(--t-2xl); font-weight:700; color:var(--ink); letter-spacing:-.01em; line-height:1.3}
+.page-head .sub{color:var(--mut); font-size:var(--t-md); margin-top:4px; line-height:1.6}
+.page-head .ph-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+
+/* ─────────────────────────────────────────────────────────
+   Cards
+   ───────────────────────────────────────────────────────── */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-md);
+  padding:20px 22px; margin-bottom:16px; box-shadow:var(--sh-sm);
+  transition:box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease)
+}
+.card.tight{padding:14px 18px}
+.card.hover:hover{box-shadow:var(--sh-md); transform:translateY(-1px)}
+.card h2{font-size:var(--t-lg); font-weight:700; color:var(--ink); margin-bottom:12px; display:flex; align-items:center; gap:8px; line-height:1.4}
+.card h2 .ic{width:20px; height:20px; color:var(--p)}
+.card h3{font-size:var(--t-md); font-weight:600; color:var(--ink-2); margin:16px 0 8px; display:flex; align-items:center; gap:6px}
+.card .head-row{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap}
+.card .head-row h2{margin:0}
+.card .card-desc{color:var(--mut); font-size:var(--t-sm); margin:-4px 0 12px; line-height:1.6}
+.card.divided > * + *{margin-top:14px; padding-top:14px; border-top:1px solid var(--line-2)}
+
+/* ─────────────────────────────────────────────────────────
+   Badges & pills
+   ───────────────────────────────────────────────────────── */
+.badge{
+  display:inline-flex; align-items:center; gap:4px;
+  border-radius:var(--r-full); padding:2px 10px;
+  font-size:var(--t-xs); font-weight:700; letter-spacing:.01em;
+  border:1px solid transparent; line-height:1.6; white-space:nowrap;
+}
+.badge .dot{width:6px; height:6px; border-radius:50%; background:currentColor}
+.P0{background:var(--red-bg); color:var(--red); border-color:var(--red-line)}
+.P1{background:var(--amber-bg); color:var(--amber); border-color:var(--amber-line)}
+.P2{background:var(--blue-bg); color:var(--blue); border-color:var(--blue-line)}
+.P3{background:var(--green-bg); color:var(--green); border-color:var(--green-line)}
+.P4{background:var(--bg-2); color:var(--mut); border-color:var(--line)}
+.sensitive{background:var(--purple-bg); color:var(--purple); border-color:var(--purple-line)}
+.badge.sensitive{background:var(--purple-bg); color:var(--purple); border-color:var(--purple-line)}
+.badge.dim{background:var(--bg-2); color:var(--mut); border-color:var(--line)}
+
+/* ─────────────────────────────────────────────────────────
+   Alerts
+   ───────────────────────────────────────────────────────── */
+.alert{
+  border-radius:var(--r); padding:12px 14px 12px 14px;
+  font-size:var(--t-sm); display:flex; gap:10px; align-items:flex-start;
+  border:1px solid; line-height:1.7; margin:12px 0;
+}
+.alert svg{width:18px; height:18px; flex-shrink:0; margin-top:3px}
+.alert.red{background:var(--red-bg); color:#991b1b; border-color:var(--red-line)}
+.alert.red svg{color:var(--red)}
+.alert.amber{background:var(--amber-bg); color:#92400e; border-color:var(--amber-line)}
+.alert.amber svg{color:var(--amber)}
+.alert.blue{background:var(--blue-bg); color:#1e40af; border-color:var(--blue-line)}
+.alert.blue svg{color:var(--blue)}
+.alert.green{background:var(--green-bg); color:#166534; border-color:var(--green-line)}
+.alert.green svg{color:var(--green)}
+.alert ul{margin:6px 0 0 18px; padding:0}
+
+/* ─────────────────────────────────────────────────────────
+   Typography helpers
+   ───────────────────────────────────────────────────────── */
+.muted{color:var(--mut); font-size:var(--t-sm)}
+.small{font-size:var(--t-xs); color:var(--mut)}
+.tiny{font-size:10.5px; color:var(--mut-2)}
+.kv{font-size:var(--t-sm); color:var(--ink-2); line-height:1.9}
+.kv b{color:var(--ink); font-weight:600}
+.mono{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace; font-size:var(--t-xs)}
+.divider{height:1px; background:var(--line); margin:16px 0}
+.hr-dot{border:none; border-top:1px dashed var(--line); margin:14px 0}
+
+/* ─────────────────────────────────────────────────────────
+   Tables
+   ───────────────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto; border-radius:var(--r); border:1px solid var(--line)}
+table{width:100%; border-collapse:collapse; font-size:var(--t-sm)}
+thead th{
+  background:var(--bg-2); color:var(--ink-2); text-align:right;
+  padding:10px 14px; font-weight:600; font-size:var(--t-xs);
+  text-transform:uppercase; letter-spacing:.04em;
+  border-bottom:1px solid var(--line); white-space:nowrap;
+}
+tbody td{padding:11px 14px; border-bottom:1px solid var(--line-2); vertical-align:top; color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background var(--dur) var(--ease)}
+tbody tr:hover td{background:#fafbfc}
+td.num,th.num{text-align:left; font-variant-numeric:tabular-nums}
+td .small{display:block; margin-top:2px}
+
+/* ─────────────────────────────────────────────────────────
+   Forms
+   ───────────────────────────────────────────────────────── */
+.grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px}
+.grid-2{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px}
+.grid-3{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px}
+@media(max-width:720px){.grid-2,.grid-3{grid-template-columns:1fr}}
+label{display:block; font-size:var(--t-sm); font-weight:600; color:var(--ink-2); margin:0 0 6px}
+input[type=text], input[type=password], input[type=number], input[type=date], textarea, select{
+  width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:var(--r);
+  font-size:var(--t-md); background:#fff; color:var(--ink);
+  transition:all var(--dur) var(--ease); line-height:1.6;
+}
+textarea{min-height:72px; resize:vertical; font-family:inherit}
+input:focus, textarea:focus, select:focus{
+  outline:none; border-color:var(--p); box-shadow:0 0 0 3px rgba(13,148,136,.12)
+}
+input::placeholder, textarea::placeholder{color:var(--mut-2)}
+select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:left 12px center; padding-inline-start:12px; padding-inline-end:32px}
+fieldset{
+  border:1px solid var(--line); border-radius:var(--r-md); padding:14px 16px 8px;
+  margin:8px 0 12px; background:#fff;
+}
+legend{
+  font-weight:600; font-size:var(--t-sm); color:var(--p-d);
+  padding:0 8px; display:inline-flex; align-items:center; gap:6px;
+}
+.chk{display:flex; flex-wrap:wrap; gap:8px 18px}
+.chk label{
+  display:inline-flex; align-items:center; gap:7px;
+  font-weight:400; margin:0; cursor:pointer;
+  padding:6px 10px; border-radius:var(--r-sm);
+  border:1px solid var(--line-2); background:#fff;
+  font-size:var(--t-sm); transition:all var(--dur) var(--ease)
+}
+.chk label:hover{background:var(--bg-2); border-color:var(--mut-3)}
+.chk label:has(input:checked){background:var(--p-ll); border-color:var(--p-l); color:var(--p-dd); font-weight:600}
+.chk input[type=checkbox]{
+  width:16px; height:16px; accent-color:var(--p); margin:0; cursor:pointer
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  background:var(--p); color:#fff; border:1px solid var(--p);
+  border-radius:var(--r); padding:9px 18px; font-size:var(--t-md);
+  font-weight:600; cursor:pointer; transition:all var(--dur) var(--ease);
+  text-decoration:none; line-height:1.4;
+}
+.btn:hover{background:var(--p-d); border-color:var(--p-d); color:#fff; transform:translateY(-1px); box-shadow:0 4px 12px rgba(13,148,136,.25)}
+.btn:active{transform:translateY(0)}
+.btn svg{width:16px; height:16px}
+.btn.sec{background:#fff; color:var(--p-d); border-color:var(--line)}
+.btn.sec:hover{background:var(--bg-2); border-color:var(--p-l); color:var(--p-d); box-shadow:var(--sh-xs)}
+.btn.warn{background:var(--red); border-color:var(--red)}
+.btn.warn:hover{background:#b91c1c; border-color:#b91c1c; box-shadow:0 4px 12px rgba(220,38,38,.25)}
+.btn.ghost{background:transparent; border-color:transparent; color:var(--mut)}
+.btn.ghost:hover{background:var(--bg-2); color:var(--ink); box-shadow:none}
+.btn.sm{padding:6px 12px; font-size:var(--t-sm)}
+.btn.lg{padding:12px 24px; font-size:var(--t-lg)}
+
+/* ─────────────────────────────────────────────────────────
+   Misc components
+   ───────────────────────────────────────────────────────── */
+.seq{
+  border-inline-start:3px solid var(--p-l); margin-inline-start:4px;
+  padding:4px 0 4px 14px; margin-bottom:10px; position:relative;
+}
+.seq::before{
+  content:""; position:absolute; inset-inline-start:-6px; top:8px;
+  width:9px; height:9px; border-radius:50%; background:var(--p); border:2px solid #fff;
+  box-shadow:0 0 0 1px var(--p-l)
+}
+.seq .step{font-weight:700; color:var(--ink); font-size:var(--t-sm); display:block; margin-bottom:4px}
+
+.kvs{display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px 18px; font-size:var(--t-sm)}
+.kvs .item{display:flex; flex-direction:column; gap:2px}
+.kvs .k{color:var(--mut); font-size:var(--t-xs); font-weight:600}
+.kvs .v{color:var(--ink); font-weight:500}
+
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin-bottom:20px}
+.stat{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
+  padding:16px; box-shadow:var(--sh-xs); position:relative; overflow:hidden;
+}
+.stat .ic{width:36px; height:36px; border-radius:var(--r); display:grid; place-items:center; margin-bottom:10px}
+.stat .ic svg{width:20px; height:20px}
+.stat .num{font-size:var(--t-2xl); font-weight:700; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums}
+.stat .lbl{color:var(--mut); font-size:var(--t-xs); margin-top:6px; font-weight:500}
+.stat.teal .ic{background:var(--p-ll); color:var(--p-d)}
+.stat.red .ic{background:var(--red-bg); color:var(--red)}
+.stat.amber .ic{background:var(--amber-bg); color:var(--amber)}
+.stat.blue .ic{background:var(--blue-bg); color:var(--blue)}
+.stat.green .ic{background:var(--green-bg); color:var(--green)}
+
+.empty{
+  text-align:center; padding:40px 20px; color:var(--mut);
+  display:flex; flex-direction:column; align-items:center; gap:10px
+}
+.empty svg{width:48px; height:48px; color:var(--mut-3)}
+.empty .e-title{font-weight:600; color:var(--ink-2); font-size:var(--t-md)}
+.empty .e-sub{font-size:var(--t-sm); color:var(--mut)}
+
+.tag{display:inline-block; padding:1px 8px; border-radius:var(--r-sm); background:var(--bg-2); color:var(--mut); font-size:var(--t-xs); border:1px solid var(--line)}
+.tag.teal{background:var(--p-ll); color:var(--p-d); border-color:var(--p-l)}
+
+footer{padding:16px 28px; text-align:center; color:var(--mut-2); font-size:var(--t-xs); border-top:1px solid var(--line-2); background:var(--bg)}
+
+/* Mobile */
+.mobile-toggle{display:none}
+@media(max-width:960px){
+  .app{grid-template-columns:1fr}
+  .sb{position:fixed; inset-inline-start:0; top:0; width:260px; z-index:50; transform:translateX(100%); transition:transform var(--dur) var(--ease)}
+  .sb.open{transform:translateX(0)}
+  .mobile-toggle{display:grid}
+  .content{padding:18px}
+}
+.backdrop{display:none; position:fixed; inset:0; background:rgba(15,23,42,.4); z-index:40}
+.backdrop.show{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sb" id="sidebar">
+    <div class="sb-brand">
+      <span class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10 0-4.418-2.865-8.166-6.879-9.502A2 2 0 0013 4v6a2 2 0 01-2 2H5a2 2 0 00-1.502 3.121C4.834 19.135 8.582 22 13 22z"/><path d="M5 11h4"/><path d="M9 5v6"/></svg>
+      </span>
+      <div>
+        <div class="name">سامانه شناسایی، احراز، توانمندسازی</div>
+        <div class="sub">شناسایی محرومیت چندبُعدی</div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-section">
+        <div class="lbl">عملیات اصلی</div>
+      </div>
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        داشبورد
+      </a>
+      {% if u.role == 'beneficiary' %}
+      {# نیازمند: دکمهٔ ثبت درخواست جدید #}
+      <a href="{{ url_for('beneficiary_new_request') }}" class="{{ 'active' if request.endpoint == 'beneficiary_new_request' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+        ثبت درخواست جدید
+      </a>
+      {% elif u.role in ('assistant', 'worker', 'rose', 'swclinic', 'employ') %}
+      {# همیار: استخر درخواست‌ها #}
+      <a href="{{ url_for('assistant_pool') }}" class="{{ 'active' if request.endpoint == 'assistant_pool' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        استخر درخواست‌ها
+        {% set pending_count = namespace(n=0) %}
+        {% for hh in households if hh.h.status|default('') == 'pending' %}{% set pending_count.n = pending_count.n + 1 %}{% endfor %}
+        {% if pending_count.n > 0 %}<span class="badge-mini">{{ pending_count.n }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('household_new') }}" class="{{ 'active' if request.endpoint == 'household_new' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+        ثبت پروندهٔ دستی
+      </a>
+      {% else %}
+      <a href="{{ url_for('household_new') }}" class="{{ 'active' if request.endpoint == 'household_new' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+        ثبت پروندهٔ جدید
+      </a>
+      {% endif %}
+      <a href="{{ url_for('catalog') }}" class="{{ 'active' if request.endpoint == 'catalog' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        کاتالوگ چارچوب
+      </a>
+      {% if u.role not in ('beneficiary',) %}
+      <a href="{{ url_for('service_queues') }}" class="{{ 'active' if request.endpoint == 'service_queues' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        صف‌های خدمت
+      </a>
+      {% endif %}
+      {% if u.role in ('worker', 'manager', 'admin') %}
+      <a href="{{ url_for('worker_dashboard') }}" class="{{ 'active' if request.endpoint == 'worker_dashboard' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        داشبورد تحلیلی
+      </a>
+      {% endif %}
+      {% if u.role == 'hqmanager' %}
+      <a href="{{ url_for('hq_dashboard') }}" class="{{ 'active' if request.endpoint == 'hq_dashboard' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        گزارش کل کشور
+      </a>
+      {% endif %}
+
+      <div class="sb-section">
+        <div class="lbl">ارجاع‌ها</div>
+      </div>
+      <a href="{{ url_for('index') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        در انتظار پاسخ
+      </a>
+    </div>
+
+    {% if u %}
+    <div class="sb-user">
+      <div class="card-user">
+        <div class="avatar">{{ u.name[:1] if u.name else '?' }}</div>
+        <div class="uinfo">
+          <div class="uname">{{ u.name }}</div>
+          <div class="urole">حلقهٔ {{ u.ring or '—' }} · {{ u.label or '—' }}</div>
+        </div>
+        <form action="{{ url_for('logout') }}" method="get">
+          <button class="logout" title="خروج">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </aside>
+  <div class="backdrop" id="backdrop" onclick="document.getElementById('sidebar').classList.remove('open'); this.classList.remove('show')"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open'); document.getElementById('backdrop').classList.add('show')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="crumb">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>سامانه شناسایی، احراز، توانمندسازی</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="last">{% block crumb %}صفحه{% endblock %}</span>
+      </div>
+      <div class="tb-spacer"></div>
+      <form class="search" onsubmit="event.preventDefault()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="جستجوی پرونده، شناسه، محل...">
+      </form>
+      <div class="tb-actions">
+        <button class="icon-btn" title="اعلان‌ها">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="icon-btn" title="راهنما">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      {% block body %}{% endblock %}
+    </main>
+
+    <footer>نمونهٔ اولیهٔ CDI — خروجی سامانه «پیشنهاد» است؛ تصمیم نهایی با مددکار خانواده (بند ۹ـ۲)</footer>
+  </div>
+</div>
+</body>
+</html>

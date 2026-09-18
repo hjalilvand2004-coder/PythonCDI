@@ -1,0 +1,3324 @@
+{
+  "households": {
+    "IR-1001": {
+      "identity": {
+        "hid": "IR-1001",
+        "name": "خانوار الف — سرپرست: مریم رضایی",
+        "location": "کرمانشاه، منطقهٔ ۲",
+        "members": "۵ نفر (۳ کودک مدرسه‌رو)",
+        "contact": "۰۹۱۲۰۰۰۰۰۰۰",
+        "at_risk": "کودک ۹ سالهٔ دارای سوءتغذیه"
+      },
+      "em_input": {
+        "level": "شدید",
+        "redflags": [
+          "food",
+          "housing",
+          "safety",
+          "education"
+        ],
+        "em_dims": [
+          "health",
+          "living"
+        ],
+        "redflag_labels": [
+          "ناامنی غذایی",
+          "ناامنی مسکن",
+          "خشونت/خطر حفاظتی",
+          "خطر ترک تحصیل"
+        ],
+        "services_received": [
+          "کمک غیرنقدی ماهانه",
+          "بیمه درمان رایگان"
+        ],
+        "em_date": "۱۴۰۵/۰۶/۱۰",
+        "note": "پرچم قرمز حفاظتی فعال — ارجاع فوری لازم",
+        "emmpi_score": 310.0,
+        "emmpi_level": "محرومیت متوسط",
+        "emmpi_referral": "ارجاع فوری مستقل از امتیاز"
+      },
+      "state": {
+        "redflags": [
+          "food",
+          "housing",
+          "safety",
+          "education"
+        ],
+        "em_dims": [
+          "health",
+          "living"
+        ],
+        "active_axes": [
+          "CDI-1-01",
+          "CDI-1-02",
+          "CDI-1-05",
+          "CDI-1-06",
+          "CDI-1-07",
+          "CDI-2-01",
+          "CDI-2-02",
+          "CDI-2-03",
+          "CDI-2-04",
+          "CDI-2-05",
+          "CDI-2-06",
+          "CDI-2-07",
+          "CDI-4-06",
+          "CDI-4-07",
+          "CDI-5-08"
+        ],
+        "answers": {
+          "CDI-1-01": {
+            "severity": "high",
+            "note": "دو وعده در روز؛ کودک ۹ ساله زیر وزن استاندارد",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-1-02": {
+            "severity": "high",
+            "note": "مهلت تخلیه تا پایان ماه؛ مالک حاضر به تمدید نیست",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-1-05": {
+            "severity": "none",
+            "note": "[هشدار همیار] TEST-NOTE-XYZ",
+            "conflict": false,
+            "alert": true,
+            "by": "assistant"
+          },
+          "CDI-2-01": {
+            "severity": "medium",
+            "note": "دختر ۱۴ ساله در خطر ترک تحصیل",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-2-03": {
+            "severity": "low",
+            "note": "کارت ملی فرزند سوم منقضی شده",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-4-06": {
+            "severity": "medium",
+            "note": "خانوار خواهان اولویت مسکن و اشتغال سرپرست است",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-5-08": {
+            "severity": "low",
+            "note": "کمک غیرنقدی جاری با حمایت مسکن هم‌پوشانی ندارد",
+            "conflict": false,
+            "by": "assistant"
+          }
+        },
+        "created_at": "2026-09-15T21:30:00",
+        "created_by": "assistant"
+      },
+      "layer2_done": true,
+      "layer3_done": true,
+      "decisions": [
+        {
+          "at": "2026-09-16T22:14:22",
+          "priority": "",
+          "confirm": false,
+          "note": "",
+          "by": "worker",
+          "g3": false
+        }
+      ],
+      "referrals": [
+        {
+          "at": "2026-09-15T21:40:00",
+          "from": "assistant",
+          "to": "rose",
+          "axis": "CDI-2-01",
+          "note": "مشاوره تحصیلی دختر ۱۴ ساله",
+          "status": "done",
+          "result": ""
+        }
+      ],
+      "history": [
+        {
+          "at": "2026-09-15T21:30:00",
+          "by": "assistant",
+          "action": "ایجاد پرونده و فعال‌سازی ۱۵ محور از EM-MPI"
+        },
+        {
+          "at": "2026-09-15T21:38:00",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-15T21:40:00",
+          "by": "assistant",
+          "action": "ارجاع به کلینیک مشاوره «رز» برای محور CDI-2-01"
+        },
+        {
+          "at": "2026-09-16T22:09:04",
+          "by": "worker",
+          "action": "تحلیل لایه ۳ ثبت شد",
+          "reasons": [
+            "پرچم قرمز یا خطر فعال"
+          ]
+        },
+        {
+          "at": "2026-09-16T22:09:20",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-16T22:13:04",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-16T22:13:26",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-16T22:14:22",
+          "by": "worker",
+          "action": "تصمیم مددکار: اولویت  — اصلاح/یادداشت"
+        },
+        {
+          "at": "2026-09-16T22:14:22",
+          "by": "worker",
+          "action": "ارجاع به  برای محور "
+        },
+        {
+          "at": "2026-09-16T22:14:23",
+          "by": "rose",
+          "action": "نتیجهٔ ارجاع ثبت شد: "
+        },
+        {
+          "at": "2026-09-18T12:33:12",
+          "by": "assistant",
+          "action": "غربالگری EM-MPI: امتیاز 310.0 — سطح محرومیت متوسط"
+        }
+      ],
+      "preferences": {
+        "اولویت خانوار": "تثبیت مسکن",
+        "آمادگی": "سرپرست آماده اشتغال پاره‌وقت است"
+      },
+      "capacities": [
+        "تجربه خیاطی سرپرست",
+        "حمایت مادربزرگ در مراقبت کودکان"
+      ],
+      "causes": [
+        "بیکاری سرپرست پس از طلاق",
+        "بدهی اجاره"
+      ],
+      "emmpi": {
+        "indicators": {
+          "A1": 0.5,
+          "A2": 0.0,
+          "A3": 0.5,
+          "A4": 0.5,
+          "A5": 0.5,
+          "A6": 0.5,
+          "A7": 0.0,
+          "B1": 0.5,
+          "B2": 0.5,
+          "B3": 0.0,
+          "B4": 0.0,
+          "B5": 0.5,
+          "B6": 0.5,
+          "B7": 0.0,
+          "C1": 0.0,
+          "C2": 0.0,
+          "C3": 0.5,
+          "C4": 0.5,
+          "C5": 0.0,
+          "C6": 0.5,
+          "C7": 0.5,
+          "C8": 0.5,
+          "C9": 1.0,
+          "D1": 0.0,
+          "D2": 0.0,
+          "D3": 0.0,
+          "D4": 0.0,
+          "D5": 0.0,
+          "D6": 0.0,
+          "E1": 0.0,
+          "E2": 0.5,
+          "E3": 1.0,
+          "E4": 0.5,
+          "E5": 1.0,
+          "E6": 1.0
+        },
+        "result": {
+          "score": 310.0,
+          "max_score": 1000,
+          "score_pct": 31.0,
+          "dimension_scores": {
+            "A": {
+              "name": "سلامت و امنیت زیستی",
+              "score": 92.5,
+              "max": 250,
+              "pct": 37.0
+            },
+            "B": {
+              "name": "آموزش و رشد انسانی",
+              "score": 60.0,
+              "max": 200,
+              "pct": 30.0
+            },
+            "C": {
+              "name": "استاندارد زندگی و مسکن",
+              "score": 95.0,
+              "max": 300,
+              "pct": 31.7
+            },
+            "D": {
+              "name": "معیشت، اشتغال و درآمد",
+              "score": 0.0,
+              "max": 150,
+              "pct": 0.0
+            },
+            "E": {
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 62.5,
+              "max": 100,
+              "pct": 62.5
+            }
+          },
+          "indicator_scores": {
+            "A1": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            "A2": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "ناتوانی یا معلولیت مؤثر و نیاز به توان‌بخشی"
+            },
+            "A3": {
+              "weight": 50,
+              "severity": 0.5,
+              "score": 25.0,
+              "dim": "A",
+              "title": "نیاز درمانی یا توان‌بخشی ضروری تأمین‌نشده"
+            },
+            "A4": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            "A5": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "A",
+              "title": "پوشش مؤثر بیمه و دسترسی عملی به خدمات درمانی"
+            },
+            "A6": {
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            "A7": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "اختلال سلامت روان یا اعتیاد مختل‌کننده عملکرد"
+            },
+            "B1": {
+              "weight": 50,
+              "severity": 0.5,
+              "score": 25.0,
+              "dim": "B",
+              "title": "بازماندگی یا ترک تحصیل کودک و نوجوان"
+            },
+            "B2": {
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "B",
+              "title": "خطر جدی ترک تحصیل"
+            },
+            "B3": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "محرومیت از سواد کارکردی در بزرگسال مسئول"
+            },
+            "B4": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "دسترسی عملی به آموزش مناسب"
+            },
+            "B5": {
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "B",
+              "title": "دسترسی به ابزار ضروری آموزش دیجیتال"
+            },
+            "B6": {
+              "weight": 30,
+              "severity": 0.5,
+              "score": 15.0,
+              "dim": "B",
+              "title": "نیاز آموزشی ویژه بدون خدمت متناسب"
+            },
+            "B7": {
+              "weight": 40,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "فقدان مسیر مهارت‌آموزی یا آمادگی اشتغال"
+            },
+            "C1": {
+              "weight": 60,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "بی‌خانمانی، سکونت اضطراری یا خطر فوری تخلیه"
+            },
+            "C2": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "ایمنی سازه و کفایت فیزیکی مسکن"
+            },
+            "C3": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "C",
+              "title": "امنیت تصرف و پایداری سکونت"
+            },
+            "C4": {
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "C",
+              "title": "تراکم شدید سکونت"
+            },
+            "C5": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی پایدار به آب، برق، گاز یا سوخت ایمن"
+            },
+            "C6": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "C",
+              "title": "سرویس بهداشتی، حمام و بهداشت محیط"
+            },
+            "C7": {
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "C",
+              "title": "فقدان وسایل ضروری زندگی"
+            },
+            "C8": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "C",
+              "title": "فشار هزینه مسکن"
+            },
+            "C9": {
+              "weight": 25,
+              "severity": 1.0,
+              "score": 25.0,
+              "dim": "C",
+              "title": "دسترسی فیزیکی به خدمات پایه ضروری"
+            },
+            "D1": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان اشتغال یا درآمد فعال در فرد اصلی تأمین‌کننده"
+            },
+            "D2": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بیکاری یا بلااستفاده‌ماندن ظرفیت کار در اعضای توانمند"
+            },
+            "D3": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناپایداری اشتغال یا درآمد"
+            },
+            "D4": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناکافی‌بودن درآمد قابل‌دسترس برای نیازهای اساسی"
+            },
+            "D5": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بدهی بحرانی یا شوک اقتصادی مؤثر بر معیشت"
+            },
+            "D6": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان مهارت، ابزار یا سرمایه حداقلی برای ورود به کار"
+            },
+            "E1": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "فقدان ظرفیت مؤثر تأمین معاش در خانوار"
+            },
+            "E2": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            "E3": {
+              "weight": 15,
+              "severity": 1.0,
+              "score": 15.0,
+              "dim": "E",
+              "title": "فقدان شبکه حمایت خانوادگی، اجتماعی یا محلی"
+            },
+            "E4": {
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "E",
+              "title": "مانع حقوقی، هویتی یا اداری مؤثر بر دسترسی"
+            },
+            "E5": {
+              "weight": 15,
+              "severity": 1.0,
+              "score": 15.0,
+              "dim": "E",
+              "title": "عدم دسترسی مؤثر به حمایت‌ها و خدمات واجد شرایط"
+            },
+            "E6": {
+              "weight": 15,
+              "severity": 1.0,
+              "score": 15.0,
+              "dim": "E",
+              "title": "ریسک بالای تشدید محرومیت در آینده"
+            }
+          },
+          "effective_indicators": [
+            {
+              "code": "A3",
+              "weight": 50,
+              "severity": 0.5,
+              "score": 25.0,
+              "dim": "A",
+              "title": "نیاز درمانی یا توان‌بخشی ضروری تأمین‌نشده"
+            },
+            {
+              "code": "B1",
+              "weight": 50,
+              "severity": 0.5,
+              "score": 25.0,
+              "dim": "B",
+              "title": "بازماندگی یا ترک تحصیل کودک و نوجوان"
+            },
+            {
+              "code": "C9",
+              "weight": 25,
+              "severity": 1.0,
+              "score": 25.0,
+              "dim": "C",
+              "title": "دسترسی فیزیکی به خدمات پایه ضروری"
+            },
+            {
+              "code": "A6",
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            {
+              "code": "A1",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            {
+              "code": "A4",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            {
+              "code": "C3",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "C",
+              "title": "امنیت تصرف و پایداری سکونت"
+            },
+            {
+              "code": "C8",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "C",
+              "title": "فشار هزینه مسکن"
+            },
+            {
+              "code": "B6",
+              "weight": 30,
+              "severity": 0.5,
+              "score": 15.0,
+              "dim": "B",
+              "title": "نیاز آموزشی ویژه بدون خدمت متناسب"
+            },
+            {
+              "code": "E3",
+              "weight": 15,
+              "severity": 1.0,
+              "score": 15.0,
+              "dim": "E",
+              "title": "فقدان شبکه حمایت خانوادگی، اجتماعی یا محلی"
+            },
+            {
+              "code": "E5",
+              "weight": 15,
+              "severity": 1.0,
+              "score": 15.0,
+              "dim": "E",
+              "title": "عدم دسترسی مؤثر به حمایت‌ها و خدمات واجد شرایط"
+            },
+            {
+              "code": "E6",
+              "weight": 15,
+              "severity": 1.0,
+              "score": 15.0,
+              "dim": "E",
+              "title": "ریسک بالای تشدید محرومیت در آینده"
+            },
+            {
+              "code": "B2",
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "B",
+              "title": "خطر جدی ترک تحصیل"
+            },
+            {
+              "code": "C4",
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "C",
+              "title": "تراکم شدید سکونت"
+            },
+            {
+              "code": "C7",
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "C",
+              "title": "فقدان وسایل ضروری زندگی"
+            },
+            {
+              "code": "A5",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "A",
+              "title": "پوشش مؤثر بیمه و دسترسی عملی به خدمات درمانی"
+            },
+            {
+              "code": "C6",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "C",
+              "title": "سرویس بهداشتی، حمام و بهداشت محیط"
+            },
+            {
+              "code": "E2",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            {
+              "code": "B5",
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "B",
+              "title": "دسترسی به ابزار ضروری آموزش دیجیتال"
+            },
+            {
+              "code": "E4",
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "E",
+              "title": "مانع حقوقی، هویتی یا اداری مؤثر بر دسترسی"
+            }
+          ],
+          "level": {
+            "code": "L2",
+            "min": 300,
+            "max": 449,
+            "name": "محرومیت متوسط",
+            "approach": "ارجاع عادی به CDI و طراحی حمایت هدفمند",
+            "color": "P2"
+          },
+          "red_flags": [
+            {
+              "code": "R5",
+              "title": "خشونت خانوادگی یا تهدید امنیتی",
+              "sources": [
+                "A7",
+                "E3"
+              ],
+              "action": "محدودسازی دسترسی و ارجاع تخصصی فوری",
+              "triggered_by": [
+                "E3"
+              ]
+            },
+            {
+              "code": "R6",
+              "title": "سالمند، بیمار یا فرد دارای معلولیت بدون مراقب",
+              "sources": [
+                "A2",
+                "E2",
+                "E3"
+              ],
+              "action": "بازدید و رسیدگی فوری",
+              "triggered_by": [
+                "E3"
+              ]
+            },
+            {
+              "code": "R9",
+              "title": "احتمال قریب‌الوقوع از دست‌دادن درآمد اصلی یا مسکن",
+              "sources": [
+                "D3",
+                "D5",
+                "C1",
+                "C8",
+                "E6"
+              ],
+              "action": "ارجاع پیشگیرانه یا فوری، حسب شدت",
+              "triggered_by": [
+                "E6"
+              ]
+            }
+          ],
+          "referral_path": {
+            "name": "ارجاع فوری مستقل از امتیاز",
+            "condition": "وجود پرچم قرمز معتبر",
+            "action": "رسیدگی اضطراری، ارجاع فوری به مددکار و CDI؛ بدون انتظار برای تکمیل امتیاز",
+            "to_cdi": true,
+            "color": "P0"
+          },
+          "referral_path_code": "P6",
+          "dominant_dims": [
+            {
+              "code": "E",
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 62.5,
+              "max": 100,
+              "pct": 62.5
+            },
+            {
+              "code": "A",
+              "name": "سلامت و امنیت زیستی",
+              "score": 92.5,
+              "max": 250,
+              "pct": 37.0
+            },
+            {
+              "code": "C",
+              "name": "استاندارد زندگی و مسکن",
+              "score": 95.0,
+              "max": 300,
+              "pct": 31.7
+            }
+          ],
+          "needs_cdi": true,
+          "is_recommendation": true
+        },
+        "computed_at": "2026-09-18T12:33:12",
+        "computed_by": "assistant"
+      }
+    },
+    "IR-1002": {
+      "identity": {
+        "hid": "IR-1002",
+        "name": "خانوار ب — سرپرست: حسین کریمی",
+        "location": "سیستان و بلوچستان، روستای دَهک",
+        "members": "۷ نفر",
+        "contact": "۰۹۱۳۰۰۰۰۰۰۰",
+        "at_risk": "—"
+      },
+      "em_input": {
+        "level": "شدید",
+        "redflags": [
+          "food",
+          "employment",
+          "transport",
+          "digital"
+        ],
+        "em_dims": [
+          "work",
+          "living"
+        ],
+        "redflag_labels": [
+          "ناامنی غذایی",
+          "بیکاری/اشتغال ناپایدار",
+          "مانع رفت‌وآمد",
+          "محرومیت دیجیتال"
+        ],
+        "services_received": [],
+        "em_date": "۱۴۰۵/۰۶/۱۲",
+        "note": "دور از مراکز خدمت — نیازمند مداخله منطقه‌ای"
+      },
+      "state": {
+        "redflags": [
+          "food",
+          "employment",
+          "transport",
+          "digital"
+        ],
+        "em_dims": [
+          "work",
+          "living"
+        ],
+        "active_axes": [
+          "CDI-1-01",
+          "CDI-2-05",
+          "CDI-2-06",
+          "CDI-3-01",
+          "CDI-3-03",
+          "CDI-3-05",
+          "CDI-4-06",
+          "CDI-5-06",
+          "CDI-5-08"
+        ],
+        "answers": {
+          "CDI-1-01": {
+            "severity": "medium",
+            "note": "ناامنی غذایی فصلی",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-3-01": {
+            "severity": "medium",
+            "note": "سرپرست دامدار خرد است؛ تمایل به توسعه دام",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-3-05": {
+            "severity": "high",
+            "note": "بدون بازار تضمینی برای محصولات دام",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-5-06": {
+            "severity": "medium",
+            "note": "۳۰ کیلومتر تا نزدیک‌ترین بازار",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-4-06": {
+            "severity": "low",
+            "note": "خانوار خواهان مسیر دامداری است",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-5-08": {
+            "severity": "none",
+            "note": "تعاونی روستایی ظرفیت همکاری دارد",
+            "conflict": false,
+            "by": "assistant"
+          }
+        },
+        "created_at": "2026-09-15T22:00:00",
+        "created_by": "assistant"
+      },
+      "layer2_done": true,
+      "layer3_done": true,
+      "decisions": [
+        {
+          "at": "2026-09-16T22:05:29",
+          "priority": "",
+          "confirm": false,
+          "note": "",
+          "by": "worker",
+          "g3": false
+        }
+      ],
+      "referrals": [
+        {
+          "at": "2026-09-15T22:10:00",
+          "from": "assistant",
+          "to": "employ",
+          "axis": "CDI-3-05",
+          "note": "اعتبارسنجی بازار دام و امکان بازارسازی",
+          "status": "pending",
+          "result": ""
+        }
+      ],
+      "history": [
+        {
+          "at": "2026-09-15T22:00:00",
+          "by": "assistant",
+          "action": "ایجاد پرونده و فعال‌سازی ۹ محور از EM-MPI"
+        },
+        {
+          "at": "2026-09-15T22:08:00",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-15T22:10:00",
+          "by": "assistant",
+          "action": "ارجاع به کارشناس اشتغال برای محور CDI-3-05"
+        },
+        {
+          "at": "2026-09-16T22:05:29",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-16T22:05:29",
+          "by": "worker",
+          "action": "تصمیم مددکار: اولویت  — اصلاح/یادداشت"
+        },
+        {
+          "at": "2026-09-16T22:05:29",
+          "by": "worker",
+          "action": "ارجاع به  برای محور "
+        },
+        {
+          "at": "2026-09-16T22:08:06",
+          "by": "assistant",
+          "action": "تحلیل لایه ۳ ثبت شد",
+          "reasons": [
+            "پرچم قرمز یا خطر فعال"
+          ]
+        }
+      ],
+      "preferences": {
+        "اولویت خانوار": "توسعه دامداری خرد",
+        "آمادگی": "آماده آموزش تکمیلی"
+      },
+      "capacities": [
+        "تجربه دامداری",
+        "زمین کوچک آیش"
+      ],
+      "causes": [
+        "فقدان بازار و زنجیره تأمین",
+        "فاصله جغرافیایی"
+      ]
+    },
+    "IR-1003": {
+      "identity": {
+        "hid": "IR-1003",
+        "name": "خانوار ج — سرپرست: زهرا موسوی",
+        "location": "مشهد، منطقهٔ ۷",
+        "members": "۳ نفر",
+        "contact": "۰۹۱۵۰۰۰۰۰۰۰",
+        "at_risk": "—"
+      },
+      "em_input": {
+        "level": "متوسط",
+        "redflags": [
+          "insurance",
+          "motivation"
+        ],
+        "em_dims": [
+          "work"
+        ],
+        "redflag_labels": [
+          "فقدان بیمه",
+          "افت انگیزه"
+        ],
+        "services_received": [
+          "وام خوداشتغالی (در حال بازپرداخت)"
+        ],
+        "em_date": "۱۴۰۵/۰۶/۰۱",
+        "note": "وضعیت نسبتاً پایدار — کاندید پایش و توانمندسازی"
+      },
+      "state": {
+        "redflags": [
+          "insurance",
+          "motivation"
+        ],
+        "em_dims": [
+          "work"
+        ],
+        "active_axes": [
+          "CDI-3-01",
+          "CDI-3-03",
+          "CDI-3-05",
+          "CDI-3-08",
+          "CDI-4-05",
+          "CDI-4-06",
+          "CDI-5-05",
+          "CDI-5-08"
+        ],
+        "answers": {
+          "CDI-3-01": {
+            "severity": "low",
+            "note": "مسیر خیاطی خانگی انتخاب شده",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-3-08": {
+            "severity": "medium",
+            "note": "بدون بیمه اجتماعی",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-4-05": {
+            "severity": "medium",
+            "note": "خودباوری پس از شکست قبلی پایین است",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-4-06": {
+            "severity": "low",
+            "note": "خانوار هدف درآمد پایدار دارد",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-5-05": {
+            "severity": "low",
+            "note": "دوره رایگان خیاطی در نزدیکی محل سکونت",
+            "conflict": false,
+            "by": "assistant"
+          },
+          "CDI-5-08": {
+            "severity": "none",
+            "note": "وام جاری با مداخله جدید هم‌پوشانی ندارد",
+            "conflict": false,
+            "by": "assistant"
+          }
+        },
+        "created_at": "2026-09-15T22:20:00",
+        "created_by": "assistant"
+      },
+      "layer2_done": true,
+      "layer3_done": true,
+      "decisions": [],
+      "referrals": [],
+      "history": [
+        {
+          "at": "2026-09-15T22:20:00",
+          "by": "assistant",
+          "action": "ایجاد پرونده و فعال‌سازی ۸ محور از EM-MPI"
+        },
+        {
+          "at": "2026-09-15T22:26:00",
+          "by": "assistant",
+          "action": "ارزیابی لایه ۲ ثبت شد"
+        },
+        {
+          "at": "2026-09-16T22:05:29",
+          "by": "worker",
+          "action": "تحلیل لایه ۳ ثبت شد",
+          "reasons": [
+            "پرچم قرمز یا خطر فعال"
+          ]
+        }
+      ],
+      "preferences": {
+        "اولویت خانوار": "درآمد پایدار از خیاطی",
+        "آمادگی": "آماده دوره فنی"
+      },
+      "capacities": [
+        "مهارت خیاطی",
+        "دستگاه موجود"
+      ],
+      "causes": [
+        "شکست مداخله قبلی بدون بازارسازی"
+      ]
+    },
+    "5555": {
+      "identity": {
+        "hid": "5555",
+        "name": "قاسم",
+        "location": "تهران",
+        "members": "3",
+        "contact": "",
+        "at_risk": ""
+      },
+      "em_input": {
+        "level": "شدید",
+        "redflags": [
+          "food",
+          "housing",
+          "health",
+          "education",
+          "identity",
+          "employment",
+          "debt",
+          "insurance",
+          "network",
+          "isolation",
+          "discrimination"
+        ],
+        "em_dims": [
+          "health",
+          "education",
+          "living"
+        ],
+        "redflag_labels": [
+          "ناامنی غذایی",
+          "ناامنی مسکن",
+          "بحران سلامت",
+          "خطر ترک تحصیل",
+          "فقدان مدارک",
+          "بیکاری/اشتغال ناپایدار",
+          "بدهی بحرانی",
+          "فقدان بیمه",
+          "ضعف شبکه حمایت",
+          "انزوای اجتماعی",
+          "تبعیض/طرد"
+        ],
+        "services_received": [],
+        "em_date": "",
+        "note": ""
+      },
+      "state": {
+        "redflags": [
+          "food",
+          "housing",
+          "health",
+          "education",
+          "identity",
+          "employment",
+          "debt",
+          "insurance",
+          "network",
+          "isolation",
+          "discrimination"
+        ],
+        "em_dims": [
+          "health",
+          "education",
+          "living"
+        ],
+        "active_axes": [
+          "CDI-1-01",
+          "CDI-1-02",
+          "CDI-1-03",
+          "CDI-1-04",
+          "CDI-1-05",
+          "CDI-1-06",
+          "CDI-1-07",
+          "CDI-2-01",
+          "CDI-2-02",
+          "CDI-2-03",
+          "CDI-2-04",
+          "CDI-2-05",
+          "CDI-2-06",
+          "CDI-2-07",
+          "CDI-3-01",
+          "CDI-3-03",
+          "CDI-3-05",
+          "CDI-3-07",
+          "CDI-3-08",
+          "CDI-4-06",
+          "CDI-5-01",
+          "CDI-5-02",
+          "CDI-5-03",
+          "CDI-5-04",
+          "CDI-5-07",
+          "CDI-5-08"
+        ],
+        "answers": {},
+        "created_at": "2026-09-16T22:19:10",
+        "created_by": "assistant"
+      },
+      "layer2_done": false,
+      "layer3_done": false,
+      "decisions": [],
+      "referrals": [],
+      "history": [],
+      "preferences": {},
+      "capacities": [],
+      "causes": []
+    },
+    "1254": {
+      "identity": {
+        "hid": "1254",
+        "name": "رضا",
+        "location": "رضایی",
+        "members": "4",
+        "contact": "6564545",
+        "at_risk": ""
+      },
+      "em_input": {
+        "level": "خفیف",
+        "redflags": [
+          "health",
+          "safety"
+        ],
+        "em_dims": [
+          "health"
+        ],
+        "redflag_labels": [
+          "بحران سلامت",
+          "خشونت/خطر حفاظتی"
+        ],
+        "services_received": [],
+        "em_date": "2026-09-18",
+        "note": "",
+        "emmpi_score": 165.0,
+        "emmpi_level": "محرومیت خفیف",
+        "emmpi_referral": "ارجاع فوری مستقل از امتیاز"
+      },
+      "state": {
+        "redflags": [
+          "health",
+          "safety"
+        ],
+        "em_dims": [
+          "health"
+        ],
+        "active_axes": [
+          "CDI-1-01",
+          "CDI-1-02",
+          "CDI-1-03",
+          "CDI-1-04",
+          "CDI-1-05",
+          "CDI-1-06",
+          "CDI-1-07",
+          "CDI-2-01",
+          "CDI-2-02",
+          "CDI-2-03",
+          "CDI-2-04",
+          "CDI-2-05",
+          "CDI-2-06",
+          "CDI-2-07",
+          "CDI-4-06",
+          "CDI-4-07",
+          "CDI-5-08"
+        ],
+        "answers": {},
+        "created_at": "2026-09-18T16:17:41",
+        "created_by": "assistant"
+      },
+      "layer2_done": false,
+      "layer3_done": false,
+      "decisions": [],
+      "referrals": [],
+      "history": [
+        {
+          "at": "2026-09-18T16:17:41",
+          "by": "assistant",
+          "action": "ثبت درخواست اولیه — مرحلهٔ ۱"
+        },
+        {
+          "at": "2026-09-18T16:18:27",
+          "by": "assistant",
+          "action": "غربالگری EM-MPI: امتیاز 165.0 — سطح محرومیت خفیف — 2 پرچم قرمز"
+        },
+        {
+          "at": "2026-09-18T16:18:27",
+          "by": "assistant",
+          "action": "فعال‌سازی 17 محور CDI بر اساس پرچم‌های قرمز EM-MPI"
+        }
+      ],
+      "preferences": {},
+      "capacities": [],
+      "causes": [],
+      "emmpi": {
+        "indicators": {
+          "A1": 1.0,
+          "A2": 0.0,
+          "A3": 0.0,
+          "A4": 0.0,
+          "A5": 0.0,
+          "A6": 0.5,
+          "A7": 1.0,
+          "B1": 0.0,
+          "B2": 0.0,
+          "B3": 0.0,
+          "B4": 0.5,
+          "B5": 0.5,
+          "B6": 0.5,
+          "B7": 0.0,
+          "C1": 0.0,
+          "C2": 0.0,
+          "C3": 0.0,
+          "C4": 0.0,
+          "C5": 0.0,
+          "C6": 0.0,
+          "C7": 1.0,
+          "C8": 0.0,
+          "C9": 0.0,
+          "D1": 0.0,
+          "D2": 0.0,
+          "D3": 0.0,
+          "D4": 0.0,
+          "D5": 0.0,
+          "D6": 0.0,
+          "E1": 0.5,
+          "E2": 0.5,
+          "E3": 0.0,
+          "E4": 0.0,
+          "E5": 0.0,
+          "E6": 0.0
+        },
+        "result": {
+          "score": 165.0,
+          "max_score": 1000,
+          "score_pct": 16.5,
+          "dimension_scores": {
+            "A": {
+              "name": "سلامت و امنیت زیستی",
+              "score": 87.5,
+              "max": 250,
+              "pct": 35.0
+            },
+            "B": {
+              "name": "آموزش و رشد انسانی",
+              "score": 32.5,
+              "max": 200,
+              "pct": 16.2
+            },
+            "C": {
+              "name": "استاندارد زندگی و مسکن",
+              "score": 25.0,
+              "max": 300,
+              "pct": 8.3
+            },
+            "D": {
+              "name": "معیشت، اشتغال و درآمد",
+              "score": 0.0,
+              "max": 150,
+              "pct": 0.0
+            },
+            "E": {
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 20.0,
+              "max": 100,
+              "pct": 20.0
+            }
+          },
+          "indicator_scores": {
+            "A1": {
+              "weight": 35,
+              "severity": 1.0,
+              "score": 35.0,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            "A2": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "ناتوانی یا معلولیت مؤثر و نیاز به توان‌بخشی"
+            },
+            "A3": {
+              "weight": 50,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "نیاز درمانی یا توان‌بخشی ضروری تأمین‌نشده"
+            },
+            "A4": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            "A5": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "پوشش مؤثر بیمه و دسترسی عملی به خدمات درمانی"
+            },
+            "A6": {
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            "A7": {
+              "weight": 30,
+              "severity": 1.0,
+              "score": 30.0,
+              "dim": "A",
+              "title": "اختلال سلامت روان یا اعتیاد مختل‌کننده عملکرد"
+            },
+            "B1": {
+              "weight": 50,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "بازماندگی یا ترک تحصیل کودک و نوجوان"
+            },
+            "B2": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "خطر جدی ترک تحصیل"
+            },
+            "B3": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "محرومیت از سواد کارکردی در بزرگسال مسئول"
+            },
+            "B4": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "B",
+              "title": "دسترسی عملی به آموزش مناسب"
+            },
+            "B5": {
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "B",
+              "title": "دسترسی به ابزار ضروری آموزش دیجیتال"
+            },
+            "B6": {
+              "weight": 30,
+              "severity": 0.5,
+              "score": 15.0,
+              "dim": "B",
+              "title": "نیاز آموزشی ویژه بدون خدمت متناسب"
+            },
+            "B7": {
+              "weight": 40,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "فقدان مسیر مهارت‌آموزی یا آمادگی اشتغال"
+            },
+            "C1": {
+              "weight": 60,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "بی‌خانمانی، سکونت اضطراری یا خطر فوری تخلیه"
+            },
+            "C2": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "ایمنی سازه و کفایت فیزیکی مسکن"
+            },
+            "C3": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "امنیت تصرف و پایداری سکونت"
+            },
+            "C4": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "تراکم شدید سکونت"
+            },
+            "C5": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی پایدار به آب، برق، گاز یا سوخت ایمن"
+            },
+            "C6": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "سرویس بهداشتی، حمام و بهداشت محیط"
+            },
+            "C7": {
+              "weight": 25,
+              "severity": 1.0,
+              "score": 25.0,
+              "dim": "C",
+              "title": "فقدان وسایل ضروری زندگی"
+            },
+            "C8": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "فشار هزینه مسکن"
+            },
+            "C9": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی فیزیکی به خدمات پایه ضروری"
+            },
+            "D1": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان اشتغال یا درآمد فعال در فرد اصلی تأمین‌کننده"
+            },
+            "D2": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بیکاری یا بلااستفاده‌ماندن ظرفیت کار در اعضای توانمند"
+            },
+            "D3": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناپایداری اشتغال یا درآمد"
+            },
+            "D4": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناکافی‌بودن درآمد قابل‌دسترس برای نیازهای اساسی"
+            },
+            "D5": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بدهی بحرانی یا شوک اقتصادی مؤثر بر معیشت"
+            },
+            "D6": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان مهارت، ابزار یا سرمایه حداقلی برای ورود به کار"
+            },
+            "E1": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "فقدان ظرفیت مؤثر تأمین معاش در خانوار"
+            },
+            "E2": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            "E3": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "فقدان شبکه حمایت خانوادگی، اجتماعی یا محلی"
+            },
+            "E4": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "مانع حقوقی، هویتی یا اداری مؤثر بر دسترسی"
+            },
+            "E5": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "عدم دسترسی مؤثر به حمایت‌ها و خدمات واجد شرایط"
+            },
+            "E6": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "ریسک بالای تشدید محرومیت در آینده"
+            }
+          },
+          "effective_indicators": [
+            {
+              "code": "A1",
+              "weight": 35,
+              "severity": 1.0,
+              "score": 35.0,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            {
+              "code": "A7",
+              "weight": 30,
+              "severity": 1.0,
+              "score": 30.0,
+              "dim": "A",
+              "title": "اختلال سلامت روان یا اعتیاد مختل‌کننده عملکرد"
+            },
+            {
+              "code": "C7",
+              "weight": 25,
+              "severity": 1.0,
+              "score": 25.0,
+              "dim": "C",
+              "title": "فقدان وسایل ضروری زندگی"
+            },
+            {
+              "code": "A6",
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            {
+              "code": "B6",
+              "weight": 30,
+              "severity": 0.5,
+              "score": 15.0,
+              "dim": "B",
+              "title": "نیاز آموزشی ویژه بدون خدمت متناسب"
+            },
+            {
+              "code": "B4",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "B",
+              "title": "دسترسی عملی به آموزش مناسب"
+            },
+            {
+              "code": "E1",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "فقدان ظرفیت مؤثر تأمین معاش در خانوار"
+            },
+            {
+              "code": "E2",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            {
+              "code": "B5",
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "B",
+              "title": "دسترسی به ابزار ضروری آموزش دیجیتال"
+            }
+          ],
+          "level": {
+            "code": "L1",
+            "min": 150,
+            "max": 299,
+            "name": "محرومیت خفیف",
+            "approach": "بررسی تکمیلی و حمایت متناسب",
+            "color": "P3"
+          },
+          "red_flags": [
+            {
+              "code": "R2",
+              "title": "بیماری حیاتی یا نیاز درمانی فوری",
+              "sources": [
+                "A1",
+                "A3"
+              ],
+              "action": "ارجاع فوری — مستقل از امتیاز EM-MPI",
+              "triggered_by": [
+                "A1"
+              ]
+            },
+            {
+              "code": "R5",
+              "title": "خشونت خانوادگی یا تهدید امنیتی",
+              "sources": [
+                "A7",
+                "E3"
+              ],
+              "action": "محدودسازی دسترسی و ارجاع تخصصی فوری",
+              "triggered_by": [
+                "A7"
+              ]
+            }
+          ],
+          "referral_path": {
+            "name": "ارجاع فوری مستقل از امتیاز",
+            "condition": "وجود پرچم قرمز معتبر",
+            "action": "رسیدگی اضطراری، ارجاع فوری به مددکار و CDI؛ بدون انتظار برای تکمیل امتیاز",
+            "to_cdi": true,
+            "color": "P0"
+          },
+          "referral_path_code": "P6",
+          "dominant_dims": [
+            {
+              "code": "A",
+              "name": "سلامت و امنیت زیستی",
+              "score": 87.5,
+              "max": 250,
+              "pct": 35.0
+            },
+            {
+              "code": "E",
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 20.0,
+              "max": 100,
+              "pct": 20.0
+            },
+            {
+              "code": "B",
+              "name": "آموزش و رشد انسانی",
+              "score": 32.5,
+              "max": 200,
+              "pct": 16.2
+            }
+          ],
+          "needs_cdi": true,
+          "is_recommendation": true
+        },
+        "computed_at": "2026-09-18T16:18:27",
+        "computed_by": "assistant"
+      }
+    },
+    "65432": {
+      "identity": {
+        "hid": "65432",
+        "name": "کریم",
+        "location": "بوشهر",
+        "members": "3",
+        "contact": "تلفن",
+        "at_risk": "1"
+      },
+      "em_input": {
+        "level": "",
+        "redflags": [],
+        "em_dims": [],
+        "redflag_labels": [],
+        "services_received": [],
+        "em_date": "",
+        "note": ""
+      },
+      "state": {
+        "redflags": [],
+        "em_dims": [],
+        "active_axes": [],
+        "answers": {},
+        "created_at": "2026-09-18T18:25:23",
+        "created_by": "beneficiary"
+      },
+      "layer2_done": false,
+      "layer3_done": false,
+      "decisions": [],
+      "referrals": [],
+      "history": [
+        {
+          "at": "2026-09-18T18:25:23",
+          "by": "beneficiary",
+          "action": "ثبت درخواست اولیه — مرحلهٔ ۱"
+        }
+      ],
+      "preferences": {},
+      "capacities": [],
+      "causes": []
+    },
+    "96385": {
+      "identity": {
+        "hid": "96385",
+        "name": "منوچهر منوچهری",
+        "location": "کردستان",
+        "members": "3",
+        "contact": "تلفن",
+        "at_risk": ""
+      },
+      "em_input": {
+        "level": "خفیف",
+        "redflags": [],
+        "em_dims": [
+          "health",
+          "education"
+        ],
+        "redflag_labels": [],
+        "services_received": [],
+        "em_date": "2026-09-18",
+        "note": "",
+        "emmpi_score": 102.5,
+        "emmpi_level": "محرومیت محدود",
+        "emmpi_referral": "پایش و خدمت عمومی"
+      },
+      "state": {
+        "redflags": [],
+        "em_dims": [
+          "health",
+          "education"
+        ],
+        "active_axes": [],
+        "answers": {},
+        "created_at": "2026-09-18T18:26:45",
+        "created_by": "beneficiary"
+      },
+      "layer2_done": false,
+      "layer3_done": false,
+      "decisions": [],
+      "referrals": [],
+      "history": [
+        {
+          "at": "2026-09-18T18:26:45",
+          "by": "beneficiary",
+          "action": "ثبت درخواست اولیه — مرحلهٔ ۱"
+        },
+        {
+          "at": "2026-09-18T18:27:36",
+          "by": "beneficiary",
+          "action": "غربالگری EM-MPI: امتیاز 102.5 — سطح محرومیت محدود — بدون پرچم قرمز"
+        }
+      ],
+      "preferences": {},
+      "capacities": [],
+      "causes": [],
+      "emmpi": {
+        "indicators": {
+          "A1": 0.0,
+          "A2": 0.5,
+          "A3": 0.0,
+          "A4": 1.0,
+          "A5": 0.0,
+          "A6": 0.0,
+          "A7": 0.0,
+          "B1": 0.0,
+          "B2": 0.0,
+          "B3": 0.0,
+          "B4": 0.0,
+          "B5": 0.0,
+          "B6": 0.0,
+          "B7": 0.5,
+          "C1": 0.0,
+          "C2": 0.5,
+          "C3": 0.0,
+          "C4": 0.0,
+          "C5": 0.0,
+          "C6": 0.0,
+          "C7": 0.0,
+          "C8": 0.0,
+          "C9": 0.0,
+          "D1": 0.0,
+          "D2": 0.0,
+          "D3": 0.0,
+          "D4": 0.0,
+          "D5": 0.0,
+          "D6": 0.5,
+          "E1": 0.0,
+          "E2": 0.0,
+          "E3": 0.0,
+          "E4": 0.0,
+          "E5": 0.0,
+          "E6": 0.0
+        },
+        "result": {
+          "score": 102.5,
+          "max_score": 1000,
+          "score_pct": 10.2,
+          "dimension_scores": {
+            "A": {
+              "name": "سلامت و امنیت زیستی",
+              "score": 52.5,
+              "max": 250,
+              "pct": 21.0
+            },
+            "B": {
+              "name": "آموزش و رشد انسانی",
+              "score": 20.0,
+              "max": 200,
+              "pct": 10.0
+            },
+            "C": {
+              "name": "استاندارد زندگی و مسکن",
+              "score": 22.5,
+              "max": 300,
+              "pct": 7.5
+            },
+            "D": {
+              "name": "معیشت، اشتغال و درآمد",
+              "score": 7.5,
+              "max": 150,
+              "pct": 5.0
+            },
+            "E": {
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 0.0,
+              "max": 100,
+              "pct": 0.0
+            }
+          },
+          "indicator_scores": {
+            "A1": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            "A2": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "ناتوانی یا معلولیت مؤثر و نیاز به توان‌بخشی"
+            },
+            "A3": {
+              "weight": 50,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "نیاز درمانی یا توان‌بخشی ضروری تأمین‌نشده"
+            },
+            "A4": {
+              "weight": 35,
+              "severity": 1.0,
+              "score": 35.0,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            "A5": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "پوشش مؤثر بیمه و دسترسی عملی به خدمات درمانی"
+            },
+            "A6": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            "A7": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "A",
+              "title": "اختلال سلامت روان یا اعتیاد مختل‌کننده عملکرد"
+            },
+            "B1": {
+              "weight": 50,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "بازماندگی یا ترک تحصیل کودک و نوجوان"
+            },
+            "B2": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "خطر جدی ترک تحصیل"
+            },
+            "B3": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "محرومیت از سواد کارکردی در بزرگسال مسئول"
+            },
+            "B4": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "دسترسی عملی به آموزش مناسب"
+            },
+            "B5": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "دسترسی به ابزار ضروری آموزش دیجیتال"
+            },
+            "B6": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "نیاز آموزشی ویژه بدون خدمت متناسب"
+            },
+            "B7": {
+              "weight": 40,
+              "severity": 0.5,
+              "score": 20.0,
+              "dim": "B",
+              "title": "فقدان مسیر مهارت‌آموزی یا آمادگی اشتغال"
+            },
+            "C1": {
+              "weight": 60,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "بی‌خانمانی، سکونت اضطراری یا خطر فوری تخلیه"
+            },
+            "C2": {
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "C",
+              "title": "ایمنی سازه و کفایت فیزیکی مسکن"
+            },
+            "C3": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "امنیت تصرف و پایداری سکونت"
+            },
+            "C4": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "تراکم شدید سکونت"
+            },
+            "C5": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی پایدار به آب، برق، گاز یا سوخت ایمن"
+            },
+            "C6": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "سرویس بهداشتی، حمام و بهداشت محیط"
+            },
+            "C7": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "فقدان وسایل ضروری زندگی"
+            },
+            "C8": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "فشار هزینه مسکن"
+            },
+            "C9": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی فیزیکی به خدمات پایه ضروری"
+            },
+            "D1": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان اشتغال یا درآمد فعال در فرد اصلی تأمین‌کننده"
+            },
+            "D2": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بیکاری یا بلااستفاده‌ماندن ظرفیت کار در اعضای توانمند"
+            },
+            "D3": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناپایداری اشتغال یا درآمد"
+            },
+            "D4": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناکافی‌بودن درآمد قابل‌دسترس برای نیازهای اساسی"
+            },
+            "D5": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بدهی بحرانی یا شوک اقتصادی مؤثر بر معیشت"
+            },
+            "D6": {
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "D",
+              "title": "فقدان مهارت، ابزار یا سرمایه حداقلی برای ورود به کار"
+            },
+            "E1": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "فقدان ظرفیت مؤثر تأمین معاش در خانوار"
+            },
+            "E2": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            "E3": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "فقدان شبکه حمایت خانوادگی، اجتماعی یا محلی"
+            },
+            "E4": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "مانع حقوقی، هویتی یا اداری مؤثر بر دسترسی"
+            },
+            "E5": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "عدم دسترسی مؤثر به حمایت‌ها و خدمات واجد شرایط"
+            },
+            "E6": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "ریسک بالای تشدید محرومیت در آینده"
+            }
+          },
+          "effective_indicators": [
+            {
+              "code": "A4",
+              "weight": 35,
+              "severity": 1.0,
+              "score": 35.0,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            {
+              "code": "C2",
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "C",
+              "title": "ایمنی سازه و کفایت فیزیکی مسکن"
+            },
+            {
+              "code": "B7",
+              "weight": 40,
+              "severity": 0.5,
+              "score": 20.0,
+              "dim": "B",
+              "title": "فقدان مسیر مهارت‌آموزی یا آمادگی اشتغال"
+            },
+            {
+              "code": "A2",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "ناتوانی یا معلولیت مؤثر و نیاز به توان‌بخشی"
+            },
+            {
+              "code": "D6",
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "D",
+              "title": "فقدان مهارت، ابزار یا سرمایه حداقلی برای ورود به کار"
+            }
+          ],
+          "level": {
+            "code": "L0",
+            "min": 0,
+            "max": 149,
+            "name": "محرومیت محدود",
+            "approach": "پایش یا رسیدگی متناسب",
+            "color": "P4"
+          },
+          "red_flags": [],
+          "referral_path": {
+            "name": "پایش و خدمت عمومی",
+            "condition": "امتیاز ۰-۱۴۹، بدون پرچم قرمز",
+            "action": "ثبت اطلاعات، اطلاع‌رسانی، اتصال به خدمات عمومی و پایش دوره‌ای",
+            "to_cdi": false,
+            "color": "P4"
+          },
+          "referral_path_code": "P1",
+          "dominant_dims": [
+            {
+              "code": "A",
+              "name": "سلامت و امنیت زیستی",
+              "score": 52.5,
+              "max": 250,
+              "pct": 21.0
+            },
+            {
+              "code": "B",
+              "name": "آموزش و رشد انسانی",
+              "score": 20.0,
+              "max": 200,
+              "pct": 10.0
+            },
+            {
+              "code": "C",
+              "name": "استاندارد زندگی و مسکن",
+              "score": 22.5,
+              "max": 300,
+              "pct": 7.5
+            }
+          ],
+          "needs_cdi": false,
+          "is_recommendation": true
+        },
+        "computed_at": "2026-09-18T18:27:36",
+        "computed_by": "beneficiary"
+      }
+    },
+    "H-963852": {
+      "identity": {
+        "hid": "H-963852",
+        "national_id": "963852",
+        "name": "رضا احمدی",
+        "location": "خراسان جنوبی",
+        "members": "7",
+        "contact": "0912545454",
+        "at_risk": ""
+      },
+      "em_input": {
+        "level": "خفیف",
+        "redflags": [
+          "health"
+        ],
+        "em_dims": [
+          "health",
+          "education"
+        ],
+        "redflag_labels": [
+          "بحران سلامت"
+        ],
+        "services_received": [],
+        "em_date": "2026-09-18",
+        "note": "",
+        "emmpi_score": 272.5,
+        "emmpi_level": "محرومیت خفیف",
+        "emmpi_referral": "ارجاع فوری مستقل از امتیاز"
+      },
+      "state": {
+        "redflags": [
+          "health"
+        ],
+        "em_dims": [
+          "health",
+          "education"
+        ],
+        "active_axes": [
+          "CDI-1-01",
+          "CDI-1-02",
+          "CDI-1-03",
+          "CDI-1-04",
+          "CDI-1-05",
+          "CDI-1-06",
+          "CDI-1-07",
+          "CDI-2-01",
+          "CDI-2-02",
+          "CDI-2-03",
+          "CDI-2-04",
+          "CDI-2-05",
+          "CDI-2-06",
+          "CDI-2-07",
+          "CDI-4-06",
+          "CDI-5-08"
+        ],
+        "answers": {},
+        "created_at": "2026-09-18T19:12:48",
+        "created_by": "beneficiary"
+      },
+      "layer2_done": false,
+      "layer3_done": false,
+      "decisions": [],
+      "referrals": [],
+      "history": [
+        {
+          "at": "2026-09-18T19:12:48",
+          "by": "beneficiary",
+          "action": "ثبت درخواست توسط نیازمند + واکشی وب‌سرویس"
+        },
+        {
+          "at": "2026-09-18T19:14:32",
+          "by": "assistant",
+          "action": "تخصیص درخواست به همیار: خانم مریم احمدی (همیار مددکار)"
+        },
+        {
+          "at": "2026-09-18T19:15:14",
+          "by": "assistant",
+          "action": "غربالگری EM-MPI: امتیاز 272.5 — سطح محرومیت خفیف — 1 پرچم قرمز"
+        },
+        {
+          "at": "2026-09-18T19:15:14",
+          "by": "assistant",
+          "action": "فعال‌سازی 16 محور CDI بر اساس پرچم‌های قرمز EM-MPI"
+        }
+      ],
+      "preferences": {},
+      "capacities": [],
+      "causes": [],
+      "national_id": "963852",
+      "status": "claimed",
+      "claimed_by": {
+        "id": "AST-001",
+        "name": "خانم مریم احمدی",
+        "role": "assistant",
+        "role_label": "همیار مددکار",
+        "claimed_at": "2026-09-18T19:14:32"
+      },
+      "self_declaration": {
+        "submitted_at": "2026-09-18T19:12:48",
+        "submitted_by": "beneficiary",
+        "need_description": "من چالش های متعددی در امور اقتصادی دارم",
+        "at_risk": "",
+        "preferred_contact": "پیامک",
+        "preferred_gender": "آقا",
+        "preferred_language": "فارسی",
+        "questions": {
+          "health_illness": "no",
+          "disability": "no",
+          "food": "no",
+          "mental": "no",
+          "violence": "no",
+          "dropout": "partial",
+          "literacy": "partial",
+          "skills": "no",
+          "housing": "partial",
+          "utilities": "partial",
+          "rent": "partial",
+          "housing_quality": "no",
+          "unemployment": "partial",
+          "debt": "partial",
+          "income": "partial",
+          "caregiving": "partial",
+          "network": "no",
+          "legal": "no"
+        },
+        "yes_count": 0
+      },
+      "web_service_data": {
+        "civil_registry": {
+          "status": "success",
+          "source": "ثبت‌احوال",
+          "fetched_at": "2026-09-18T19:12:48",
+          "data": {
+            "head_name": "رضا احمدی",
+            "family_size": 7,
+            "members": [
+              {
+                "name": "رضا احمدی",
+                "national_id": "963852",
+                "relationship": "سرپرست",
+                "age": 39,
+                "gender": "مرد"
+              },
+              {
+                "name": "حسن احمدی",
+                "national_id": "963852-1",
+                "relationship": "فرزند",
+                "age": 33,
+                "gender": "مرد"
+              },
+              {
+                "name": "علی احمدی",
+                "national_id": "963852-2",
+                "relationship": "فرزند",
+                "age": 8,
+                "gender": "مرد"
+              },
+              {
+                "name": "فاطمه احمدی",
+                "national_id": "963852-3",
+                "relationship": "فرزند",
+                "age": 6,
+                "gender": "زن"
+              },
+              {
+                "name": "نگار احمدی",
+                "national_id": "963852-4",
+                "relationship": "پدر",
+                "age": 31,
+                "gender": "زن"
+              },
+              {
+                "name": "محمد احمدی",
+                "national_id": "963852-5",
+                "relationship": "مادر",
+                "age": 32,
+                "gender": "مرد"
+              },
+              {
+                "name": "نسیم احمدی",
+                "national_id": "963852-6",
+                "relationship": "خواهر",
+                "age": 39,
+                "gender": "زن"
+              }
+            ],
+            "marriage_status": "مطلقه/فاقد همسر"
+          }
+        },
+        "insurance": {
+          "status": "success",
+          "source": "سامانه بیمه",
+          "fetched_at": "2026-09-18T19:12:48",
+          "data": {
+            "total_covered": 6,
+            "total_uncovered": 1,
+            "members": [
+              {
+                "member_idx": 0,
+                "insurance_type": "بیمه سلامت",
+                "is_covered": true,
+                "expiry_date": "1405/09/15"
+              },
+              {
+                "member_idx": 1,
+                "insurance_type": "بیمه-basic",
+                "is_covered": true,
+                "expiry_date": "1405/09/15"
+              },
+              {
+                "member_idx": 2,
+                "insurance_type": "بیمه سلامت",
+                "is_covered": true,
+                "expiry_date": "1405/09/15"
+              },
+              {
+                "member_idx": 3,
+                "insurance_type": "بیمه سلامت",
+                "is_covered": true,
+                "expiry_date": "1405/09/15"
+              },
+              {
+                "member_idx": 4,
+                "insurance_type": "بدون بیمه",
+                "is_covered": false,
+                "expiry_date": "1405/09/15"
+              },
+              {
+                "member_idx": 5,
+                "insurance_type": "بیمه-basic",
+                "is_covered": true,
+                "expiry_date": "1405/09/15"
+              },
+              {
+                "member_idx": 6,
+                "insurance_type": "بیمه-basic",
+                "is_covered": true,
+                "expiry_date": "1405/09/15"
+              }
+            ]
+          }
+        },
+        "education": {
+          "status": "success",
+          "source": "آموزش‌وپرورش",
+          "fetched_at": "2026-09-18T19:12:48",
+          "data": {
+            "members": [
+              {
+                "member_idx": 0,
+                "age": 37,
+                "status": "فارغ‌التحصیل",
+                "level": "متوسطه اول"
+              },
+              {
+                "member_idx": 1,
+                "age": 33,
+                "status": "فارغ‌التحصیل",
+                "level": "متوسطه دوم"
+              },
+              {
+                "member_idx": 2,
+                "age": 8,
+                "status": "در حال تحصیل",
+                "level": "ابتدایی"
+              },
+              {
+                "member_idx": 3,
+                "age": 6,
+                "status": "قبل از سن مدرسه",
+                "level": "—"
+              },
+              {
+                "member_idx": 4,
+                "age": 31,
+                "status": "فارغ‌التحصیل",
+                "level": "متوسطه اول"
+              },
+              {
+                "member_idx": 5,
+                "age": 32,
+                "status": "فارغ‌التحصیل",
+                "level": "دیپلم"
+              },
+              {
+                "member_idx": 6,
+                "age": 39,
+                "status": "فارغ‌التحصیل",
+                "level": "کارشناسی"
+              }
+            ]
+          }
+        },
+        "employment": {
+          "status": "success",
+          "source": "تأمین‌اجتماعی",
+          "fetched_at": "2026-09-18T19:12:48",
+          "data": {
+            "members": [
+              {
+                "member_idx": 0,
+                "age": 37,
+                "status": "گشت‌کار",
+                "sector": "کشاورزی",
+                "monthly_income": 14000000
+              },
+              {
+                "member_idx": 1,
+                "age": 33,
+                "status": "دانش‌آموخته",
+                "sector": "بازرگانی",
+                "monthly_income": 20000000
+              },
+              {
+                "member_idx": 2,
+                "age": 8,
+                "status": "زیر سن کار",
+                "sector": "—",
+                "monthly_income": 0
+              },
+              {
+                "member_idx": 3,
+                "age": 6,
+                "status": "زیر سن کار",
+                "sector": "—",
+                "monthly_income": 0
+              },
+              {
+                "member_idx": 4,
+                "age": 31,
+                "status": "بیکار",
+                "sector": "بازرگانی",
+                "monthly_income": 29000000
+              },
+              {
+                "member_idx": 5,
+                "age": 32,
+                "status": "بیکار",
+                "sector": "کشاورزی",
+                "monthly_income": 13000000
+              },
+              {
+                "member_idx": 6,
+                "age": 39,
+                "status": "خویش‌فرما",
+                "sector": "بازرگانی",
+                "monthly_income": 27000000
+              }
+            ],
+            "total_monthly_income": 103000000,
+            "income_per_capita": 14714285
+          }
+        },
+        "housing": {
+          "status": "success",
+          "source": "سامانه مسکن",
+          "fetched_at": "2026-09-18T19:12:48",
+          "data": {
+            "tenure": "اسکان غیررسمی",
+            "area_m2": 44,
+            "rooms": 1,
+            "monthly_rent_or_mortgage": 0,
+            "has_utilities": true
+          }
+        },
+        "fetched_at": "2026-09-18T19:12:48"
+      },
+      "assigned_assistant": {
+        "id": "AST-001",
+        "name": "خانم مریم احمدی",
+        "role": "assistant",
+        "role_label": "همیار مددکار",
+        "claimed_at": "2026-09-18T19:14:32"
+      },
+      "emmpi": {
+        "indicators": {
+          "A1": 0.5,
+          "A2": 0.5,
+          "A3": 1.0,
+          "A4": 0.5,
+          "A5": 1.0,
+          "A6": 0.5,
+          "A7": 0.5,
+          "B1": 0.5,
+          "B2": 0.5,
+          "B3": 1.0,
+          "B4": 1.0,
+          "B5": 0.0,
+          "B6": 0.0,
+          "B7": 0.0,
+          "C1": 0.0,
+          "C2": 0.0,
+          "C3": 0.5,
+          "C4": 0.0,
+          "C5": 0.0,
+          "C6": 0.0,
+          "C7": 0.0,
+          "C8": 0.0,
+          "C9": 0.0,
+          "D1": 0.0,
+          "D2": 0.0,
+          "D3": 0.0,
+          "D4": 0.0,
+          "D5": 0.0,
+          "D6": 0.0,
+          "E1": 0.0,
+          "E2": 0.5,
+          "E3": 0.5,
+          "E4": 0.0,
+          "E5": 0.0,
+          "E6": 0.0
+        },
+        "result": {
+          "score": 272.5,
+          "max_score": 1000,
+          "score_pct": 27.2,
+          "dimension_scores": {
+            "A": {
+              "name": "سلامت و امنیت زیستی",
+              "score": 160.0,
+              "max": 250,
+              "pct": 64.0
+            },
+            "B": {
+              "name": "آموزش و رشد انسانی",
+              "score": 77.5,
+              "max": 200,
+              "pct": 38.8
+            },
+            "C": {
+              "name": "استاندارد زندگی و مسکن",
+              "score": 17.5,
+              "max": 300,
+              "pct": 5.8
+            },
+            "D": {
+              "name": "معیشت، اشتغال و درآمد",
+              "score": 0.0,
+              "max": 150,
+              "pct": 0.0
+            },
+            "E": {
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 17.5,
+              "max": 100,
+              "pct": 17.5
+            }
+          },
+          "indicator_scores": {
+            "A1": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            "A2": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "ناتوانی یا معلولیت مؤثر و نیاز به توان‌بخشی"
+            },
+            "A3": {
+              "weight": 50,
+              "severity": 1.0,
+              "score": 50.0,
+              "dim": "A",
+              "title": "نیاز درمانی یا توان‌بخشی ضروری تأمین‌نشده"
+            },
+            "A4": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            "A5": {
+              "weight": 20,
+              "severity": 1.0,
+              "score": 20.0,
+              "dim": "A",
+              "title": "پوشش مؤثر بیمه و دسترسی عملی به خدمات درمانی"
+            },
+            "A6": {
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            "A7": {
+              "weight": 30,
+              "severity": 0.5,
+              "score": 15.0,
+              "dim": "A",
+              "title": "اختلال سلامت روان یا اعتیاد مختل‌کننده عملکرد"
+            },
+            "B1": {
+              "weight": 50,
+              "severity": 0.5,
+              "score": 25.0,
+              "dim": "B",
+              "title": "بازماندگی یا ترک تحصیل کودک و نوجوان"
+            },
+            "B2": {
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "B",
+              "title": "خطر جدی ترک تحصیل"
+            },
+            "B3": {
+              "weight": 20,
+              "severity": 1.0,
+              "score": 20.0,
+              "dim": "B",
+              "title": "محرومیت از سواد کارکردی در بزرگسال مسئول"
+            },
+            "B4": {
+              "weight": 20,
+              "severity": 1.0,
+              "score": 20.0,
+              "dim": "B",
+              "title": "دسترسی عملی به آموزش مناسب"
+            },
+            "B5": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "دسترسی به ابزار ضروری آموزش دیجیتال"
+            },
+            "B6": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "نیاز آموزشی ویژه بدون خدمت متناسب"
+            },
+            "B7": {
+              "weight": 40,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "B",
+              "title": "فقدان مسیر مهارت‌آموزی یا آمادگی اشتغال"
+            },
+            "C1": {
+              "weight": 60,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "بی‌خانمانی، سکونت اضطراری یا خطر فوری تخلیه"
+            },
+            "C2": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "ایمنی سازه و کفایت فیزیکی مسکن"
+            },
+            "C3": {
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "C",
+              "title": "امنیت تصرف و پایداری سکونت"
+            },
+            "C4": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "تراکم شدید سکونت"
+            },
+            "C5": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی پایدار به آب، برق، گاز یا سوخت ایمن"
+            },
+            "C6": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "سرویس بهداشتی، حمام و بهداشت محیط"
+            },
+            "C7": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "فقدان وسایل ضروری زندگی"
+            },
+            "C8": {
+              "weight": 35,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "فشار هزینه مسکن"
+            },
+            "C9": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "C",
+              "title": "دسترسی فیزیکی به خدمات پایه ضروری"
+            },
+            "D1": {
+              "weight": 30,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان اشتغال یا درآمد فعال در فرد اصلی تأمین‌کننده"
+            },
+            "D2": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بیکاری یا بلااستفاده‌ماندن ظرفیت کار در اعضای توانمند"
+            },
+            "D3": {
+              "weight": 25,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناپایداری اشتغال یا درآمد"
+            },
+            "D4": {
+              "weight": 45,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "ناکافی‌بودن درآمد قابل‌دسترس برای نیازهای اساسی"
+            },
+            "D5": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "بدهی بحرانی یا شوک اقتصادی مؤثر بر معیشت"
+            },
+            "D6": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "D",
+              "title": "فقدان مهارت، ابزار یا سرمایه حداقلی برای ورود به کار"
+            },
+            "E1": {
+              "weight": 20,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "فقدان ظرفیت مؤثر تأمین معاش در خانوار"
+            },
+            "E2": {
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            "E3": {
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "E",
+              "title": "فقدان شبکه حمایت خانوادگی، اجتماعی یا محلی"
+            },
+            "E4": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "مانع حقوقی، هویتی یا اداری مؤثر بر دسترسی"
+            },
+            "E5": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "عدم دسترسی مؤثر به حمایت‌ها و خدمات واجد شرایط"
+            },
+            "E6": {
+              "weight": 15,
+              "severity": 0.0,
+              "score": 0.0,
+              "dim": "E",
+              "title": "ریسک بالای تشدید محرومیت در آینده"
+            }
+          },
+          "effective_indicators": [
+            {
+              "code": "A3",
+              "weight": 50,
+              "severity": 1.0,
+              "score": 50.0,
+              "dim": "A",
+              "title": "نیاز درمانی یا توان‌بخشی ضروری تأمین‌نشده"
+            },
+            {
+              "code": "B1",
+              "weight": 50,
+              "severity": 0.5,
+              "score": 25.0,
+              "dim": "B",
+              "title": "بازماندگی یا ترک تحصیل کودک و نوجوان"
+            },
+            {
+              "code": "A6",
+              "weight": 45,
+              "severity": 0.5,
+              "score": 22.5,
+              "dim": "A",
+              "title": "ناامنی غذایی خانوار"
+            },
+            {
+              "code": "A5",
+              "weight": 20,
+              "severity": 1.0,
+              "score": 20.0,
+              "dim": "A",
+              "title": "پوشش مؤثر بیمه و دسترسی عملی به خدمات درمانی"
+            },
+            {
+              "code": "B3",
+              "weight": 20,
+              "severity": 1.0,
+              "score": 20.0,
+              "dim": "B",
+              "title": "محرومیت از سواد کارکردی در بزرگسال مسئول"
+            },
+            {
+              "code": "B4",
+              "weight": 20,
+              "severity": 1.0,
+              "score": 20.0,
+              "dim": "B",
+              "title": "دسترسی عملی به آموزش مناسب"
+            },
+            {
+              "code": "A1",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "بیماری مزمن یا جدی مؤثر بر عملکرد و معیشت"
+            },
+            {
+              "code": "A2",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "ناتوانی یا معلولیت مؤثر و نیاز به توان‌بخشی"
+            },
+            {
+              "code": "A4",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "A",
+              "title": "فشار مالی درمان بر خانوار"
+            },
+            {
+              "code": "C3",
+              "weight": 35,
+              "severity": 0.5,
+              "score": 17.5,
+              "dim": "C",
+              "title": "امنیت تصرف و پایداری سکونت"
+            },
+            {
+              "code": "A7",
+              "weight": 30,
+              "severity": 0.5,
+              "score": 15.0,
+              "dim": "A",
+              "title": "اختلال سلامت روان یا اعتیاد مختل‌کننده عملکرد"
+            },
+            {
+              "code": "B2",
+              "weight": 25,
+              "severity": 0.5,
+              "score": 12.5,
+              "dim": "B",
+              "title": "خطر جدی ترک تحصیل"
+            },
+            {
+              "code": "E2",
+              "weight": 20,
+              "severity": 0.5,
+              "score": 10.0,
+              "dim": "E",
+              "title": "بار مراقبتی سنگین و فاقد پشتیبانی"
+            },
+            {
+              "code": "E3",
+              "weight": 15,
+              "severity": 0.5,
+              "score": 7.5,
+              "dim": "E",
+              "title": "فقدان شبکه حمایت خانوادگی، اجتماعی یا محلی"
+            }
+          ],
+          "level": {
+            "code": "L1",
+            "min": 150,
+            "max": 299,
+            "name": "محرومیت خفیف",
+            "approach": "بررسی تکمیلی و حمایت متناسب",
+            "color": "P3"
+          },
+          "red_flags": [
+            {
+              "code": "R2",
+              "title": "بیماری حیاتی یا نیاز درمانی فوری",
+              "sources": [
+                "A1",
+                "A3"
+              ],
+              "action": "ارجاع فوری — مستقل از امتیاز EM-MPI",
+              "triggered_by": [
+                "A3"
+              ]
+            }
+          ],
+          "referral_path": {
+            "name": "ارجاع فوری مستقل از امتیاز",
+            "condition": "وجود پرچم قرمز معتبر",
+            "action": "رسیدگی اضطراری، ارجاع فوری به مددکار و CDI؛ بدون انتظار برای تکمیل امتیاز",
+            "to_cdi": true,
+            "color": "P0"
+          },
+          "referral_path_code": "P6",
+          "dominant_dims": [
+            {
+              "code": "A",
+              "name": "سلامت و امنیت زیستی",
+              "score": 160.0,
+              "max": 250,
+              "pct": 64.0
+            },
+            {
+              "code": "B",
+              "name": "آموزش و رشد انسانی",
+              "score": 77.5,
+              "max": 200,
+              "pct": 38.8
+            },
+            {
+              "code": "E",
+              "name": "آسیب‌پذیری و دسترسی به حمایت‌ها",
+              "score": 17.5,
+              "max": 100,
+              "pct": 17.5
+            }
+          ],
+          "needs_cdi": true,
+          "is_recommendation": true
+        },
+        "computed_at": "2026-09-18T19:15:14",
+        "computed_by": "assistant"
+      }
+    },
+    "H-111111": {
+      "identity": {
+        "hid": "H-111111",
+        "national_id": "1111111111",
+        "name": "محمد کریمی",
+        "location": "سیستان وبلوچستان",
+        "members": "3",
+        "contact": "0916050505",
+        "at_risk": ""
+      },
+      "em_input": {
+        "level": "",
+        "redflags": [],
+        "em_dims": [],
+        "redflag_labels": [],
+        "services_received": [],
+        "em_date": "",
+        "note": ""
+      },
+      "state": {
+        "redflags": [],
+        "em_dims": [],
+        "active_axes": [],
+        "answers": {},
+        "created_at": "2026-09-18T19:34:32",
+        "created_by": "beneficiary"
+      },
+      "layer2_done": false,
+      "layer3_done": false,
+      "decisions": [],
+      "referrals": [],
+      "history": [
+        {
+          "at": "2026-09-18T19:34:32",
+          "by": "beneficiary",
+          "action": "ثبت درخواست توسط نیازمند + واکشی وب‌سرویس"
+        }
+      ],
+      "preferences": {},
+      "capacities": [],
+      "causes": [],
+      "national_id": "1111111111",
+      "status": "pending",
+      "claimed_by": null,
+      "self_declaration": {
+        "submitted_at": "2026-09-18T19:34:32",
+        "submitted_by": "beneficiary",
+        "need_description": "اوضاع معیشتی بشدت خراب هست",
+        "at_risk": "",
+        "preferred_contact": "تماس تلفنی",
+        "preferred_gender": "",
+        "preferred_language": "بلوچی",
+        "questions": {
+          "health_illness": "no",
+          "disability": "no",
+          "food": "no",
+          "mental": "no",
+          "violence": "no",
+          "dropout": "no",
+          "literacy": "partial",
+          "skills": "no",
+          "housing": "partial",
+          "utilities": "no",
+          "rent": "no",
+          "housing_quality": "no",
+          "unemployment": "partial",
+          "debt": "partial",
+          "income": "partial",
+          "caregiving": "no",
+          "network": "no",
+          "legal": "no"
+        },
+        "yes_count": 0
+      },
+      "web_service_data": {
+        "civil_registry": {
+          "status": "success",
+          "source": "ثبت‌احوال",
+          "fetched_at": "2026-09-18T19:34:32",
+          "verified": true,
+          "data": {
+            "head_name": "محمد کریمی",
+            "last_name": "کریمی",
+            "family_size": 3,
+            "members": [
+              {
+                "name": "محمد کریمی",
+                "national_id": "1111111111",
+                "relationship": "سرپرست",
+                "age": 44,
+                "gender": "مرد",
+                "date_of_birth": "1368/05/08"
+              },
+              {
+                "name": "پریسا کریمی",
+                "national_id": "1111111111-spouse",
+                "relationship": "همسر",
+                "age": 37,
+                "gender": "زن",
+                "date_of_birth": "—"
+              },
+              {
+                "name": "کیان کریمی",
+                "national_id": "1111111111-2",
+                "relationship": "فرزند",
+                "age": 6,
+                "gender": "مرد",
+                "date_of_birth": "—"
+              }
+            ],
+            "marriage_status": "متأهل",
+            "date_of_birth": "1368/05/08"
+          }
+        },
+        "insurance": {
+          "status": "success",
+          "source": "سامانه بیمه",
+          "fetched_at": "2026-09-18T19:34:32",
+          "data": {
+            "total_covered": 3,
+            "total_uncovered": 0,
+            "members": [
+              {
+                "member_idx": 0,
+                "insurance_type": "بیمه-basic",
+                "is_covered": true,
+                "expiry_date": "1403/04/15"
+              },
+              {
+                "member_idx": 1,
+                "insurance_type": "بیمه-basic",
+                "is_covered": true,
+                "expiry_date": "1403/04/15"
+              },
+              {
+                "member_idx": 2,
+                "insurance_type": "بیمه تأمین‌اجتماعی",
+                "is_covered": true,
+                "expiry_date": "1403/04/15"
+              }
+            ]
+          }
+        },
+        "education": {
+          "status": "success",
+          "source": "آموزش‌وپرورش",
+          "fetched_at": "2026-09-18T19:34:32",
+          "data": {
+            "members": [
+              {
+                "member_idx": 0,
+                "age": 44,
+                "status": "بدون تحصیل عالی",
+                "level": "کارشناسی"
+              },
+              {
+                "member_idx": 1,
+                "age": 37,
+                "status": "فارغ‌التحصیل",
+                "level": "حوزوی"
+              },
+              {
+                "member_idx": 2,
+                "age": 6,
+                "status": "قبل از سن مدرسه",
+                "level": "—"
+              }
+            ]
+          }
+        },
+        "employment": {
+          "status": "success",
+          "source": "تأمین‌اجتماعی",
+          "fetched_at": "2026-09-18T19:34:32",
+          "data": {
+            "members": [
+              {
+                "member_idx": 0,
+                "age": 44,
+                "status": "خویش‌فرما",
+                "sector": "صنعت",
+                "monthly_income": 9000000
+              },
+              {
+                "member_idx": 1,
+                "age": 37,
+                "status": "دانش‌آموخته",
+                "sector": "بازرگانی",
+                "monthly_income": 17000000
+              },
+              {
+                "member_idx": 2,
+                "age": 6,
+                "status": "زیر سن کار",
+                "sector": "—",
+                "monthly_income": 0
+              }
+            ],
+            "total_monthly_income": 26000000,
+            "income_per_capita": 8666666
+          }
+        },
+        "housing": {
+          "status": "success",
+          "source": "سامانه مسکن",
+          "fetched_at": "2026-09-18T19:34:32",
+          "data": {
+            "tenure": "اسکان غیررسمی",
+            "area_m2": 109,
+            "rooms": 2,
+            "monthly_rent_or_mortgage": 0,
+            "has_utilities": true
+          }
+        },
+        "fetched_at": "2026-09-18T19:34:32"
+      }
+    }
+  }
+}

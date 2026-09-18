@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% block crumb %}ثبت درخواست{% endblock %}
+{% block body %}
+
+<style>
+.sd-section{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:14px;overflow:hidden;box-shadow:var(--sh-sm)}
+.sd-section > h3{background:linear-gradient(135deg,var(--p-ll),#fff);padding:12px 18px;margin:0;font-size:13.5px;font-weight:700;color:var(--p-dd);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.sd-section > h3 .sd-ic{width:28px;height:28px;border-radius:7px;background:var(--p);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.sd-section > h3 .sd-ic svg{width:16px;height:16px}
+.sd-section > h3 .sd-count{margin-inline-start:auto;font-size:11px;color:var(--mut);font-weight:500}
+
+.sd-q{padding:12px 18px;border-bottom:1px solid var(--line-2)}
+.sd-q:last-child{border-bottom:none}
+.sd-q .sq-text{font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-bottom:8px}
+.sd-q .sq-hint{font-size:10.5px;color:var(--mut);margin-bottom:8px}
+.sd-q .sq-opts{display:flex;gap:6px;flex-wrap:wrap}
+.sd-q .sq-opt{position:relative;cursor:pointer}
+.sd-q .sq-opt input{position:absolute;opacity:0;pointer-events:none}
+.sd-q .sq-opt .sq-card{border:1.5px solid var(--line);border-radius:8px;padding:6px 12px;background:#fff;font-size:11.5px;transition:all .15s ease;cursor:pointer;text-align:center}
+.sd-q .sq-opt .sq-card:hover{border-color:var(--mut-3);background:var(--bg-2)}
+.sd-q .sq-opt input:checked + .sq-card{border-width:2px;font-weight:600}
+.sd-q .sq-opt input[value="yes"]:checked + .sq-card{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.sd-q .sq-opt input[value="partial"]:checked + .sq-card{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
+.sd-q .sq-opt input[value="no"]:checked + .sq-card{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+
+.ws-banner{background:linear-gradient(135deg,var(--blue-bg),#fff);border:1px solid var(--blue-line);border-radius:var(--r-md);padding:14px 18px;margin-bottom:14px}
+.ws-banner h3{font-size:13px;font-weight:700;color:var(--blue);margin:0 0 6px;display:flex;align-items:center;gap:6px}
+.ws-banner h3 svg{width:18px;height:18px}
+.ws-banner p{font-size:11.5px;color:var(--mut);line-height:1.6;margin:0}
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
+.ws-card{background:#fff;border:1px solid var(--blue-line);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:6px}
+.ws-card svg{width:16px;height:16px;color:var(--blue);flex-shrink:0}
+.ws-card .ws-name{font-size:11px;font-weight:600;color:var(--ink-2)}
+.ws-card .ws-desc{font-size:10px;color:var(--mut)}
+
+.sticky-submit{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 0;margin-top:20px;display:flex;gap:8px;justify-content:flex-end;z-index:20}
+</style>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>ثبت درخواست حمایت</h1>
+    <p class="sub">اطلاعات هویتی و خوداظهاری را تکمیل کنید. سامانه به‌صورت خودکار داده‌های تکمیلی را از وب‌سرویس‌ها واکشی می‌کند. این اطلاعات به همیار مددکار برای انجام ارزیابی EM-MPI کمک می‌کند.</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert red">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div>{{ error }}</div>
+</div>
+{% endif %}
+
+<form method="post">
+
+{# ══════ بخش ۱: اطلاعات هویتی ══════ #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      اطلاعات هویتی
+    </h2>
+    <span class="tag teal">بخش ۱</span>
+  </div>
+  <div class="grid">
+    <div><label>شناسهٔ ملی (کدملی) *</label><input type="text" name="national_id" required placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" value="{{ national_id or '' }}"></div>
+    <div><label>تاریخ تولد سرپرست *</label><input type="date" name="date_of_birth" required value="{{ date_of_birth or '' }}" style="font-family:inherit"></div>
+    <div><label>نام و نام خانوادگی</label><input type="text" name="name" placeholder="اگر خالی بگذارید، از ثبت‌احوال واکشی می‌شود"></div>
+    <div>
+      <label>استان محل سکونت *</label>
+      <select name="province" id="province-select" required onchange="updateCities()">
+        <option value="">— انتخاب استان —</option>
+        {% for pk, pn in provinces %}
+        <option value="{{ pk }}">{{ pn }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>شهر محل سکونت *</label>
+      <select name="city" id="city-select" required onchange="showGeoPicker()">
+        <option value="">— ابتدا استان را انتخاب کنید —</option>
+      </select>
+    </div>
+    <div><label>تلفن تماس *</label><input type="text" name="contact" required placeholder="۰۹۱۲-***-****"></div>
+    <div><label>افراد در معرض خطر</label><input type="text" name="at_risk" placeholder="کودکان، سالمندان، بیماران..."></div>
+    <div><label>زبان ترجیحی</label>
+      <select name="preferred_language">
+        <option value="فارسی" selected>فارسی</option>
+        <option value="ترکی">ترکی آذربایجانی</option>
+        <option value="کردی">کردی</option>
+        <option value="عربی">عربی</option>
+        <option value="بلوچی">بلوچی</option>
+      </select>
+    </div>
+    <div><label>جنسیت مددکار ترجیحی</label>
+      <select name="preferred_gender">
+        <option value="">بدون ترجیح</option>
+        <option value="خانم">خانم</option>
+        <option value="آقا">آقا</option>
+      </select>
+    </div>
+    <div><label>راه ارتباطی ترجیحی</label>
+      <select name="preferred_contact">
+        <option value="تماس تلفنی">تماس تلفنی</option>
+        <option value="پیامک">پیامک</option>
+        <option value="حضوری">حضوری</option>
+      </select>
+    </div>
+  </div>
+
+  {# فیلد موقعیت جغرافیایی روی نقشه Leaflet ─────────────── #}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <div id="geo-picker-container" style="display:none;margin-top:16px">
+    <label>موقعیت جغرافیایی محل سکونت *</label>
+    <p class="card-desc" style="margin-bottom:10px">روی نقشه در موقعیت شهر خود کلیک کنید. می‌توانید زوم کنید و نقشه را جابه‌جا کنید.</p>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div id="beneficiary-map" style="width:100%;max-width:500px;height:350px;border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--sh-sm);z-index:1"></div>
+      <div>
+        <input type="hidden" name="geo_lat" id="geo-lat-input" value="">
+        <input type="hidden" name="geo_lng" id="geo-lng-input" value="">
+        <div id="geo-info" style="font-size:12px;color:var(--mut);padding:8px 0">
+          <b>هنوز موقعیتی انتخاب نشده</b>
+          <br>روی نقشه کلیک کنید
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  let beneficiaryMap = null;
+  let selectedMarker = null;
+  const PROVINCE_COORDS = {{ PROVINCES | tojson }};
+
+  function showGeoPicker() {
+    const city = document.getElementById('city-select').value;
+    const provKey = document.getElementById('province-select').value;
+    if (city && provKey) {
+      document.getElementById('geo-picker-container').style.display = 'block';
+
+      // مختصات استان انتخاب‌شده
+      const provData = PROVINCE_COORDS[provKey];
+      const lat = provData ? provData.lat : 32.4279;
+      const lng = provData ? provData.lng : 53.6880;
+
+      // اگر نقشه قبلاً ساخته شده فقط حرکتش بده
+      if (beneficiaryMap) {
+        beneficiaryMap.setView([lat, lng], 10);
+        setTimeout(function() { beneficiaryMap.invalidateSize(); }, 100);
+        return;
+      }
+
+      // ساخت نقشه
+      setTimeout(function() {
+        beneficiaryMap = L.map('beneficiary-map', { scrollWheelZoom: true }).setView([lat, lng], 10);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap',
+          maxZoom: 18,
+        }).addTo(beneficiaryMap);
+
+        // کلیک روی نقشه = انتخاب موقعیت
+        beneficiaryMap.on('click', function(e) {
+          const clickLat = e.latlng.lat.toFixed(6);
+          const clickLng = e.latlng.lng.toFixed(6);
+
+          // حذف مارکر قبلی
+          if (selectedMarker) {
+            beneficiaryMap.removeLayer(selectedMarker);
+          }
+
+          // افزودن مارکر جدید
+          selectedMarker = L.marker([parseFloat(clickLat), parseFloat(clickLng)], {
+            draggable: true
+          }).addTo(beneficiaryMap);
+
+          // popup
+          selectedMarker.bindPopup('📍 موقعیت انتخاب‌شده').openPopup();
+
+          // به‌روزرسانی هنگام درگ کردن مارکر
+          selectedMarker.on('dragend', function(ev) {
+            const newPos = ev.target.getLatLng();
+            updateGeoInfo(newPos.lat.toFixed(6), newPos.lng.toFixed(6));
+          });
+
+          updateGeoInfo(clickLat, clickLng);
+        });
+      }, 100);
+    }
+  }
+
+  function updateGeoInfo(lat, lng) {
+    document.getElementById('geo-lat-input').value = lat;
+    document.getElementById('geo-lng-input').value = lng;
+
+    const provSelect = document.getElementById('province-select');
+    const provName = provSelect.options[provSelect.selectedIndex].text;
+    const citySelect = document.getElementById('city-select');
+    const cityName = citySelect.options[citySelect.selectedIndex].text;
+
+    document.getElementById('geo-info').innerHTML =
+      '<b style="color:var(--green)">✓ موقعیت ثبت شد</b>' +
+      '<br>استان: ' + provName +
+      '<br>شهر: ' + cityName +
+      '<br>عرض جغرافیایی: ' + lat +
+      '<br>طول جغرافیایی: ' + lng;
+  }
+  </script>
+
+  <script>
+  // دیتای شهرها از سرور دریافت شد — در متغیر جاوااسکریپت ذخیره می‌کنیم
+  const PROVINCES_DATA = {{ PROVINCES | tojson }};
+  
+  function updateCities() {
+    const provKey = document.getElementById('province-select').value;
+    const citySelect = document.getElementById('city-select');
+    citySelect.innerHTML = '<option value="">— انتخاب شهر —</option>';
+    if (provKey && PROVINCES_DATA[provKey]) {
+      PROVINCES_DATA[provKey].cities.forEach(city => {
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        citySelect.appendChild(opt);
+      });
+    }
+  }
+  </script>
+
+  <div class="alert blue" style="margin-top:12px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div>
+      <b>تست سیستم:</b> کدملی‌های زیر داده‌های هویتی آماده دارند:
+      <br><span class="mono">۱۲۳۴۵۶۷۸۹۰</span> — علی محمدی (تهران)
+      <br><span class="mono">۹۸۷۶۵۴۳۲۱۰</span> — حسن رضایی (کرج)
+      <br><span class="mono">۱۱۱۱۱۱۱۱۱۱</span> — محمد کریمی (اصفهان)
+      <br><span class="mono">۲۲۲۲۲۲۲۲۲۲</span> — سحر احمدی (شهرری)
+    </div>
+  </div>
+  <label>توضیح مختصر از نیاز و شرایط</label>
+  <textarea name="need_description" placeholder="به‌اختصار وضعیت فعلی، مشکل اصلی و نیاز فوری خود را توضیح دهید..." style="min-height:80px"></textarea>
+</div>
+
+{# ══════ بخش ۲: خوداظهاری (پیش‌ارزیابی) ══════ #}
+<div class="card" style="margin-bottom:0">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      خوداظهاری وضعیت خانوار
+    </h2>
+    <span class="tag teal">بخش ۲ — پیش‌ارزیابی</span>
+  </div>
+  <p class="card-desc">این اطلاعات به همیار مددکار کمک می‌کند تا ارزیابی EM-MPI را سریع‌تر و دقیق‌تر انجام دهد. پاسخ شما به تنهایی مبنای تصمیم نهایی نیست — همیار بررسی تخصصی را انجام خواهد داد.</p>
+</div>
+
+{# سلامت و امنیت زیستی (بُعد A) #}
+<div class="sd-section">
+  <h3>
+    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+    سلامت و امنیت زیستی
+    <span class="sd-count">۵ پرسش</span>
+  </h3>
+  <div class="sd-q">
+    <div class="sq-text">آیا در خانوار فردی با بیماری مزمن، صعب‌العلاج یا نیاز درمانی فوری وجود دارد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_health_illness" value="yes"><div class="sq-card">بله، نیاز فوری</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_health_illness" value="partial"><div class="sq-card">بیماری مزمن کنترل‌شده</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_health_illness" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا فردی با معلولیت یا محدودیت عملکردی نیازمند مراقبت یا توان‌بخشی در خانوار وجود دارد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_disability" value="yes"><div class="sq-card">بله، نیاز مستمر</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_disability" value="partial"><div class="sq-card">محدودیت جزئی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_disability" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا در ۳۰ روز گذشته نگران تمام‌شدن غذا، حذف وعده یا گرسنگی بوده‌اید؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_food" value="yes"><div class="sq-card">بله، گرسنگی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_food" value="partial"><div class="sq-card">کاهش کیفیت</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_food" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا فشار روانی شدید، اختلال یا اعتیاد در خانوار وجود دارد که عملکرد را مختل کرده باشد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_mental" value="yes"><div class="sq-card">بله، مختل‌کننده</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_mental" value="partial"><div class="sq-card">فشار روانی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_mental" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا خشونت خانوادگی، خطر حفاظتی یا تهدید امنیتی در خانوار وجود دارد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_violence" value="yes"><div class="sq-card">⚠ بله</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_violence" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+</div>
+
+{# آموزش و رشد انسانی (بُعد B) #}
+<div class="sd-section">
+  <h3>
+    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z M6 12v5"/></svg></span>
+    آموزش و رشد انسانی
+    <span class="sd-count">۳ پرسش</span>
+  </h3>
+  <div class="sd-q">
+    <div class="sq-text">آیا کودک یا نوجوانی در خانوار وجود دارد که از مدرسه جا مانده یا ترک تحصیل کرده است؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_dropout" value="yes"><div class="sq-card">بله، ترک تحصیل</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_dropout" value="partial"><div class="sq-card">در خطر ترک</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_dropout" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا سرپرست خانوار در خواندن، نوشتن یا انجام امور اداری مشکل دارد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_literacy" value="yes"><div class="sq-card">بله، مشکلی جدی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_literacy" value="partial"><div class="sq-card">محدود</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_literacy" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا فرد آماده کار در خانوار فاقد مهارت یا مسیر مهارت‌آموزی است؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_skills" value="yes"><div class="sq-card">بله</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_skills" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+</div>
+
+{# استاندارد زندگی و مسکن (بُعد C) #}
+<div class="sd-section">
+  <h3>
+    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10"/></svg></span>
+    استاندارد زندگی و مسکن
+    <span class="sd-count">۴ پرسش</span>
+  </h3>
+  <div class="sd-q">
+    <div class="sq-text">آیا در خطر از دست‌دادن محل سکونت، تخلیه یا بی‌خانمانی هستید؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_housing" value="yes"><div class="sq-card">⚠ بله، خطر فوری</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_housing" value="partial"><div class="sq-card">ناامنی نسبی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_housing" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا آب، برق یا گاز قطع شده یا در خطر قطع است؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_utilities" value="yes"><div class="sq-card">بله، قطع</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_utilities" value="partial"><div class="sq-card">در خطر قطع</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_utilities" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا هزینه مسکن (اجاره/اقساط) بیش از ۵۰٪ درآمد شماست؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_rent" value="yes"><div class="sq-card">بله، بحرانی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_rent" value="partial"><div class="sq-card">۳۰-۵۰٪</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_rent" value="no" checked><div class="sq-card">کمتر از ۳۰٪</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا مسکن شما ناایمن، فرسوده یا غیرقابل سکونت است؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_housing_quality" value="yes"><div class="sq-card">بله، ناایمن</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_housing_quality" value="partial"><div class="sq-card">نیازمند تعمیر</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_housing_quality" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+</div>
+
+{# معیشت، اشتغال و درآمد (بُعد D) #}
+<div class="sd-section">
+  <h3>
+    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+    معیشت، اشتغال و درآمد
+    <span class="sd-count">۳ پرسش</span>
+  </h3>
+  <div class="sd-q">
+    <div class="sq-text">آیا سرپرست خانوار بیکار است یا درآمد فعالی ندارد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_unemployment" value="yes"><div class="sq-card">بله، بیکار</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_unemployment" value="partial"><div class="sq-card">ناپایدار</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_unemployment" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا بدهی بحرانی یا شوک اقتصادی (از دست‌دادن درآمد، حادثه) دارید؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_debt" value="yes"><div class="sq-card">بله، بحرانی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_debt" value="partial"><div class="sq-card">بدهی قابل مدیریت</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_debt" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا درآمد خانوار برای تأمین نیازهای اساسی کافی نیست؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_income" value="yes"><div class="sq-card">بله، ناکافی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_income" value="partial"><div class="sq-card">به‌سختی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_income" value="no" checked><div class="sq-card">کافی</div></label>
+    </div>
+  </div>
+</div>
+
+{# آسیب‌پذیری و شبکه حمایت (بُعد E) #}
+<div class="sd-section">
+  <h3>
+    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+    آسیب‌پذیری و شبکه حمایت
+    <span class="sd-count">۳ پرسش</span>
+  </h3>
+  <div class="sd-q">
+    <div class="sq-text">آیا بار مراقبتی سنگین (کودک، سالمند، بیمار) بدون پشتیبانی دارید؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_caregiving" value="yes"><div class="sq-card">بله، سنگین</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_caregiving" value="partial"><div class="sq-card">جزئی</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_caregiving" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا در مواقع بحران فرد یا نهاد قابل اتکایی برای کمک دارید؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_network" value="yes"><div class="sq-card">بله</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_network" value="partial"><div class="sq-card">محدود</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_network" value="no" checked><div class="sq-card">خیر، فاقد شبکه</div></label>
+    </div>
+  </div>
+  <div class="sd-q">
+    <div class="sq-text">آیا مانع حقوقی، هویتی یا اداری دارید که دسترسی به خدمات را مسدود کرده باشد؟</div>
+    <div class="sq-opts">
+      <label class="sq-opt"><input type="radio" name="sd_legal" value="yes"><div class="sq-card">بله</div></label>
+      <label class="sq-opt"><input type="radio" name="sd_legal" value="no" checked><div class="sq-card">خیر</div></label>
+    </div>
+  </div>
+</div>
+
+{# ══════ بخش ۳: وب‌سرویس‌ها ══════ #}
+<div class="ws-banner">
+  <h3>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
+    واکشی خودکار داده‌های تکمیلی
+  </h3>
+  <p>پس از ثبت درخواست، سامانه به‌صورت خودکار از سامانه‌های رسمی زیر داده‌های تکمیلی را واکشی می‌کند:</p>
+  <div class="ws-grid">
+    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div><div class="ws-name">ثبت‌احوال</div><div class="ws-desc">اعضای خانوار</div></div></div>
+    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><div><div class="ws-name">بیمه</div><div class="ws-desc">پوشش درمان</div></div></div>
+    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z M6 12v5"/></svg><div><div class="ws-name">آموزش</div><div class="ws-desc">وضعیت تحصیلی</div></div></div>
+    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v9"/></svg><div><div class="ws-name">تأمین‌اجتماعی</div><div class="ws-desc">اشتغال و درآمد</div></div></div>
+    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><div><div class="ws-name">مسکن</div><div class="ws-desc">وضعیت سکونت</div></div></div>
+  </div>
+</div>
+
+<div class="sticky-submit">
+  <a class="btn sec" href="{{ url_for('index') }}">انصراف</a>
+  <button class="btn lg" type="submit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    ثبت درخواست و واکشی داده‌ها
+  </button>
+</div>
+</form>
+
+<script>
+// شمارش زندهٔ پاسخ‌های «بله» برای هشدار فوریت
+document.querySelectorAll('.sd-q input[type=radio]').forEach(r => {
+  r.addEventListener('change', function() {
+    let urgent = 0;
+    document.querySelectorAll('.sd-q input[value="yes"]:checked').forEach(c => {
+      let name = c.name;
+      if (['sd_violence','sd_health_illness','sd_housing','sd_food','sd_mental'].includes(name)) urgent++;
+    });
+  });
+});
+</script>
+{% endblock %}

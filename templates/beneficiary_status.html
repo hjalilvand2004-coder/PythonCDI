@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block crumb %}وضعیت درخواست{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>وضعیت درخواست شما</h1>
+    <p class="sub">شناسهٔ پرونده: <b class="mono">{{ hid }}</b> — تاریخ ثبت: {{ h.identity.created_at if h.identity.created_at is defined else '—' }}</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{# ── Status banner ───────────────────────────────────── #}
+{% set status = h.status|default('pending') %}
+<div class="card" style="border-inline-start:4px solid {% if status == 'pending' %}var(--amber){% elif status == 'claimed' %}var(--blue){% elif status == 'emmpi_done' %}var(--p){% elif status == 'cdi_in_progress' %}var(--blue){% elif status == 'completed' %}var(--green){% else %}var(--mut){% endif %}">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      وضعیت فعلی درخواست
+    </h2>
+    <span class="badge {% if status == 'pending' %}P1{% elif status == 'claimed' %}P2{% elif status == 'emmpi_done' %}P3{% elif status == 'completed' %}P3{% else %}P4{% endif %}">
+      <span class="dot"></span>
+      {% if status == 'pending' %}در انتظار تخصیص همیار{% elif status == 'claimed' %}تخصیص یافت — در حال غربالگری{% elif status == 'emmpi_done' %}غربالگری EM-MPI انجام شد{% elif status == 'cdi_in_progress' %}در حال ارزیابی جامع CDI{% elif status == 'completed' %}تکمیل شد{% else %}{{ status }}{% endif %}
+    </span>
+  </div>
+
+  {% if h.claimed_by %}
+  <div class="kvs">
+    <div class="item">
+      <span class="k">همیار تخصیص‌یافته</span>
+      <span class="v"><b>{{ h.claimed_by.name }}</b> — {{ h.claimed_by.role_label }}</span>
+    </div>
+    <div class="item">
+      <span class="k">تاریخ تخصیص</span>
+      <span class="v mono">{{ h.claimed_by.claimed_at }}</span>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert amber">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div>درخواست شما در استخر درخواست‌ها قرار دارد و در انتظار پذیرش توسط همیاران است. این فرایند معمولاً ۲۴ تا ۴۸ ساعت طول می‌کشد.</div>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Self declaration summary ─────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      اطلاعات خوداظهاری
+    </h2>
+  </div>
+  <div class="kvs">
+    <div class="item"><span class="k">شناسهٔ ملی</span><span class="v mono">{{ h.national_id or h.identity.national_id or '—' }}</span></div>
+    <div class="item"><span class="k">نام</span><span class="v">{{ h.identity.name or '—' }}</span></div>
+    <div class="item"><span class="k">محل سکونت</span><span class="v">{{ h.identity.location or '—' }}</span></div>
+    <div class="item"><span class="k">تلفن</span><span class="v">{{ h.identity.contact or '—' }}</span></div>
+    <div class="item"><span class="k">افراد در معرض خطر</span><span class="v">{{ h.identity.at_risk or '—' }}</span></div>
+  </div>
+  {% if h.self_declaration and h.self_declaration.need_description %}
+  <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-2)">
+    <div class="small" style="font-weight:600;color:var(--ink-2);margin-bottom:6px">توضیح نیاز:</div>
+    <div style="font-size:13px;color:var(--ink-2);line-height:1.7">{{ h.self_declaration.need_description }}</div>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Web service data ─────────────────────────────────── #}
+{% if h.web_service_data %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
+      داده‌های واکشی‌شده از وب‌سرویس‌ها
+    </h2>
+    <span class="tag teal">۵ سامانه</span>
+  </div>
+
+  {# Civil Registry #}
+  {% set civil = h.web_service_data.get('civil_registry', {}) %}
+  {% if civil and civil.get('data') %}
+  <h3>۱. ثبت‌احوال — اعضای خانوار</h3>
+  <div class="table-wrap" style="margin-bottom:14px">
+    <table>
+      <thead><tr><th>نام</th><th>نسبت</th><th>سن</th><th>جنسیت</th></tr></thead>
+      <tbody>
+        {% for m in civil.data.members %}
+        <tr>
+          <td>{{ m.name }}</td>
+          <td>{{ m.relationship }}</td>
+          <td>{{ m.age }}</td>
+          <td>{{ m.gender }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {# Insurance #}
+  {% set ins = h.web_service_data.get('insurance', {}) %}
+  {% if ins and ins.get('data') %}
+  <h3>۲. وضعیت بیمه</h3>
+  <div class="kvs" style="margin-bottom:14px">
+    <div class="item"><span class="k">پوشش‌یافته</span><span class="v" style="color:var(--green)"><b>{{ ins.data.total_covered }}</b> نفر</span></div>
+    <div class="item"><span class="k">بدون پوشش</span><span class="v" style="color:var(--red)"><b>{{ ins.data.total_uncovered }}</b> نفر</span></div>
+  </div>
+  {% endif %}
+
+  {# Employment #}
+  {% set emp = h.web_service_data.get('employment', {}) %}
+  {% if emp and emp.get('data') %}
+  <h3>۳. وضعیت اشتغال و درآمد</h3>
+  <div class="kvs">
+    <div class="item"><span class="k">درآمد ماهانه کل</span><span class="v"><b>{{ emp.data.total_monthly_income }}</b> ریال</span></div>
+    <div class="item"><span class="k">سرانهٔ نفر</span><span class="v"><b>{{ emp.data.income_per_capita }}</b> ریال</span></div>
+  </div>
+  <div class="table-wrap" style="margin-top:10px">
+    <table>
+      <thead><tr><th>عضو</th><th>سن</th><th>وضعیت</th><th>بخش</th><th>درآمد ماهانه</th></tr></thead>
+      <tbody>
+        {% for m in emp.data.members %}
+        <tr>
+          <td>عضو {{ m.member_idx + 1 }}</td>
+          <td>{{ m.age }}</td>
+          <td>{{ m.status }}</td>
+          <td>{{ m.sector }}</td>
+          <td>{{ m.monthly_income or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {# Housing #}
+  {% set house = h.web_service_data.get('housing', {}) %}
+  {% if house and house.get('data') %}
+  <h3 style="margin-top:14px">۴. وضعیت مسکن</h3>
+  <div class="kvs">
+    <div class="item"><span class="k">نوع سکونت</span><span class="v">{{ house.data.tenure }}</span></div>
+    <div class="item"><span class="k">متراژ</span><span class="v">{{ house.data.area_m2 }} م²</span></div>
+    <div class="item"><span class="k">تعداد اتاق</span><span class="v">{{ house.data.rooms }}</span></div>
+    {% if house.data.monthly_rent_or_mortgage > 0 %}
+    <div class="item"><span class="k">اجاره/بدهی ماهانه</span><span class="v">{{ house.data.monthly_rent_or_mortgage }} ریال</span></div>
+    {% endif %}
+    <div class="item"><span class="k">خدمات حیاتی (آب/برق/گاز)</span><span class="v">{% if house.data.has_utilities %}<span class="badge P3"><span class="dot"></span>متصل</span>{% else %}<span class="badge P0"><span class="dot"></span>قطع</span>{% endif %}</span></div>
+  </div>
+  {% endif %}
+
+  <div class="small" style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--line-2);color:var(--mut)">
+    📅 تاریخ واکشی: <b class="mono">{{ h.web_service_data.fetched_at }}</b>
+    — این داده‌ها از سامانه‌های رسمی واکشی شده‌اند و در صورت تناقض با خوداظهاری، هشدار کیفیت داده صادر می‌شود.
+  </div>
+</div>
+{% endif %}
+
+{# ── History ─────────────────────────────────────────── #}
+{% if h.history %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      تاریخچهٔ درخواست
+    </h2>
+    <span class="tag teal">{{ h.history|length }} رویداد</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>زمان</th><th>بازیگر</th><th>رویداد</th></tr></thead>
+      <tbody>
+        {% for e in h.history %}
+        <tr>
+          <td><span class="small mono">{{ e.at }}</span></td>
+          <td><span class="tag">{{ e.by }}</span></td>
+          <td><span class="small" style="color:var(--ink-2)">{{ e.action }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

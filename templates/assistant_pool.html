@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block crumb %}استخر درخواست‌ها{% endblock %}
+{% block body %}
+
+<style>
+.pool-hero{
+  background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);
+  color:#fff; border-radius:var(--r-lg); padding:24px 28px; margin-bottom:18px;
+  box-shadow:var(--sh-lg); position:relative; overflow:hidden;
+}
+.pool-hero::before{
+  content:""; position:absolute; top:-40px; inset-inline-end:-30px;
+  width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle,rgba(94,234,212,.25),transparent 65%);
+}
+.pool-hero > *{position:relative; z-index:1}
+.pool-hero h1{font-size:22px; font-weight:700; margin:0 0 6px}
+.pool-hero .hero-sub{font-size:12.5px; color:rgba(255,255,255,.8); line-height:1.7; margin-bottom:14px}
+.pool-hero .hero-stats{display:flex; gap:18px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,.15)}
+.pool-hero .hs-item{display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,.85)}
+.pool-hero .hs-item b{color:#5eead4}
+
+.req-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
+  padding:16px 18px; margin-bottom:12px; box-shadow:var(--sh-sm);
+  transition:all .2s var(--ease); position:relative; overflow:hidden;
+  border-inline-start:4px solid var(--amber);
+}
+.req-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
+.req-card.match-high{border-inline-start-color:var(--green)}
+.req-card.match-med{border-inline-start-color:var(--amber)}
+
+.rc-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:12px}
+.rc-avatar{
+  width:48px; height:48px; border-radius:12px; display:grid; place-items:center;
+  font-weight:700; font-size:18px; color:#fff; flex-shrink:0;
+  background:linear-gradient(135deg,var(--p),var(--p-d));
+}
+.rc-info{flex:1; min-width:180px}
+.rc-name{font-size:15px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.rc-meta{font-size:11.5px; color:var(--mut); margin-top:2px}
+.rc-match{text-align:center; min-width:80px}
+.rc-match .rm-num{font-size:24px; font-weight:800; color:var(--p); line-height:1}
+.rc-match .rm-lbl{font-size:10px; color:var(--mut); margin-top:2px}
+.rc-match .rm-bar{height:4px; background:var(--bg-2); border-radius:2px; margin-top:6px; overflow:hidden}
+.rc-match .rm-bar-fill{height:100%; border-radius:2px; background:linear-gradient(90deg,var(--green),var(--p))}
+
+.rc-body{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px; padding-top:10px; border-top:1px dashed var(--line-2)}
+.rc-field{display:flex; flex-direction:column; gap:1px}
+.rc-field .rf-k{font-size:10.5px; color:var(--mut); font-weight:600}
+.rc-field .rf-v{font-size:12px; color:var(--ink-2); font-weight:500}
+
+.rc-need{font-size:12px; color:var(--ink-2); padding:8px 10px; background:var(--bg-2); border-radius:6px; margin-top:8px; line-height:1.6; border-inline-start:3px solid var(--p-l)}
+.rc-ws-tags{display:flex; flex-wrap:wrap; gap:4px; margin-top:8px}
+.rc-ws-tag{font-size:10px; padding:2px 6px; border-radius:4px; background:var(--blue-bg); color:var(--blue); border:1px solid var(--blue-line); font-weight:600}
+.rc-actions{display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line-2); flex-wrap:wrap}
+
+.my-claim-card{
+  background:linear-gradient(135deg,var(--p-ll) 0%,#fff 60%); border:1px solid var(--p-l);
+  border-radius:var(--r-md); padding:16px 18px; margin-bottom:12px;
+  border-inline-start:4px solid var(--p);
+}
+</style>
+
+{# ── Hero ─────────────────────────────────────────────── #}
+<div class="pool-hero">
+  <h1>استخر درخواست‌های نیازمندان</h1>
+  <p class="hero-sub">
+    درخواست‌های ثبت‌شده توسط نیازمندان که در انتظار تخصیص همیار هستند.
+    بر اساس موقعیت و تخصص شما مرتب‌شده‌اند — مانند اسنپ: شما درخواست مناسب را انتخاب می‌کنید.
+  </p>
+  <div class="hero-stats">
+    <div class="hs-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      در انتظار: <b>{{ pending_requests|length }}</b> درخواست
+    </div>
+    {% if my_claims %}
+    <div class="hs-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+      تخصیص‌یافته به شما: <b>{{ my_claims|length }}</b> پرونده
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── My claimed requests ──────────────────────────────── #}
+{% if my_claims %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      پرونده‌های تخصیص‌یافته به شما
+    </h2>
+    <span class="tag teal">{{ my_claims|length }} مورد</span>
+  </div>
+  {% for item in my_claims %}
+  {% set h = item.h %}
+  <div class="my-claim-card">
+    <div class="rc-head">
+      <div class="rc-avatar" style="background:linear-gradient(135deg,var(--p),var(--p-d))">
+        {{ (h.identity.name or item.hid)[:1] }}
+      </div>
+      <div class="rc-info">
+        <div class="rc-name">
+          {{ h.identity.name or 'خانوار ' + item.hid }}
+          <span class="badge P3"><span class="dot"></span>تخصیص‌یافته</span>
+        </div>
+        <div class="rc-meta">شناسه: <span class="mono">{{ item.hid }}</span> · محل: {{ h.identity.location or '—' }}</div>
+      </div>
+      <div class="rc-actions" style="margin:0;padding:0;border:none">
+        {% if h.emmpi %}
+        <a class="btn sec sm" href="{{ url_for('emmpi_result', hid=item.hid) }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          مشاهدهٔ EM-MPI
+        </a>
+        {% if h.emmpi.result.needs_cdi %}
+        <a class="btn sm" href="{{ url_for('assess', hid=item.hid) }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg>
+          شروع CDI
+        </a>
+        {% endif %}
+        {% else %}
+        <a class="btn warn sm" href="{{ url_for('emmpi_form', hid=item.hid) }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          انجام EM-MPI
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Available requests ───────────────────────────────── #}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>درخواست‌های در دسترس</h1>
+    <p class="sub">مرتب‌شده بر اساس میزان تطبیق با شما — بالاترین امتیاز، مناسب‌ترین گزینه</p>
+  </div>
+</div>
+
+{% for req in pending_requests %}
+{% set h = req.h %}
+{% set match_class = 'match-high' if req.match_score >= 60 else ('match-med' if req.match_score >= 40 else '') %}
+<div class="req-card {{ match_class }}">
+  <div class="rc-head">
+    <div class="rc-avatar">
+      {{ (h.identity.name or req.hid)[:1] }}
+    </div>
+    <div class="rc-info">
+      <div class="rc-name">
+        {{ h.identity.name or 'خانوار ' + req.hid }}
+        <span class="badge P1"><span class="dot"></span>در انتظار</span>
+      </div>
+      <div class="rc-meta">
+        شناسه: <span class="mono">{{ req.hid }}</span> · 
+        محل: {{ h.identity.location or '—' }} · 
+        اعضا: {{ h.identity.members or '—' }}
+      </div>
+    </div>
+    <div class="rc-match">
+      <div class="rm-num">{{ req.match_score }}</div>
+      <div class="rm-lbl">تطبیق</div>
+      <div class="rm-bar"><div class="rm-bar-fill" style="width:{{ req.match_score }}%"></div></div>
+    </div>
+  </div>
+
+  {# خلاصهٔ وب‌سرویس #}
+  {% set ws = h.web_service_data or {} %}
+  {% if ws %}
+  <div class="rc-ws-tags">
+    {% if ws.civil_registry %}<span class="rc-ws-tag">🏛️ ثبت‌احوال: {{ ws.civil_registry.data.family_size }} عضو</span>{% endif %}
+    {% if ws.insurance %}<span class="rc-ws-tag">🏥 بیمه: {{ ws.insurance.data.total_covered }}/{{ ws.insurance.data.total_covered + ws.insurance.data.total_uncovered }} پوشش</span>{% endif %}
+    {% if ws.employment %}<span class="rc-ws-tag">💼 درآمد: {{ ws.employment.data.total_monthly_income }} ریال</span>{% endif %}
+    {% if ws.housing %}<span class="rc-ws-tag">🏠 {{ ws.housing.data.tenure }}</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {# افراد در معرض خطر #}
+  {% if h.identity.at_risk %}
+  <div class="rc-need">
+    <b style="color:var(--red)">⚠ افراد در معرض خطر:</b> {{ h.identity.at_risk }}
+  </div>
+  {% endif %}
+
+  {# توضیح نیاز #}
+  {% if h.self_declaration and h.self_declaration.need_description %}
+  <div class="rc-need">
+    <b>توضیح نیازمند:</b> {{ h.self_declaration.need_description[:200] }}{% if h.self_declaration.need_description|length > 200 %}...{% endif %}
+  </div>
+  {% endif %}
+
+  {# ترجیحات #}
+  {% if h.self_declaration %}
+  <div class="rc-body">
+    {% if h.self_declaration.preferred_language %}<div class="rc-field"><span class="rf-k">زبان ترجیحی</span><span class="rf-v">{{ h.self_declaration.preferred_language }}</span></div>{% endif %}
+    {% if h.self_declaration.preferred_gender %}<div class="rc-field"><span class="rf-k">جنسیت مددکار</span><span class="rf-v">{{ h.self_declaration.preferred_gender }}</span></div>{% endif %}
+    {% if h.self_declaration.preferred_contact %}<div class="rc-field"><span class="rf-k">راه ارتباطی</span><span class="rf-v">{{ h.self_declaration.preferred_contact }}</span></div>{% endif %}
+    <div class="rc-field"><span class="rf-k">تاریخ ثبت</span><span class="rf-v mono">{{ h.state.created_at[:10] if h.state.created_at else '—' }}</span></div>
+  </div>
+  {% endif %}
+
+  {# Reasons #}
+  {% if req.match_reasons %}
+  <div style="font-size:11px;color:var(--mut);margin-top:8px;padding:6px 8px;background:var(--bg-2);border-radius:6px">
+    <b>دلایل تطبیق:</b> {{ req.match_reasons|join('؛ ') }}
+  </div>
+  {% endif %}
+
+  {# Actions #}
+  <div class="rc-actions">
+    <form method="post" action="{{ url_for('assistant_claim', hid=req.hid) }}" style="display:inline">
+      <button class="btn lg" type="submit" onclick="return confirm('این درخواست به شما تخصیص داده می‌شود. ادامه می‌دهید؟')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        پذیرش و تخصیص به خودم
+      </button>
+    </form>
+    <a class="btn sec sm" href="{{ url_for('household_view', hid=req.hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/></svg>
+      جزئیات بیشتر
+    </a>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <div class="e-title">در حال حاضر درخواستی در دسترس نیست</div>
+    <div class="e-sub">درخواست‌های جدید توسط نیازمندان ثبت شوند و در این صفحه نمایش داده می‌شوند.</div>
+  </div>
+</div>
+{% endfor %}
+
+{# ── ۹ معیار هوشمند ────────────────────────────────────── #}
+<div class="card" style="margin-top:20px">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      معیارهای هوشمند تطبیق (بند ۹ـ۲)
+    </h2>
+  </div>
+  <div class="grid" style="gap:8px">
+    {% for c in match_criteria %}
+    <div style="display:flex;gap:8px;align-items:center;padding:8px 10px;background:var(--bg-2);border-radius:8px">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--p-ll);color:var(--p-d);font-size:10px;font-weight:700;flex-shrink:0">{{ c.weight }}</span>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink)">{{ c.name }}</div>
+        <div style="font-size:10.5px;color:var(--mut)">{{ c.desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

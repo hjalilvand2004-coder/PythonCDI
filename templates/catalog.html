@@ -1,0 +1,717 @@
+{% extends "base.html" %}
+{% block crumb %}کاتالوگ چارچوب{% endblock %}
+{% block body %}
+
+<style>
+/* ─── Hero ─── */
+.cat-hero{
+  background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);
+  color:#fff; border-radius:var(--r-lg); padding:28px 32px; margin-bottom:18px;
+  box-shadow:var(--sh-lg); position:relative; overflow:hidden;
+}
+.cat-hero::before{
+  content:""; position:absolute; top:-60px; inset-inline-end:-40px;
+  width:280px; height:280px; border-radius:50%;
+  background:radial-gradient(circle,rgba(94,234,212,.25),transparent 65%);
+}
+.cat-hero::after{
+  content:""; position:absolute; bottom:-100px; inset-inline-start:30%;
+  width:340px; height:340px; border-radius:50%;
+  background:radial-gradient(circle,rgba(13,148,136,.35),transparent 70%);
+}
+.cat-hero > *{position:relative; z-index:1}
+.cat-hero h1{font-size:26px; font-weight:700; margin:0 0 8px; letter-spacing:-.01em}
+.cat-hero .hero-sub{font-size:13px; color:rgba(255,255,255,.8); line-height:1.8; max-width:760px}
+.cat-hero .hero-stats{display:flex; gap:18px; flex-wrap:wrap; margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,.15)}
+.cat-hero .hs-item{display:flex; align-items:center; gap:8px}
+.cat-hero .hs-num{font-size:22px; font-weight:800; color:#5eead4; line-height:1; font-variant-numeric:tabular-nums}
+.cat-hero .hs-lbl{font-size:11px; color:rgba(255,255,255,.7)}
+
+/* ─── Pipeline Section ─── */
+.pipeline-section{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px}
+@media(max-width:760px){.pipeline-section{grid-template-columns:1fr}}
+.pipe-card{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:18px 20px; box-shadow:var(--sh-sm); border-top:4px solid; position:relative; overflow:hidden}
+.pipe-card.emmpi{border-top-color:var(--amber)}
+.pipe-card.cdi{border-top-color:var(--blue)}
+.pipe-card .pc-head{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.pipe-card .pc-num{width:36px; height:36px; border-radius:10px; display:grid; place-items:center; font-weight:800; font-size:15px; color:#fff; flex-shrink:0}
+.pipe-card.emmpi .pc-num{background:linear-gradient(135deg,var(--amber),#b45309); box-shadow:0 4px 12px rgba(217,119,6,.3)}
+.pipe-card.cdi .pc-num{background:linear-gradient(135deg,var(--blue),#1d4ed8); box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.pipe-card .pc-title{font-size:15px; font-weight:700; color:var(--ink); flex:1}
+.pipe-card .pc-sub{font-size:11px; color:var(--mut); margin-top:1px}
+.pipe-card .pc-body{font-size:12.5px; color:var(--ink-2); line-height:1.8; margin-bottom:12px}
+.pipe-card .pc-body b{color:var(--ink)}
+
+/* EM-MPI Dim grid */
+.emmpi-dims{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:10px}
+@media(max-width:640px){.emmpi-dims{grid-template-columns:repeat(2,1fr)}}
+.emmpi-dim{background:var(--bg-2); border-radius:8px; padding:8px 10px; text-align:center; border-top:3px solid var(--amber)}
+.emmpi-dim .ed-letter{font-size:18px; font-weight:800; color:var(--amber); line-height:1}
+.emmpi-dim .ed-name{font-size:10px; color:var(--ink-2); font-weight:600; margin-top:3px; line-height:1.3}
+.emmpi-dim .ed-max{font-size:11px; color:var(--mut); margin-top:3px}
+
+/* CDI Dim grid */
+.cdi-dims{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:10px}
+@media(max-width:640px){.cdi-dims{grid-template-columns:repeat(2,1fr)}}
+.cdi-dim{background:var(--bg-2); border-radius:8px; padding:8px 10px; text-align:center; border-top:3px solid var(--blue)}
+.cdi-dim .cd-letter{font-size:18px; font-weight:800; color:var(--blue); line-height:1}
+.cdi-dim .cd-name{font-size:10px; color:var(--ink-2); font-weight:600; margin-top:3px; line-height:1.3}
+.cdi-dim .cd-count{font-size:11px; color:var(--mut); margin-top:3px}
+
+/* ─── Workflow Stepper (big) ─── */
+.big-stepper{display:flex; align-items:flex-start; justify-content:space-between; position:relative; padding:10px 0; gap:4px; flex-wrap:nowrap}
+.big-stepper::before{content:""; position:absolute; top:32px; inset-inline-start:40px; inset-inline-end:40px; height:4px; background:var(--line); border-radius:2px; z-index:0}
+.bs-step{display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; position:relative; z-index:1; text-align:center; max-width:140px}
+.bs-step .bs-circle{width:64px; height:64px; border-radius:50%; background:#fff; border:3px solid var(--line); color:var(--mut); display:grid; place-items:center; font-weight:800; font-size:20px; transition:all .3s var(--ease); box-shadow:var(--sh-sm)}
+.bs-step .bs-circle svg{width:28px; height:28px}
+.bs-step.active .bs-circle{background:linear-gradient(135deg,var(--p),var(--p-d)); border-color:var(--p); color:#fff; box-shadow:0 8px 20px rgba(13,148,136,.3)}
+.bs-step .bs-title{font-size:12px; font-weight:700; color:var(--ink); line-height:1.3}
+.bs-step .bs-sub{font-size:10.5px; color:var(--mut); line-height:1.5}
+
+/* ─── 3-Layer Architecture ─── */
+.layers-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+@media(max-width:760px){.layers-grid{grid-template-columns:1fr}}
+.layer-card{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:16px; box-shadow:var(--sh-sm); border-top:4px solid; position:relative}
+.layer-card.l1{border-top-color:var(--red)}
+.layer-card.l2{border-top-color:var(--amber)}
+.layer-card.l3{border-top-color:var(--blue)}
+.layer-card .lc-head{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+.layer-card .lc-num{width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-weight:800; font-size:14px; color:#fff}
+.layer-card.l1 .lc-num{background:var(--red)}
+.layer-card.l2 .lc-num{background:var(--amber)}
+.layer-card.l3 .lc-num{background:var(--blue)}
+.layer-card .lc-title{font-size:14px; font-weight:700; color:var(--ink); flex:1}
+.layer-card .lc-body{font-size:12px; color:var(--ink-2); line-height:1.7}
+.layer-card .lc-body b{color:var(--ink)}
+.layer-card .lc-foot{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line-2); font-size:11px; color:var(--mut)}
+
+/* ─── Priority Pipeline ─── */
+.priority-pipeline{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px}
+@media(max-width:760px){.priority-pipeline{grid-template-columns:1fr}}
+.pp-card{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:18px; box-shadow:var(--sh-sm); border-top:4px solid}
+.pp-card.l1{border-top-color:var(--red)}
+.pp-card.l2{border-top-color:var(--amber)}
+.pp-card.l3{border-top-color:var(--blue)}
+.pp-card .pc-head{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.pp-card .pc-num{width:36px; height:36px; border-radius:10px; display:grid; place-items:center; font-weight:800; font-size:15px; color:#fff; flex-shrink:0}
+.pp-card.l1 .pc-num{background:var(--red); box-shadow:0 4px 12px rgba(220,38,38,.3)}
+.pp-card.l2 .pc-num{background:var(--amber); box-shadow:0 4px 12px rgba(217,119,6,.3)}
+.pp-card.l3 .pc-num{background:var(--blue); box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.pp-card .pc-title{font-size:14px; font-weight:700; color:var(--ink); flex:1}
+.pp-card .pc-q{font-size:11px; color:var(--mut); margin-top:1px}
+.pp-formula{font-family:ui-monospace,monospace; font-size:11px; background:var(--bg-2); padding:8px 12px; border-radius:6px; color:var(--p-d); margin:10px 0; line-height:1.7; border-inline-start:3px solid var(--p)}
+.pp-weights{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px}
+.pp-weights .w-item{background:var(--bg-2); padding:6px 8px; border-radius:6px; text-align:center}
+.pp-weights .w-item .w-k{font-weight:700; font-size:11px; color:var(--p-d)}
+.pp-weights .w-item .w-v{font-size:10px; color:var(--mut)}
+.pc-out{font-size:11px; color:var(--ink-2); margin-top:10px; padding-top:10px; border-top:1px dashed var(--line-2)}
+.pc-out b{color:var(--ink)}
+
+/* ─── Ranks A-E ─── */
+.rank-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px}
+@media(max-width:640px){.rank-grid{grid-template-columns:repeat(2,1fr)}}
+.rank-card{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:14px; border-top:3px solid; text-align:center; transition:all .2s var(--ease)}
+.rank-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
+.rank-card.A{border-top-color:var(--red)}
+.rank-card.B{border-top-color:var(--amber)}
+.rank-card.C{border-top-color:var(--blue)}
+.rank-card.D{border-top-color:var(--green)}
+.rank-card.E{border-top-color:var(--purple)}
+.rank-card .rc-letter{font-size:28px; font-weight:800; line-height:1; margin-bottom:6px}
+.rank-card.A .rc-letter{color:var(--red)}
+.rank-card.B .rc-letter{color:var(--amber)}
+.rank-card.C .rc-letter{color:var(--blue)}
+.rank-card.D .rc-letter{color:var(--green)}
+.rank-card.E .rc-letter{color:var(--purple)}
+.rank-card .rc-title{font-size:11.5px; font-weight:700; color:var(--ink); margin-bottom:6px; line-height:1.4}
+.rank-card .rc-meta{font-size:10.5px; color:var(--mut); line-height:1.6}
+
+/* ─── Queue families ─── */
+.queue-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px}
+.queue-card{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:14px; box-shadow:var(--sh-xs); border-inline-start:4px solid; transition:all .2s var(--ease)}
+.queue-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
+.queue-card.q-P0{border-inline-start-color:var(--red)}
+.queue-card.q-P1{border-inline-start-color:var(--amber)}
+.queue-card.q-P2{border-inline-start-color:var(--blue)}
+.queue-card.q-P3{border-inline-start-color:var(--green)}
+.queue-card.q-P4{border-inline-start-color:var(--mut)}
+.queue-card .qc-head{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.queue-card .qc-code{font-family:ui-monospace,monospace; font-size:11px; font-weight:700; color:var(--p-d); background:var(--p-ll); padding:2px 7px; border-radius:4px}
+.queue-card .qc-name{font-size:13px; font-weight:700; color:var(--ink); flex:1}
+.queue-card .qc-services{font-size:11px; color:var(--mut); line-height:1.7}
+
+/* ─── Relationship cards ─── */
+.rel-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px}
+.rel-card{background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:12px 14px; display:flex; gap:10px; align-items:flex-start}
+.rel-card .rc-ic{width:32px; height:32px; border-radius:8px; display:grid; place-items:center; flex-shrink:0; background:var(--p-ll); color:var(--p-d)}
+.rel-card .rc-ic svg{width:18px; height:18px}
+.rel-card .rc-body .rc-name{font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:2px}
+.rel-card .rc-body .rc-desc{font-size:11px; color:var(--mut); line-height:1.5}
+.rel-card .rc-body .rc-eg{font-size:10.5px; color:var(--ink-2); margin-top:4px; padding-top:4px; border-top:1px dashed var(--line-2); font-style:italic}
+
+/* ─── Rule list ─── */
+.rule-list{counter-reset:rule}
+.rule-list .rule-item{display:flex; gap:10px; padding:8px 0; border-bottom:1px dashed var(--line-2)}
+.rule-list .rule-item:last-child{border-bottom:none}
+.rule-list .rule-item::before{counter-increment:rule; content:counter(rule); flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--p-ll); color:var(--p-d); display:grid; place-items:center; font-size:11px; font-weight:700}
+.rule-list .rule-item .r-text{font-size:12.5px; color:var(--ink-2); line-height:1.7}
+
+/* ─── Section title ─── */
+.cat-section-title{font-size:18px; font-weight:700; color:var(--ink); margin:24px 0 14px; display:flex; align-items:center; gap:8px}
+.cat-section-title .cst-num{width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--p),var(--p-d)); color:#fff; display:grid; place-items:center; font-size:14px; font-weight:800; flex-shrink:0; box-shadow:0 4px 12px rgba(13,148,136,.25)}
+.cat-section-title .cst-sub{font-size:11px; color:var(--mut); font-weight:400; margin-inline-start:8px}
+
+/* ─── Red flags mini ─── */
+.rf-mini-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px}
+.rf-mini{background:var(--red-bg); border:1px solid var(--red-line); border-radius:8px; padding:8px 10px; font-size:11px; display:flex; align-items:center; gap:6px}
+.rf-mini .rf-code{font-family:ui-monospace,monospace; font-weight:700; color:var(--red); flex-shrink:0}
+.rf-mini .rf-title{color:var(--ink-2)}
+</style>
+
+{# ── Hero ─────────────────────────────────────────────── #}
+<div class="cat-hero">
+  <h1>کاتالوگ چارچوب شناسایی، احراز و توانمندسازی</h1>
+  <p class="hero-sub">
+    مرجع کامل چارچوب عملیاتی سامانه — از ثبت درخواست تا خروج پایدار.
+    هماهنگ با اسناد <b>Emdad_sanadHemayt0004</b> (EM-MPI) و <b>Emdad_sanadHemayt0005</b> (CDI).
+  </p>
+  <div class="hero-stats">
+    <div class="hs-item"><div class="hs-num">۷</div><div class="hs-lbl">مرحلهٔ رسیدگی</div></div>
+    <div class="hs-item"><div class="hs-num">۵+۵</div><div class="hs-lbl">بُعد EM-MPI + CDI</div></div>
+    <div class="hs-item"><div class="hs-num">۳۵+۴۱</div><div class="hs-lbl">شاخص EM-MPI + محور CDI</div></div>
+    <div class="hs-item"><div class="hs-num">۹</div><div class="hs-lbl">پرچم قرمز</div></div>
+    <div class="hs-item"><div class="hs-num">۸</div><div class="hs-lbl">مسیر ارجاع</div></div>
+    <div class="hs-item"><div class="hs-num">۹</div><div class="hs-lbl">خانوادهٔ صف خدمت</div></div>
+    <div class="hs-item"><div class="hs-num">۵</div><div class="hs-lbl">رتبهٔ اقدام A-E</div></div>
+  </div>
+</div>
+
+{# ══════ ۱. مسیر کامل رسیدگی ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۱</span>
+  مسیر کامل رسیدگی به خانوار
+  <span class="cst-sub">۷ مرحله — از ثبت درخواست تا خروج پایدار</span>
+</h2>
+
+<div class="card">
+  <div class="big-stepper">
+    <div class="bs-step active">
+      <div class="bs-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      </div>
+      <div class="bs-title">ثبت درخواست</div>
+      <div class="bs-sub">مشخصات اولیهٔ خانوار</div>
+    </div>
+    <div class="bs-step">
+      <div class="bs-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="bs-title">EM-MPI</div>
+      <div class="bs-sub">غربالگری ۳۵ شاخص</div>
+    </div>
+    <div class="bs-step">
+      <div class="bs-circle">۳</div>
+      <div class="bs-title">CDI سریع</div>
+      <div class="bs-sub">لایهٔ ۱ — فعال‌سازی</div>
+    </div>
+    <div class="bs-step">
+      <div class="bs-circle">۴</div>
+      <div class="bs-title">CDI هدفمند</div>
+      <div class="bs-sub">لایهٔ ۲ — ارزیابی</div>
+    </div>
+    <div class="bs-step">
+      <div class="bs-circle">۵</div>
+      <div class="bs-title">پروفایل</div>
+      <div class="bs-sub">توانمندسازی</div>
+    </div>
+    <div class="bs-step">
+      <div class="bs-circle">۶</div>
+      <div class="bs-title">سبد مداخله</div>
+      <div class="bs-sub">اقدامات A-E</div>
+    </div>
+    <div class="bs-step">
+      <div class="bs-circle">۷</div>
+      <div class="bs-title">پایش و خروج</div>
+      <div class="bs-sub">کاهش تدریجی حمایت</div>
+    </div>
+  </div>
+</div>
+
+{# ══════ ۲. معماری دو فازی: EM-MPI + CDI ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۲</span>
+  معماری دو فازی سامانه
+  <span class="cst-sub">غربالگری اولیه (EM-MPI) + ارزیابی جامع (CDI)</span>
+</h2>
+
+<div class="pipeline-section">
+  {# ── فاز ۱: EM-MPI ── #}
+  <div class="pipe-card emmpi">
+    <div class="pc-head">
+      <div class="pc-num">۱</div>
+      <div>
+        <div class="pc-title">EM-MPI — غربالگری اولیه</div>
+        <div class="pc-sub">Emdad Multidimensional Poverty Index — سند ۰۰۰۴</div>
+      </div>
+    </div>
+    <div class="pc-body">
+      <b>هدف:</b> سنجش اولیهٔ محرومیت چندبُعدی، شناسایی فوریت‌ها، کشف الگوها و پیشنهاد مسیر ارجاع به CDI.
+      <br><b>قاعده:</b> هوش مصنوعی تصمیم‌یار است، نه تصمیم‌گیرنده.
+      <br><b>فرمول:</b> <span class="mono">امتیاز شاخص = وزن × ضریب شدت (۰/۰٫۵/۱)</span>
+    </div>
+    <div class="emmpi-dims">
+      <div class="emmpi-dim"><div class="ed-letter">A</div><div class="ed-name">سلامت و امنیت زیستی</div><div class="ed-max">۲۵۰</div></div>
+      <div class="emmpi-dim"><div class="ed-letter">B</div><div class="ed-name">آموزش و رشد</div><div class="ed-max">۲۰۰</div></div>
+      <div class="emmpi-dim"><div class="ed-letter">C</div><div class="ed-name">استاندارد زندگی</div><div class="ed-max">۳۰۰</div></div>
+      <div class="emmpi-dim"><div class="ed-letter">D</div><div class="ed-name">معیشت و اشتغال</div><div class="ed-max">۱۵۰</div></div>
+      <div class="emmpi-dim"><div class="ed-letter">E</div><div class="ed-name">آسیب‌پذیری</div><div class="ed-max">۱۰۰</div></div>
+    </div>
+    <div class="pc-out"><b>خروجی:</b> امتیاز ۰-۱۰۰۰ + ۵ سطح محرومیت + ۹ پرچم قرمز + ۸ مسیر ارجاع</div>
+  </div>
+
+  {# ── فاز ۲: CDI ── #}
+  <div class="pipe-card cdi">
+    <div class="pc-head">
+      <div class="pc-num">۲</div>
+      <div>
+        <div class="pc-title">CDI — ارزیابی جامع</div>
+        <div class="pc-sub">Comprehensive Diagnostic Interview — سند ۰۰۰۵</div>
+      </div>
+    </div>
+    <div class="pc-body">
+      <b>هدف:</b> تحلیل عمیق مسائل فعال، علل ریشه‌ای، گلوگاه‌ها، ظرفیت‌ها و طراحی مسیر توانمندسازی.
+      <br><b>قاعده:</b> خانوار فقط به‌اندازهٔ لازم بررسی می‌شود؛ نه فرم یکسان برای همه.
+      <br><b>سه لایه:</b> <span class="mono">سریع → هدفمند → عمیق</span>
+    </div>
+    <div class="cdi-dims">
+      <div class="cdi-dim"><div class="cd-letter">۱</div><div class="cd-name">نیازهای حیاتی</div><div class="cd-count">۷ محور</div></div>
+      <div class="cdi-dim"><div class="cd-letter">۲</div><div class="cd-name">دسترسی به خدمات</div><div class="cd-count">۷ محور</div></div>
+      <div class="cdi-dim"><div class="cd-letter">۳</div><div class="cd-name">اشتغال و درآمد</div><div class="cd-count">۹ محور</div></div>
+      <div class="cdi-dim"><div class="cd-letter">۴</div><div class="cd-name">ظرفیت انسانی</div><div class="cd-count">۹ محور</div></div>
+      <div class="cdi-dim"><div class="cd-letter">۵</div><div class="cd-name">شبکه و محیط</div><div class="cd-count">۹ محور</div></div>
+    </div>
+    <div class="pc-out"><b>خروجی:</b> پروفایل توانمندسازی ۱۶ بخشی + سبد مداخله + رتبه A-E</div>
+  </div>
+</div>
+
+{# ══════ ۳. معماری سه‌لایه CDI ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۳</span>
+  معماری سه‌لایه CDI
+  <span class="cst-sub">هر لایه با حلقهٔ اجرایی متناسب</span>
+</h2>
+
+<div class="card">
+  <div class="layers-grid">
+    <div class="layer-card l1">
+      <div class="lc-head">
+        <div class="lc-num">۱</div>
+        <div class="lc-title">CDI سریع</div>
+      </div>
+      <div class="lc-body">
+        <b>هدف:</b> دریافت داده، تشخیص فوریت، فعال‌سازی شاخه‌ها و ارجاع اولیه.
+        <br><b>بازیگر:</b> خانوار، سامانه، همیار
+        <br><b>تأیید:</b> مددکار فقط در پرچم قرمز
+      </div>
+      <div class="lc-foot">خروجی: وضعیت فوری، شاخه‌های فعال، ارجاع اولیه</div>
+    </div>
+    <div class="layer-card l2">
+      <div class="lc-head">
+        <div class="lc-num">۲</div>
+        <div class="lc-title">CDI هدفمند</div>
+      </div>
+      <div class="lc-body">
+        <b>هدف:</b> تحلیل فقط محورهای فعال و تصمیم‌ساز.
+        <br><b>بازیگر:</b> همیار، کلینیک رز/مددکاری
+        <br><b>تأیید:</b> مددکار خانواده در موارد مهم
+      </div>
+      <div class="lc-foot">خروجی: پروفایل اولیه، گلوگاه‌ها، موانع، ظرفیت‌ها</div>
+    </div>
+    <div class="layer-card l3">
+      <div class="lc-head">
+        <div class="lc-num">۳</div>
+        <div class="lc-title">CDI عمیق</div>
+      </div>
+      <div class="lc-body">
+        <b>هدف:</b> تحلیل پروندهٔ پیچیده، چندمسئله‌ای، پرخطر یا پرهزینه.
+        <br><b>بازیگر:</b> کلینیک رز → کلینیک مددکاری
+        <br><b>تأیید:</b> مددکار خانواده کمیتهٔ امداد
+      </div>
+      <div class="lc-foot">خروجی: پروفایل نهایی، نقشه راه، ریسک‌نامه</div>
+    </div>
+  </div>
+  <div class="alert red" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div><b>قاعدهٔ ورود به لایهٔ ۳ (بند ۴ـ۱):</b> فقط در ۹ شرایط: پرچم قرمز، خشونت/کودک‌آزاری، چندمسئله‌ای، تعارض داده، مداخلهٔ مالی پرهزینه، شکست مداخلهٔ قبلی، اختلاف خانوار، نیاز تخصصی، آمادگی خروج.</div>
+  </div>
+</div>
+
+{# ══════ ۴. نظام اولویت‌بندی سه‌سطحی ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۴</span>
+  نظام اولویت‌بندی سه‌سطحی پس از CDI
+  <span class="cst-sub">PEH + PIM + PES — بندهای ۲ـ۵، ۲ـ۱۰، ۲ـ۱۵</span>
+</h2>
+
+<div class="card">
+  <p class="card-desc">هر سطح به یک پرسش متفاوت پاسخ می‌دهد و خروجی متفاوتی دارد. این سه سطح نباید با هم خلط شوند.</p>
+  <div class="priority-pipeline">
+    <div class="pp-card l1">
+      <div class="pc-head">
+        <div class="pc-num">۱</div>
+        <div>
+          <div class="pc-title">PEH — اولویت اجرایی خانوار</div>
+          <div class="pc-q">کدام خانوار زودتر؟</div>
+        </div>
+      </div>
+      <div class="pp-formula">PEH = 0.15×EM + 0.35×R + 0.20×F + 0.15×G + 0.10×E + 0.05×W</div>
+      <div class="pp-weights">
+        {% for k, w in [('EM', 15), ('R', 35), ('F', 20), ('G', 15), ('E', 10), ('W', 5)] %}
+        {% set comp = component_meta.get(k, {}) if component_meta else {} %}
+        <div class="w-item" style="border-top:2px solid var(--{{ comp.color|default('mut') if comp else 'mut' }})">
+          <div style="width:22px;height:22px;border-radius:6px;display:grid;place-items:center;margin:0 auto 3px;background:var(--{{ comp.color|default('mut') }}-bg);color:var(--{{ comp.color|default('mut') }})">
+            {% if comp and comp.icon_svg %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px">{{ comp.icon_svg|safe }}</svg>
+            {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/></svg>{% endif %}
+          </div>
+          <div class="w-k">{{ k }}</div>
+          <div class="w-v">{{ comp.label|default('—') if comp else '—' }}</div>
+          <div class="w-v" style="font-weight:700;color:var(--p-d);margin-top:2px">وزن: {{ w }}٪</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="pc-out"><b>خروجی:</b> طبقه P0–P4 + رتبه ۱ تا ۱۰۰۰</div>
+    </div>
+    <div class="pp-card l2">
+      <div class="pc-head">
+        <div class="pc-num">۲</div>
+        <div>
+          <div class="pc-title">PIM — اولویت مداخله</div>
+          <div class="pc-q">کدام اقدام فوری؟</div>
+        </div>
+      </div>
+      <div class="pp-formula">PIM = 0.30×U + 0.25×G + 0.15×D + 0.15×I + 0.10×A + 0.05×C</div>
+      <div class="pp-weights">
+        {% for k, w in [('U', 30), ('G', 25), ('D', 15), ('I', 15), ('A', 10), ('C', 5)] %}
+        {% set comp = component_meta.get(k, {}) if component_meta else {} %}
+        <div class="w-item" style="border-top:2px solid var(--{{ comp.color|default('mut') if comp else 'mut' }})">
+          <div style="width:22px;height:22px;border-radius:6px;display:grid;place-items:center;margin:0 auto 3px;background:var(--{{ comp.color|default('mut') }}-bg);color:var(--{{ comp.color|default('mut') }})">
+            {% if comp and comp.icon_svg %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px">{{ comp.icon_svg|safe }}</svg>
+            {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/></svg>{% endif %}
+          </div>
+          <div class="w-k">{{ k }}</div>
+          <div class="w-v">{{ comp.label|default('—') if comp else '—' }}</div>
+          <div class="w-v" style="font-weight:700;color:var(--p-d);margin-top:2px">وزن: {{ w }}٪</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="pc-out"><b>خروجی:</b> رتبه A تا E برای هر اقدام</div>
+    </div>
+    <div class="pp-card l3">
+      <div class="pc-head">
+        <div class="pc-num">۳</div>
+        <div>
+          <div class="pc-title">PES — اولویت در صف خدمت</div>
+          <div class="pc-q">کدام در صف مقدم؟</div>
+        </div>
+      </div>
+      <div class="pp-formula">PES = 0.45×PEH + 0.35×PIM + 0.10×T + 0.10×K</div>
+      <div class="pp-weights">
+        {% for k, w in [('PEH', 45), ('PIM', 35), ('T', 10), ('K', 10)] %}
+        {% set comp = component_meta.get(k, {}) if component_meta else {} %}
+        <div class="w-item">
+          <div style="width:22px;height:22px;border-radius:6px;display:grid;place-items:center;margin:0 auto 3px;background:var(--{{ comp.color|default('blue') if comp else 'blue' }}-bg);color:var(--{{ comp.color|default('blue') if comp else 'blue' }})">
+            {% if comp and comp.icon_svg %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px">{{ comp.icon_svg|safe }}</svg>
+            {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/></svg>{% endif %}
+          </div>
+          <div class="w-k">{{ k }}</div>
+          <div class="w-v">{{ comp.label|default('—') if comp else '—' }}</div>
+          <div class="w-v" style="font-weight:700;color:var(--p-d);margin-top:2px">وزن: {{ w }}٪</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="pc-out"><b>خروجی:</b> رتبه در صف تخصصی خدمت</div>
+    </div>
+  </div>
+  <div class="alert amber" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div><b>تبصرهٔ مهم:</b> خانوار P2 با امتیاز ۸۵ نباید از خانوار P1 با امتیاز ۶۵ جلوتر قرار گیرد؛ سطح خطر و فوریت، مقدم بر امتیاز عددی است.</div>
+  </div>
+</div>
+
+{# ══════ ۸ مسیر ارجاع EM-MPI (بصری) ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">★</span>
+  ۸ مسیر ارجاع پس از EM-MPI
+  <span class="cst-sub">بند ۲ـ۳ و ۱۰ — انتخاب مسیر بر اساس امتیاز + پرچم قرمز + تشخیص مددکار</span>
+</h2>
+
+<div class="card">
+  <p class="card-desc">سامانه پس از محاسبهٔ EM-MPI، یکی از ۸ مسیر زیر را پیشنهاد می‌دهد. پرچم‌های قرمز مستقل از امتیاز، مسیر فوری ایجاد می‌کنند.</p>
+  <div class="referral-paths-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+    {% for p in referral_paths %}
+    <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:14px;border-top:4px solid var(--{{ p.color }});box-shadow:var(--sh-xs);transition:all .2s ease">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--{{ p.color }}-bg);color:var(--{{ p.color }});display:grid;place-items:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px">{{ p.icon|safe }}</svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-family:ui-monospace,monospace;font-size:10px;font-weight:700;color:var(--{{ p.color }})">{{ p.code }}</div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink)">{{ p.name }}</div>
+        </div>
+        {% if p.to_cdi %}<span class="badge P1" style="font-size:9px;padding:1px 6px">→ CDI</span>{% else %}<span class="badge P4" style="font-size:9px;padding:1px 6px">غیر CDI</span>{% endif %}
+      </div>
+      <div style="font-size:11px;color:var(--mut);line-height:1.6;margin-bottom:8px"><b>شرط:</b> {{ p.condition }}</div>
+      <div style="font-size:11px;color:var(--ink-2);line-height:1.6;padding:8px 10px;background:var(--bg-2);border-radius:6px"><b>اقدام:</b> {{ p.action }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ══════ ۵. طبقات عملیاتی + رتبه‌های A-E ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۵</span>
+  طبقات عملیاتی + رتبه‌های اقدام
+  <span class="cst-sub">P0–P4 برای خانوار + A–E برای اقدام</span>
+</h2>
+
+<div class="card">
+  <h3 style="margin:0 0 12px; font-size:14px; color:var(--ink-2)">طبقات عملیاتی خانوار (بند ۲ـ۴)</h3>
+  <div class="table-wrap" style="margin-bottom:18px">
+    <table>
+      <thead><tr><th>طبقه</th><th>عنوان</th><th>تعریف</th><th>زمان پاسخ</th></tr></thead>
+      <tbody>
+      {% for pk, pc in priority_classes.items() %}
+        <tr>
+          <td><span class="badge {{ pk }}"><span class="dot"></span>{{ pk }}</span></td>
+          <td><b>{{ pc.label }}</b></td>
+          <td><span class="small">{{ pc.definition }}</span></td>
+          <td>{{ pc.response }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin:0 0 12px; font-size:14px; color:var(--ink-2)">رتبه‌های اقدام A تا E (بند ۲ـ۹)</h3>
+  <div class="rank-grid">
+    {% for rk, info in action_ranks.items() %}
+    <div class="rank-card {{ rk }}">
+      <div class="rc-letter">{{ rk }}</div>
+      <div class="rc-title">{{ info.title }}</div>
+      <div class="rc-meta">
+        ⏱ {{ info.deadline }}<br>
+        📍 {{ info.stage }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="margin-top:14px;padding:10px 12px;background:var(--bg-2);border-radius:8px;font-size:11.5px">
+    <b>قاعدهٔ تبدیل PIM → رتبه:</b>
+    <span class="mono">۸۰-۱۰۰ → A</span> | 
+    <span class="mono">۶۵-۷۹ → B</span> | 
+    <span class="mono">۵۰-۶۴ → C</span> | 
+    <span class="mono">۳۵-۴۹ → D</span> | 
+    <span class="mono">&lt;۳۵ → E</span>
+  </div>
+</div>
+
+{# ══════ ۶. پرچم‌های قرمز EM-MPI ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۶</span>
+  پرچم‌های قرمز EM-MPI
+  <span class="cst-sub">۹ پرچم مستقل از امتیاز — مسیر ارجاع فوری</span>
+</h2>
+
+<div class="card" style="border-inline-start:4px solid var(--red)">
+  <p class="card-desc" style="color:var(--red)">⚠ پرچم قرمز با امتیاز پایین EM-MPI خنثی نمی‌شود؛ مسیر ارجاع فوری مستقل دارد.</p>
+  <div class="rf-mini-grid">
+    <div class="rf-mini"><span class="rf-code">R1</span><span class="rf-title">خطر فوری بی‌خانمانی</span></div>
+    <div class="rf-mini"><span class="rf-code">R2</span><span class="rf-title">بیماری حیاتی</span></div>
+    <div class="rf-mini"><span class="rf-code">R3</span><span class="rf-title">فقدان غذا</span></div>
+    <div class="rf-mini"><span class="rf-code">R4</span><span class="rf-title">کودک در معرض آسیب</span></div>
+    <div class="rf-mini"><span class="rf-code">R5</span><span class="rf-title">خشونت خانوادگی</span></div>
+    <div class="rf-mini"><span class="rf-code">R6</span><span class="rf-title">سالمند/معلول بدون مراقب</span></div>
+    <div class="rf-mini"><span class="rf-code">R7</span><span class="rf-title">قطع خدمات حیاتی</span></div>
+    <div class="rf-mini"><span class="rf-code">R8</span><span class="rf-title">بحران حقوقی</span></div>
+    <div class="rf-mini"><span class="rf-code">R9</span><span class="rf-title">ریسک از دست‌دادن درآمد</span></div>
+  </div>
+</div>
+
+{# ══════ ۷. ۹ خانوادهٔ صف خدمت ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۷</span>
+  ۹ خانوادهٔ صف خدمات
+  <span class="cst-sub">بند ۲ـ۱۳ — هر خانوار می‌تواند در بیش از یک صف باشد</span>
+</h2>
+
+<div class="card">
+  <div class="queue-grid">
+    {% for q in service_queues %}
+    <div class="queue-card q-{{ q.color }}">
+      <div class="qc-head">
+        <span class="qc-code">{{ q.code }}</span>
+        <span class="qc-name">{{ q.name }}</span>
+        <span class="badge {{ q.color }}"><span class="dot"></span>{{ q.color }}</span>
+      </div>
+      <div class="qc-services">{{ q.services }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ══════ ۸. روابط ۵گانهٔ اقدامات ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۸</span>
+  روابط ۵گانهٔ اقدامات سبد مداخله
+  <span class="cst-sub">بند ۲ـ۱۱</span>
+</h2>
+
+<div class="card">
+  <div class="rel-grid">
+    {% for r in action_relations %}
+    <div class="rel-card">
+      <div class="rc-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          {% if r.code == 'prereq' %}<path d="M5 12h14M12 5l-7 7 7 7"/>
+          {% elif r.code == 'concurrent' %}<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+          {% elif r.code == 'conditional' %}<polyline points="20 6 9 17 4 12"/>
+          {% elif r.code == 'alternative' %}<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h13"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H4"/>
+          {% elif r.code == 'incompatible' %}<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>{% endif %}
+        </svg>
+      </div>
+      <div class="rc-body">
+        <div class="rc-name">{{ r.name }}</div>
+        <div class="rc-desc">{{ r.desc }}</div>
+        <div class="rc-eg">مثال: {{ r.example }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ══════ ۹. ماتریس بازیگران ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۹</span>
+  ماتریس بازیگران اجرایی
+  <span class="cst-sub">بند ۳ — ۴ حلقه + کارشناس اشتغال + مدیر خدمت</span>
+</h2>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>بازیگر</th><th>وظایف مجاز</th><th>دسترسی</th><th>نیازمند ارجاع</th><th>ممنوعیت‌ها</th></tr></thead>
+      <tbody>
+      {% for a in actors %}
+        <tr>
+          <td><b>{{ a.name }}</b></td>
+          <td><span class="small">{{ a.tasks }}</span></td>
+          <td><span class="small">{{ a.access }}</span></td>
+          <td><span class="small">{{ a.referrals }}</span></td>
+          <td><span class="small" style="color:var(--red)">{{ a.prohibitions }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ══════ ۱۰. قواعد کنترلی + خط قرمزها ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۱۰</span>
+  قواعد کنترلی + خط قرمزهای هوش مصنوعی
+  <span class="cst-sub">بندهای ۲ـ۱۸ و ۹ـ۲</span>
+</h2>
+
+<div class="grid-2" style="align-items:start">
+  <div class="card" style="margin-bottom:0; border-inline-start:4px solid var(--red)">
+    <div class="head-row">
+      <h2 style="color:var(--red)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        قواعد کنترلی
+      </h2>
+      <span class="tag" style="background:var(--red-bg);color:var(--red);border-color:var(--red-line)">۲ـ۱۸</span>
+    </div>
+    <div class="rule-list">
+      {% for r in control_rules %}
+      <div class="rule-item"><div class="r-text">{{ r }}</div></div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:0; border-inline-start:4px solid var(--red)">
+    <div class="head-row">
+      <h2 style="color:var(--red)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        خط قرمزهای هوش مصنوعی
+      </h2>
+      <span class="tag" style="background:var(--red-bg);color:var(--red);border-color:var(--red-line)">۹ـ۲</span>
+    </div>
+    <div class="rule-list">
+      {% for r in red_lines %}
+      <div class="rule-item"><div class="r-text">{{ r }}</div></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{# ══════ ۱۱. منابع اطلاعات ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۱۱</span>
+  منابع اطلاعات
+  <span class="cst-sub">بند ۵ — ۵ منبع با اولویت</span>
+</h2>
+
+<div class="card">
+  <div class="grid">
+    {% for c, s in sources.items() %}
+    <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-2); border-radius:8px; border:1px solid var(--line-2)">
+      <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#fff; color:var(--p-d); font-weight:700; font-size:12px; flex-shrink:0">{{ c }}</span>
+      <span style="font-size:13px; color:var(--ink-2)">{{ s }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ══════ ۱۲. ۴۱ محور CDI (مرجع کامل) ══════ #}
+<h2 class="cat-section-title">
+  <span class="cst-num">۱۲</span>
+  ۴۱ محور CDI — مرجع کامل
+  <span class="cst-sub">۵ بُعد، ۴۱ محور عملیاتی</span>
+</h2>
+
+{% for dim in dims %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      بُعد {{ dim.id }}: {{ dim.title }}
+    </h2>
+    <span class="tag teal">{{ axes | selectattr('dim', 'equalto', dim.id) | list | length }} محور</span>
+  </div>
+  <p class="card-desc">{{ dim.goal }}</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>کد</th><th>محور</th><th>پرسش‌های تحلیلی</th><th>منابع</th><th>ارجاع</th><th>اولویت</th></tr></thead>
+      <tbody>
+      {% for a in axes if a.dim == dim.id %}
+        <tr>
+          <td>
+            <b class="mono">{{ a.code }}</b>
+            {% if a.sensitive %}<br><span class="badge sensitive" style="margin-top:4px"><span class="dot"></span>حساس</span>{% endif %}
+          </td>
+          <td><b>{{ a.title }}</b></td>
+          <td><span class="small">{{ a.questions }}</span></td>
+          <td><span class="small">{{ a.sources|join('، ') }}</span></td>
+          <td><span class="small">{{ a.referral }}</span></td>
+          <td><span class="small">{{ a.priority }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

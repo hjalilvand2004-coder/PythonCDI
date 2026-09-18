@@ -1,0 +1,950 @@
+{% extends "base.html" %}
+{% block crumb %}پروفایل توانمندسازی{% endblock %}
+{% block body %}
+{% set d = prof.data %}
+
+<style>
+/* ─── Profile-specific Design System ─────────────────── */
+
+/* Hero */
+.profile-hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg, #0f766e 0%, #0f5e57 45%, #134e4a 100%);
+  color:#fff; border-radius:var(--r-lg); padding:28px 32px; margin-bottom:18px;
+  box-shadow:var(--sh-lg);
+}
+.profile-hero::before{
+  content:""; position:absolute; top:-50px; inset-inline-end:-30px;
+  width:240px; height:240px; border-radius:50%;
+  background:radial-gradient(circle, rgba(94,234,212,.25), transparent 65%);
+}
+.profile-hero::after{
+  content:""; position:absolute; bottom:-80px; inset-inline-start:30%;
+  width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle, rgba(13,148,136,.35), transparent 70%);
+}
+.profile-hero > *{position:relative; z-index:1}
+.hero-row{display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:20px}
+.hero-avatar{
+  width:72px; height:72px; border-radius:18px;
+  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25);
+  display:grid; place-items:center; font-weight:700; font-size:30px; color:#fff;
+  backdrop-filter:blur(10px); flex-shrink:0;
+  box-shadow:0 8px 20px rgba(0,0,0,.18)
+}
+.hero-info{flex:1; min-width:220px}
+.hero-info h1{font-size:24px; font-weight:700; margin:0 0 4px; letter-spacing:-.01em}
+.hero-meta{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:rgba(255,255,255,.85); margin-bottom:10px}
+.hero-meta span{display:inline-flex; align-items:center; gap:5px}
+.hero-meta svg{width:14px; height:14px; opacity:.85}
+.hero-badges{display:flex; gap:6px; flex-wrap:wrap}
+.hero-badges .badge{background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.25); backdrop-filter:blur(10px)}
+.hero-badges .badge.P0{background:rgba(220,38,38,.3); border-color:rgba(220,38,38,.5)}
+.hero-badges .badge.P1{background:rgba(217,119,6,.3); border-color:rgba(217,119,6,.5)}
+.hero-badges .badge.P2{background:rgba(37,99,235,.3); border-color:rgba(37,99,235,.5)}
+.hero-badges .badge.P3{background:rgba(22,163,74,.3); border-color:rgba(22,163,74,.5)}
+.hero-actions{display:flex; gap:8px}
+.hero-actions .btn{background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25); color:#fff; backdrop-filter:blur(10px)}
+.hero-actions .btn:hover{background:rgba(255,255,255,.2)}
+
+/* Hero quick stats */
+.hero-stats{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px;
+  margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,.15)
+}
+.hero-stat{
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r); padding:12px 14px; backdrop-filter:blur(10px);
+}
+.hero-stat .lbl{font-size:11px; color:rgba(255,255,255,.65); margin-bottom:4px; font-weight:500}
+.hero-stat .val{font-size:18px; font-weight:700; color:#fff; line-height:1.2}
+.hero-stat .sub{font-size:10.5px; color:rgba(255,255,255,.7); margin-top:2px}
+
+/* Section card with number */
+.sec-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-md);
+  padding:20px 22px; margin-bottom:14px; box-shadow:var(--sh-sm);
+}
+.sec-card .sec-head{display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line-2)}
+.sec-card .sec-num{
+  width:30px; height:30px; border-radius:8px;
+  background:linear-gradient(135deg, var(--p-ll), var(--p-l)); color:var(--p-dd);
+  display:grid; place-items:center; font-weight:700; font-size:13px; flex-shrink:0;
+  box-shadow:0 2px 6px rgba(13,148,136,.2)
+}
+.sec-card .sec-title{font-size:15px; font-weight:700; color:var(--ink); flex:1}
+.sec-card .sec-sub{font-size:11px; color:var(--mut); margin-inline-start:8px; font-weight:400}
+.sec-card .sec-tag{display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--r-sm); font-size:11px; font-weight:600; background:var(--bg-2); color:var(--mut)}
+.sec-card .sec-tag.teal{background:var(--p-ll); color:var(--p-d)}
+.sec-card .sec-tag.red{background:var(--red-bg); color:var(--red)}
+.sec-card .sec-tag.amber{background:var(--amber-bg); color:var(--amber)}
+
+/* Pathway stepper */
+.pathway{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  position:relative; padding:8px 0 4px;
+}
+.pathway::before{
+  content:""; position:absolute; top:18px; inset-inline-start:24px; inset-inline-end:24px;
+  height:3px; background:var(--line); border-radius:2px; z-index:0;
+}
+.pathway-step{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  flex:1; position:relative; z-index:1; text-align:center; max-width:160px;
+}
+.pathway-step .circle{
+  width:36px; height:36px; border-radius:50%;
+  background:#fff; border:2px solid var(--line); color:var(--mut);
+  display:grid; place-items:center; font-weight:700; font-size:13px;
+  transition:all .3s var(--ease);
+}
+.pathway-step.done .circle{background:var(--green); border-color:var(--green); color:#fff}
+.pathway-step.current .circle{
+  background:var(--p); border-color:var(--p); color:#fff;
+  box-shadow:0 0 0 4px rgba(13,148,136,.18); animation:pulse 2s infinite;
+}
+.pathway-step.future .circle{background:var(--bg-2); color:var(--mut-2)}
+.pathway-step .step-title{font-size:11px; font-weight:600; color:var(--ink-2); line-height:1.4; max-width:140px}
+.pathway-step.done .step-title{color:var(--green)}
+.pathway-step.current .step-title{color:var(--p-d); font-weight:700}
+.pathway-step.future .step-title{color:var(--mut-2)}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(13,148,136,.18)}
+  50%{box-shadow:0 0 0 8px rgba(13,148,136,.08)}
+}
+
+/* Dimension bars */
+.dim-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px}
+.dim-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r);
+  padding:14px; transition:all .2s var(--ease);
+}
+.dim-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
+.dim-card .dim-head{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.dim-card .dim-ic{
+  width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+  background:var(--p-ll); color:var(--p-d); flex-shrink:0;
+}
+.dim-card .dim-ic svg{width:16px; height:16px}
+.dim-card .dim-name{font-size:13px; font-weight:700; color:var(--ink); flex:1}
+.dim-card .dim-count{font-size:11px; color:var(--mut); font-weight:500}
+.dim-card .dim-bar-wrap{
+  height:8px; background:var(--bg-2); border-radius:4px; overflow:hidden;
+  margin-bottom:8px; position:relative;
+}
+.dim-card .dim-bar{
+  height:100%; border-radius:4px;
+  background:linear-gradient(90deg, var(--green) 0%, var(--amber) 50%, var(--red) 100%);
+  transition:width .6s var(--ease);
+}
+.dim-card .dim-stats{display:flex; justify-content:space-between; font-size:10.5px}
+.dim-card .dim-stats .high{color:var(--red); font-weight:600}
+.dim-card .dim-stats .med{color:var(--amber); font-weight:600}
+.dim-card .dim-stats .low{color:var(--green); font-weight:600}
+
+/* SWOT matrix */
+.swot-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+}
+@media(max-width:760px){.swot-grid{grid-template-columns:1fr}}
+.swot-q{
+  border-radius:var(--r-md); padding:16px 18px;
+  border:1px solid; position:relative; overflow:hidden;
+  min-height:140px;
+}
+.swot-q::before{
+  content:""; position:absolute; top:0; inset-inline-start:0; bottom:0; width:4px;
+}
+.swot-q .swot-head{display:flex; align-items:center; gap:8px; margin-bottom:12px}
+.swot-q .swot-ic{
+  width:32px; height:32px; border-radius:8px; display:grid; place-items:center;
+  flex-shrink:0;
+}
+.swot-q .swot-ic svg{width:18px; height:18px}
+.swot-q .swot-title{font-size:14px; font-weight:700; flex:1}
+.swot-q .swot-sub{font-size:10.5px; color:var(--mut); margin-top:1px; font-weight:400}
+.swot-q ul{margin:0; padding:0; list-style:none}
+.swot-q ul li{
+  font-size:12.5px; padding:6px 0; border-bottom:1px dashed;
+  display:flex; align-items:flex-start; gap:6px;
+  color:var(--ink-2); line-height:1.6;
+}
+.swot-q ul li:last-child{border-bottom:none}
+.swot-q ul li::before{
+  content:""; width:6px; height:6px; border-radius:50%;
+  margin-top:7px; flex-shrink:0;
+}
+.swot-q.strengths{background:var(--green-bg); border-color:var(--green-line)}
+.swot-q.strengths::before{background:var(--green)}
+.swot-q.strengths .swot-ic{background:#dcfce7; color:var(--green)}
+.swot-q.strengths ul li::before{background:var(--green)}
+.swot-q.opportunities{background:var(--blue-bg); border-color:var(--blue-line)}
+.swot-q.opportunities::before{background:var(--blue)}
+.swot-q.opportunities .swot-ic{background:#dbeafe; color:var(--blue)}
+.swot-q.opportunities ul li::before{background:var(--blue)}
+.swot-q.barriers{background:var(--red-bg); border-color:var(--red-line)}
+.swot-q.barriers::before{background:var(--red)}
+.swot-q.barriers .swot-ic{background:#fee2e2; color:var(--red)}
+.swot-q.barriers ul li::before{background:var(--red)}
+.swot-q.risks{background:var(--amber-bg); border-color:var(--amber-line)}
+.swot-q.risks::before{background:var(--amber)}
+.swot-q.risks .swot-ic{background:#fef3c7; color:var(--amber)}
+.swot-q.risks ul li::before{background:var(--amber)}
+.swot-q .empty-cell{
+  font-size:12px; color:var(--mut-2); padding:8px 0; font-style:italic;
+}
+
+/* Urgent actions */
+.urgent-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px}
+.urgent-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r);
+  padding:14px; border-inline-start:4px solid var(--red);
+  transition:all .2s var(--ease);
+}
+.urgent-card:hover{box-shadow:var(--sh-md); transform:translateY(-1px)}
+.urgent-card .uc-head{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.urgent-card .uc-title{font-size:13.5px; font-weight:700; color:var(--ink); flex:1; line-height:1.4}
+.urgent-card .uc-action{font-size:12px; color:var(--ink-2); margin:6px 0 8px; line-height:1.6}
+.urgent-card .uc-foot{display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:8px; border-top:1px dashed var(--line-2)}
+.urgent-card .uc-owner{font-size:11px; color:var(--mut)}
+.urgent-card .uc-deadline{font-size:11px; font-weight:600; color:var(--red)}
+
+/* Readiness meters */
+.readiness-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px}
+.readiness-item{padding:10px 0}
+.readiness-item .r-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px}
+.readiness-item .r-label{font-size:12px; font-weight:600; color:var(--ink-2); display:flex; align-items:center; gap:6px}
+.readiness-item .r-label svg{width:14px; height:14px; color:var(--p)}
+.readiness-item .r-val{font-size:11px; font-weight:700; color:var(--mut)}
+.readiness-item .r-bar-wrap{height:8px; background:var(--bg-2); border-radius:4px; overflow:hidden; position:relative}
+.readiness-item .r-bar{height:100%; border-radius:4px; background:linear-gradient(90deg, var(--p), var(--p-l)); transition:width .6s var(--ease)}
+.readiness-item .r-bar.amb{background:linear-gradient(90deg, var(--amber), #fbbf24)}
+.readiness-item .r-bar.red{background:linear-gradient(90deg, var(--red), #f87171)}
+
+/* Bottleneck flow */
+.bottleneck-flow{
+  display:flex; align-items:center; gap:0; overflow-x:auto; padding:8px 0;
+}
+.bottleneck-node{
+  flex:1; min-width:180px; text-align:center; position:relative;
+  padding:14px 12px; background:#fff; border:1px solid var(--line);
+  border-radius:var(--r-md); margin:0 6px;
+  border-top:4px solid var(--red);
+}
+.bottleneck-node.b2{border-top-color:var(--amber)}
+.bottleneck-node.b3{border-top-color:var(--blue)}
+.bottleneck-node .bn-num{
+  width:24px; height:24px; border-radius:50%; background:var(--red); color:#fff;
+  display:inline-grid; place-items:center; font-size:11px; font-weight:700; margin-bottom:8px;
+}
+.bottleneck-node.b2 .bn-num{background:var(--amber)}
+.bottleneck-node.b3 .bn-num{background:var(--blue)}
+.bottleneck-node .bn-title{font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.4; margin-bottom:6px}
+.bottleneck-node .bn-axis{font-size:10.5px; color:var(--mut); font-family:ui-monospace,monospace}
+.bottleneck-arrow{
+  flex:0 0 24px; display:grid; place-items:center; color:var(--mut-2);
+}
+.bottleneck-arrow svg{width:20px; height:20px}
+
+/* Timeline */
+.timeline{position:relative; padding-inline-start:32px}
+.timeline::before{
+  content:""; position:absolute; inset-inline-start:11px; top:8px; bottom:8px;
+  width:2px; background:linear-gradient(180deg, var(--p), var(--p-l) 50%, var(--line));
+}
+.timeline-step{position:relative; margin-bottom:18px; padding:0}
+.timeline-step::before{
+  content:""; position:absolute; inset-inline-start:-26px; top:6px;
+  width:20px; height:20px; border-radius:50%; background:#fff;
+  border:3px solid var(--p); box-shadow:0 0 0 4px var(--p-ll);
+}
+.timeline-step .ts-head{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap}
+.timeline-step .ts-step-num{
+  font-size:11px; font-weight:700; color:var(--p-d);
+  background:var(--p-ll); padding:1px 8px; border-radius:var(--r-sm);
+}
+.timeline-step .ts-title{font-size:13.5px; font-weight:700; color:var(--ink)}
+.timeline-step .ts-badges{display:flex; gap:4px; flex-wrap:wrap; margin-top:6px}
+
+/* Priority big card */
+.priority-banner{
+  background:linear-gradient(135deg, var(--p-ll) 0%, #fff 100%);
+  border:1px solid var(--p-l); border-radius:var(--r-md);
+  padding:18px 22px; margin-bottom:14px;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+.priority-banner .pb-badge{
+  width:64px; height:64px; border-radius:14px;
+  display:grid; place-items:center; font-size:22px; font-weight:800;
+  background:linear-gradient(135deg, var(--red), #b91c1c); color:#fff;
+  box-shadow:0 8px 20px rgba(220,38,38,.25);
+  flex-shrink:0;
+}
+.priority-banner.P1 .pb-badge{background:linear-gradient(135deg, var(--amber), #b45309); box-shadow:0 8px 20px rgba(217,119,6,.25)}
+.priority-banner.P2 .pb-badge{background:linear-gradient(135deg, var(--blue), #1d4ed8); box-shadow:0 8px 20px rgba(37,99,235,.25)}
+.priority-banner.P3 .pb-badge{background:linear-gradient(135deg, var(--green), #15803d); box-shadow:0 8px 20px rgba(22,163,74,.25)}
+.priority-banner.P4 .pb-badge{background:linear-gradient(135deg, var(--mut), #475569); box-shadow:0 8px 20px rgba(100,116,139,.25)}
+.priority-banner .pb-info{flex:1; min-width:200px}
+.priority-banner .pb-title{font-size:11px; color:var(--mut); font-weight:600; margin-bottom:2px}
+.priority-banner .pb-main{font-size:18px; font-weight:700; color:var(--ink); margin-bottom:6px}
+.priority-banner .pb-meta{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--mut)}
+.priority-banner .pb-meta b{color:var(--ink-2)}
+.priority-banner .pb-actions{display:flex; flex-direction:column; gap:4px; text-align:end}
+.priority-banner .pb-action{font-size:11px; color:var(--mut)}
+.priority-banner .pb-action b{color:var(--p-d)}
+
+/* Data confidence meter */
+.confidence-meter{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r);
+  padding:16px; margin-top:12px;
+}
+.confidence-bar-wrap{
+  height:14px; background:var(--bg-2); border-radius:7px; overflow:hidden;
+  position:relative; margin:10px 0;
+}
+.confidence-bar{
+  height:100%; border-radius:7px;
+  background:linear-gradient(90deg, var(--red), var(--amber) 50%, var(--green));
+  transition:width .6s var(--ease);
+}
+.confidence-bar-wrap::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent 0% 33%, rgba(255,255,255,.4) 33% 33.5%, transparent 33.5% 66%, rgba(255,255,255,.4) 66% 66.5%, transparent 66.5%);
+}
+.confidence-labels{display:flex; justify-content:space-between; font-size:10.5px; color:var(--mut)}
+
+/* Red lines card */
+.red-lines-card{
+  background:linear-gradient(135deg, var(--red-bg) 0%, #fff 100%);
+  border:1px solid var(--red-line);
+}
+.red-lines-card .sec-num{
+  background:linear-gradient(135deg, var(--red-bg), #fecaca); color:var(--red);
+  box-shadow:0 2px 6px rgba(220,38,38,.15)
+}
+.red-lines-list{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px}
+.red-lines-list .rl-item{
+  display:flex; gap:8px; align-items:flex-start; padding:10px 12px;
+  background:#fff; border:1px solid var(--red-line); border-radius:var(--r);
+  font-size:12px; color:var(--ink-2); line-height:1.6;
+}
+.red-lines-list .rl-item svg{width:16px; height:16px; color:var(--red); flex-shrink:0; margin-top:2px}
+
+/* Service tags */
+.svc-tags{display:flex; flex-wrap:wrap; gap:6px}
+.svc-tags .svc{display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:var(--p-ll); color:var(--p-d); border:1px solid var(--p-l); border-radius:var(--r-full); font-size:11.5px; font-weight:600}
+.svc-tags .svc svg{width:12px; height:12px}
+
+/* PEH breakdown — بند ۲ـ۵ */
+.peh-card{background:linear-gradient(135deg,var(--p-ll) 0%,#fff 100%);border:1px solid var(--p-l);border-radius:var(--r-md);padding:18px 22px;margin-bottom:14px}
+.peh-card .peh-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+.peh-card .peh-num{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--p-d));color:#fff;display:grid;place-items:center;font-weight:800;font-size:18px;flex-shrink:0;box-shadow:0 4px 12px rgba(13,148,136,.3)}
+.peh-card .peh-title{font-size:14px;font-weight:700;color:var(--ink);flex:1}
+.peh-card .peh-sub{font-size:11px;color:var(--mut);margin-top:1px}
+.peh-formula{font-family:ui-monospace,monospace;font-size:11px;background:var(--bg-2);padding:8px 12px;border-radius:6px;color:var(--p-d);margin:10px 0;line-height:1.7;border-inline-start:3px solid var(--p)}
+.peh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.peh-comp{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;position:relative}
+.peh-comp .pc-key{font-size:11px;font-weight:700;color:var(--p-d);margin-bottom:2px}
+.peh-comp .pc-val{font-size:18px;font-weight:700;color:var(--ink);line-height:1.2}
+.peh-comp .pc-w{font-size:10px;color:var(--mut);margin-top:2px}
+.peh-comp .pc-bar{height:5px;background:var(--bg-2);border-radius:3px;margin-top:6px;overflow:hidden}
+.peh-comp .pc-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--p),var(--p-l));transition:width .6s var(--ease)}
+
+/* سبد مدخله — بند ۲ـ۸ */
+.basket-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.basket-stat{background:var(--bg-2);border-radius:var(--r);padding:10px 12px;text-align:center;border-top:3px solid}
+.basket-stat.A{border-top-color:var(--red)}
+.basket-stat.B{border-top-color:var(--amber)}
+.basket-stat.C{border-top-color:var(--blue)}
+.basket-stat.D{border-top-color:var(--green)}
+.basket-stat.E{border-top-color:var(--purple)}
+.basket-stat .bs-letter{font-size:22px;font-weight:800;line-height:1}
+.basket-stat.A .bs-letter{color:var(--red)}
+.basket-stat.B .bs-letter{color:var(--amber)}
+.basket-stat.C .bs-letter{color:var(--blue)}
+.basket-stat.D .bs-letter{color:var(--green)}
+.basket-stat.E .bs-letter{color:var(--purple)}
+.basket-stat .bs-count{font-size:14px;font-weight:700;color:var(--ink);margin-top:2px}
+.basket-stat .bs-name{font-size:10.5px;color:var(--mut);margin-top:2px}
+
+.basket-item{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;border-inline-start:4px solid;transition:all .2s var(--ease)}
+.basket-item.rank-A{border-inline-start-color:var(--red)}
+.basket-item.rank-B{border-inline-start-color:var(--amber)}
+.basket-item.rank-C{border-inline-start-color:var(--blue)}
+.basket-item.rank-D{border-inline-start-color:var(--green)}
+.basket-item.rank-E{border-inline-start-color:var(--purple)}
+.basket-item:hover{box-shadow:var(--sh-md)}
+.basket-item .bi-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.basket-item .bi-rank{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
+.basket-item.rank-A .bi-rank{background:var(--red)}
+.basket-item.rank-B .bi-rank{background:var(--amber)}
+.basket-item.rank-C .bi-rank{background:var(--blue)}
+.basket-item.rank-D .bi-rank{background:var(--green)}
+.basket-item.rank-E .bi-rank{background:var(--purple)}
+.basket-item .bi-title{font-size:13.5px;font-weight:700;color:var(--ink);flex:1}
+.basket-item .bi-pim{font-family:ui-monospace,monospace;font-size:11px;background:var(--bg-2);padding:2px 8px;border-radius:6px;color:var(--p-d)}
+.basket-item .bi-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:11.5px;margin-top:8px}
+.basket-item .bi-field{display:flex;flex-direction:column;gap:1px}
+.basket-item .bi-field .bf-k{color:var(--mut);font-size:10.5px}
+.basket-item .bi-field .bf-v{color:var(--ink-2);font-weight:500}
+.basket-item .bi-action{font-size:11.5px;color:var(--ink-2);line-height:1.6;padding:8px;background:var(--bg-2);border-radius:6px;margin-top:8px}
+
+/* Print */
+@media print{
+  .sb, .topbar, .hero-actions, footer{display:none}
+  .content{padding:0}
+  .sec-card, .profile-hero{box-shadow:none; page-break-inside:avoid}
+}
+</style>
+
+{# ── HERO ──────────────────────────────────────────────── #}
+<div class="profile-hero">
+  <div class="hero-row">
+    <div class="hero-avatar">{{ (d['1_identity'].name or hid)[:1] }}</div>
+    <div class="hero-info">
+      <h1>{{ d['1_identity'].name or 'خانوار' }}</h1>
+      <div class="hero-meta">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{{ d['1_identity'].location or '—' }}</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>{{ d['1_identity'].members or '—' }} عضو</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>{{ d['1_identity'].contact or '—' }}</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>{{ d['2_emmpi_card'].em_date or '—' }}</span>
+      </div>
+      <div class="hero-badges">
+        {% set op = d['10_operational_priority'] %}
+        <span class="badge {{ op.class }}"><span class="dot"></span>{{ op.class }} — اولویت عملیاتی</span>
+        <span class="badge"><span class="dot"></span>{{ d['9_intervention_stage'] }}</span>
+        {% if d['2_emmpi_card'].level %}<span class="badge">سطح: {{ d['2_emmpi_card'].level }}</span>{% endif %}
+        {% if d['16_data_confidence'].level == 'بالا' %}<span class="badge"><span class="dot"></span>اطمینان: بالا</span>{% endif %}
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a class="btn sm" href="{{ url_for('household_view', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        بازگشت
+      </a>
+      <button class="btn sm" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        چاپ
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="lbl">محورهای فعال</div>
+      <div class="val">{{ d['4_active_issues']|length }}</div>
+      <div class="sub">از ۴۱ محور CDI</div>
+    </div>
+    <div class="hero-stat">
+      <div class="lbl">اقدامات فوری</div>
+      <div class="val">{{ d['3_urgent']|length if d['3_urgent'] else 0 }}</div>
+      <div class="sub">P0 + P1</div>
+    </div>
+    <div class="hero-stat">
+      <div class="lbl">گلوگاه‌ها</div>
+      <div class="val">{{ d['8_bottlenecks']|length }}</div>
+      <div class="sub">حداکثر ۳</div>
+    </div>
+    <div class="hero-stat">
+      <div class="lbl">خدمات ثبت‌شده</div>
+      <div class="val">{{ d['13_services']|length if d['13_services'] else 0 }}</div>
+      <div class="sub">دریافت‌شده</div>
+    </div>
+    <div class="hero-stat">
+      <div class="lbl">پرچم‌های قرمز</div>
+      <div class="val">{{ d['14_risk_register'].red_flags|length }}</div>
+      <div class="sub">هشدار ریسک</div>
+    </div>
+  </div>
+</div>
+
+{# ── ۹/۱۲. EMPLOYMENT PATHWAY STEPPER ────────────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۹/۱۲</div>
+    <div class="sec-title">مسیر توانمندسازی</div>
+    <span class="sec-sub">وضعیت مداخله و مسیر</span>
+    <span class="sec-tag teal">{{ d['9_intervention_stage'] }}</span>
+  </div>
+  {% set stages = ['بحران / حفاظت', 'تثبیت نیازهای حیاتی', 'رفع مانع خدمات و اشتغال', 'توانمندسازی و درآمد', 'پایداری و تاب‌آوری', 'کاهش تدریجی حمایت و خروج پایدار'] %}
+  {% set current_stage = d['9_intervention_stage'] %}
+  {% set current_idx = stages.index(current_stage) if current_stage in stages else 5 %}
+  <div class="pathway">
+    {% for st in stages %}
+      {% set step_state = 'done' if loop.index0 < current_idx else ('current' if loop.index0 == current_idx else 'future') %}
+      <div class="pathway-step {{ step_state }}">
+        <div class="circle">{{ loop.index }}</div>
+        <div class="step-title">{{ st }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ─ـ ۱۰. PRIORITY BANNER ────────────────────────────────── #}
+<div class="priority-banner {{ op.class }}">
+  <div class="pb-badge">{{ op.class }}</div>
+  <div class="pb-info">
+    <div class="pb-title">اولویت عملیاتی خانوار</div>
+    <div class="pb-main">{{ op.definition }}</div>
+    <div class="pb-meta">
+      <span>⏱ زمان پاسخ: <b>{{ op.response }}</b></span>
+      <span>🔄 حلقهٔ اجرایی: <b>{{ op.ring }}</b></span>
+      {% if res.peh is defined %}<span>📊 امتیاز PEH: <b>{{ res.peh }}</b>/۱۰۰{% endif %}</span>
+    </div>
+  </div>
+  <div class="pb-actions">
+    <div class="pb-action">محورهای تعیین‌کننده:</div>
+    <div class="pb-action"><b>{% for x in op.drivers %}{{ x }}{% if not loop.last %}، {% endif %}{% endfor %}</b></div>
+    <div class="tiny" style="margin-top:6px; max-width:240px; text-align:start">{{ op.note }}</div>
+  </div>
+</div>
+
+{# ── PEH BREAKDOWN (بند ۲ـ۵) ─────────────────────────────── #}
+{% if res.peh_breakdown %}
+{% set peh_b = res.peh_breakdown %}
+<div class="peh-card">
+  <div class="peh-head">
+    <div class="peh-num">{{ res.peh }}</div>
+    <div>
+      <div class="peh-title">امتیاز اولویت اجرایی خانوار (PEH)</div>
+      <div class="peh-sub">از ۰ تا ۱۰۰ — رتبهٔ تقریبی کل: <b style="color:var(--p-d)">{{ res.rank_hint }}</b> از ۱۰۰۰</div>
+    </div>
+    <a class="btn sec sm" href="{{ url_for('intervention_basket', hid=hid) }}" style="margin-inline-start:auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      سبد مداخله
+    </a>
+  </div>
+  <div class="peh-formula">{{ peh_b.formula }}</div>
+  <div class="peh-grid">
+    {% for k, val in [('em', peh_b.em), ('r', peh_b.r), ('f', peh_b.f), ('g', peh_b.g), ('e', peh_b.e), ('w', peh_b.w)] %}
+    <div class="peh-comp">
+      <div class="pc-key">{{ k|upper }}</div>
+      <div class="pc-val">{{ val }}</div>
+      <div class="pc-w">وزن: {{ peh_b.weights[k|upper] }}٪</div>
+      <div class="pc-bar"><div class="pc-bar-fill" style="width:{{ val }}%"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="small" style="margin-top:12px; padding-top:10px; border-top:1px dashed var(--line-2)">
+    <b style="color:var(--ink-2)">راهنمای مؤلفه‌ها:</b>
+    {% for k, label in peh_b.components.items() %}
+    <span class="tag" style="margin:2px"><b>{{ k }}</b>: {{ label }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── سبد مدخله (بند ۲ـ۸) — خلاصهٔ بصری ─────────────────── #}
+{% if res.basket and res.basket.total > 0 %}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۱۱</div>
+    <div class="sec-title">سبد مداخله — خلاصهٔ رتبه‌بندی</div>
+    <span class="sec-sub">رتبه A-E برای هر اقدام</span>
+    <a class="sec-tag teal" href="{{ url_for('intervention_basket', hid=hid) }}">مشاهدهٔ کامل →</a>
+  </div>
+  <div class="basket-grid">
+    {% for rk, info in action_ranks.items() %}
+    <div class="basket-stat {{ rk }}">
+      <div class="bs-letter">{{ rk }}</div>
+      <div class="bs-count">{{ res.basket.counts.get(rk, 0) }}</div>
+      <div class="bs-name">{{ info.title }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if res.basket.actions %}
+  <h3 style="margin-top:14px">اقدامات اولویت‌دار (حداکثر ۵ مورد)</h3>
+  {% for item in res.basket.actions[:5] %}
+  <div class="basket-item rank-{{ item.rank }}">
+    <div class="bi-head">
+      <div class="bi-rank">{{ item.rank }}</div>
+      <div class="bi-title">{{ item.title }}</div>
+      <span class="badge {{ item.p }}"><span class="dot"></span>{{ item.p }}</span>
+      <span class="bi-pim">PIM: {{ item.pim }}</span>
+    </div>
+    <div class="bi-body">
+      <div class="bi-field"><span class="bf-k">صف خدمت</span><span class="bf-v">{{ item.queue_name }}</span></div>
+      <div class="bi-field"><span class="bf-k">مسئول اجرا</span><span class="bf-v">{{ item.owner }}</span></div>
+      <div class="bi-field"><span class="bf-k">مهلت</span><span class="bf-v">{{ item.deadline }}</span></div>
+      <div class="bi-field"><span class="bf-k">رابطه</span><span class="bf-v">{{ item.relation }}</span></div>
+    </div>
+    {% if item.intervention %}
+    <div class="bi-action"><b>اقدام پیشنهادی:</b> {{ item.intervention }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endif %}
+
+{# ─ـ ۴. FIVE DIMENSION ANALYSIS ─────────────────────────── #}
+{% set ns = namespace(d1_h=0, d1_m=0, d1_l=0, d2_h=0, d2_m=0, d2_l=0, d3_h=0, d3_m=0, d3_l=0, d4_h=0, d4_m=0, d4_l=0, d5_h=0, d5_m=0, d5_l=0) %}
+{% for i in d['4_active_issues'] %}
+  {% if i.dim == 1 %}
+    {% if i.severity == 'شدید' %}{% set ns.d1_h = ns.d1_h + 1 %}{% elif i.severity == 'متوسط' %}{% set ns.d1_m = ns.d1_m + 1 %}{% elif i.severity == 'خفیف' %}{% set ns.d1_l = ns.d1_l + 1 %}{% endif %}
+  {% elif i.dim == 2 %}
+    {% if i.severity == 'شدید' %}{% set ns.d2_h = ns.d2_h + 1 %}{% elif i.severity == 'متوسط' %}{% set ns.d2_m = ns.d2_m + 1 %}{% elif i.severity == 'خفیف' %}{% set ns.d2_l = ns.d2_l + 1 %}{% endif %}
+  {% elif i.dim == 3 %}
+    {% if i.severity == 'شدید' %}{% set ns.d3_h = ns.d3_h + 1 %}{% elif i.severity == 'متوسط' %}{% set ns.d3_m = ns.d3_m + 1 %}{% elif i.severity == 'خفیف' %}{% set ns.d3_l = ns.d3_l + 1 %}{% endif %}
+  {% elif i.dim == 4 %}
+    {% if i.severity == 'شدید' %}{% set ns.d4_h = ns.d4_h + 1 %}{% elif i.severity == 'متوسط' %}{% set ns.d4_m = ns.d4_m + 1 %}{% elif i.severity == 'خفیف' %}{% set ns.d4_l = ns.d4_l + 1 %}{% endif %}
+  {% elif i.dim == 5 %}
+    {% if i.severity == 'شدید' %}{% set ns.d5_h = ns.d5_h + 1 %}{% elif i.severity == 'متوسط' %}{% set ns.d5_m = ns.d5_m + 1 %}{% elif i.severity == 'خفیف' %}{% set ns.d5_l = ns.d5_l + 1 %}{% endif %}
+  {% endif %}
+{% endfor %}
+
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۴</div>
+    <div class="sec-title">تحلیل پنج‌بُعدی مسائل فعال</div>
+    <span class="sec-sub">توزیع شدت در ابعاد CDI</span>
+  </div>
+  <div class="dim-grid">
+    {% set dims = [
+      (1, 'نیازهای حیاتی و حفاظت', ns.d1_h, ns.d1_m, ns.d1_l, 'M12 22c5.523 0 10-4.477 10-10 0-4.418-2.865-8.166-6.879-9.502A2 2 0 0013 4v6a2 2 0 01-2 2H5a2 2 0 00-1.502 3.121C4.834 19.135 8.582 22 13 22z'),
+      (2, 'دسترسی به خدمات', ns.d2_h, ns.d2_m, ns.d2_l, 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'),
+      (3, 'اشتغال و درآمد', ns.d3_h, ns.d3_m, ns.d3_l, 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'),
+      (4, 'ظرفیت انسانی', ns.d4_h, ns.d4_m, ns.d4_l, 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'),
+      (5, 'شبکه و محیط', ns.d5_h, ns.d5_m, ns.d5_l, 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M16 3.13a4 4 0 0 1 0 7.75')
+    ] %}
+    {% for dn, dt, dh, dm, dl, dp in dims %}
+      {% set total_d = dh + dm + dl %}
+      {% set severity_pct = (dh * 100 + dm * 50) / total_d if total_d > 0 else 0 %}
+      <div class="dim-card">
+        <div class="dim-head">
+          <div class="dim-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ dp }}"/></svg>
+          </div>
+          <div>
+            <div class="dim-name">بُعد {{ dn }}: {{ dt }}</div>
+            <div class="dim-count">{{ total_d }} مسئله فعال</div>
+          </div>
+        </div>
+        <div class="dim-bar-wrap">
+          <div class="dim-bar" style="width: {{ severity_pct }}%"></div>
+        </div>
+        <div class="dim-stats">
+          <span class="high">شدید: {{ dh }}</span>
+          <span class="med">متوسط: {{ dm }}</span>
+          <span class="low">خفیف: {{ dl }}</span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ─ـ SWOT MATRIX: ۵/۶/۱۳/۱۴ ──────────────────────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۵/۶/۱۳/۱۴</div>
+    <div class="sec-title">ماتریس نقاط قوت، موانع، فرصت‌ها و ریسک‌ها</div>
+    <span class="sec-sub">تحلیل SWOT یکپارچهٔ خانوار</span>
+  </div>
+  <div class="swot-grid">
+    <div class="swot-q strengths">
+      <div class="swot-head">
+        <div class="swot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.836 5.115a5 5 0 0 1 0 7.07L9.879 17.07a5 5 0 0 1-7.07-7.07l4.95-4.95a5 5 0 0 1 7.07 0z"/><path d="M11.5 6.5l5 5"/></svg></div>
+        <div>
+          <div class="swot-title">نقاط قوت و ظرفیت‌ها</div>
+          <div class="swot-sub">مهارت، تجربه، دارایی، شبکه، انگیزه</div>
+        </div>
+      </div>
+      {% if d['6_capacities'] %}
+      <ul>{% for c in d['6_capacities'] %}<li>{{ c }}</li>{% endfor %}</ul>
+      {% else %}<div class="empty-cell">ثبت نشده — توسط همیار تکمیل شود.</div>{% endif %}
+    </div>
+
+    <div class="swot-q opportunities">
+      <div class="swot-head">
+        <div class="swot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
+        <div>
+          <div class="swot-title">فرصت‌ها و خدمات</div>
+          <div class="swot-sub">دریافت‌شده، درحال دریافت، موردنیاز</div>
+        </div>
+      </div>
+      {% if d['13_services'] %}
+      <ul>{% for s in d['13_services'] %}<li>{{ s }}</li>{% endfor %}</ul>
+      {% else %}<div class="empty-cell">ثبت نشده.</div>{% endif %}
+    </div>
+
+    <div class="swot-q barriers">
+      <div class="swot-head">
+        <div class="swot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div>
+          <div class="swot-title">موانع و علل ریشه‌ای</div>
+          <div class="swot-sub">علت‌های اصلی، موانع قابل رفع و ساختاری</div>
+        </div>
+      </div>
+      {% if d['5_root_causes'] %}
+      <ul>{% for c in d['5_root_causes'] %}<li>{{ c }}</li>{% endfor %}</ul>
+      {% else %}<div class="empty-cell">ثبت نشده — توسط همیار/کلینیک تکمیل شود.</div>{% endif %}
+    </div>
+
+    <div class="swot-q risks">
+      <div class="swot-head">
+        <div class="swot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
+        <div>
+          <div class="swot-title">ریسک‌ها و هشدارها</div>
+          <div class="swot-sub">شوک‌های محتمل، اقدام پیشگیرانه</div>
+        </div>
+      </div>
+      <ul>
+        {% for rf in d['14_risk_register'].red_flags %}<li>{{ rf }}</li>{% endfor %}
+        {% for r in d['14_risk_register'].layer3_reasons %}<li>{{ r }}</li>{% endfor %}
+        {% if not d['14_risk_register'].red_flags and not d['14_risk_register'].layer3_reasons %}<li class="empty-cell" style="padding:0; border:none; list-style:none">هشدار فعالی ثبت نشده.</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+{# ─ـ ۳. URGENT ACTIONS ──────────────────────────────────── #}
+{% if d['3_urgent'] %}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۳</div>
+    <div class="sec-title">وضعیت فوری و اقدامات لازم</div>
+    <span class="sec-tag red">{{ d['3_urgent']|length }} اقدام</span>
+  </div>
+  <div class="urgent-grid">
+    {% for u2 in d['3_urgent'] %}
+    <div class="urgent-card">
+      <div class="uc-head">
+        <span class="badge {{ u2.p }}"><span class="dot"></span>{{ u2.p }}</span>
+        <span class="uc-title">{{ u2.title }}</span>
+      </div>
+      <div class="uc-action">{{ u2.action }}</div>
+      <div class="uc-foot">
+        <span class="uc-owner">👤 {{ u2.owner }}</span>
+        <span class="uc-deadline">⏱ {{ u2.deadline }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ─ـ ۷. READINESS METERS ────────────────────────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۷</div>
+    <div class="sec-title">ترجیح و آمادگی خانوار</div>
+    <span class="sec-sub">اهداف و آمادگی در ابعاد مختلف</span>
+  </div>
+  {% if d['7_preferences'] %}
+  <div class="readiness-grid">
+    {% set prefs = d['7_preferences'] %}
+    {% set keys = prefs.keys() | list %}
+    {% set readiness_types = [
+      ('زمانی', 75, 'amber', 'M12 6v6l4 2'),
+      ('مراقبتی', 60, 'amber', 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'),
+      ('روانی', 45, 'red', 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 0 7.072 0l-.548-.447c-.347-.29-.548-.656-.548-1.066v-1.248a1 1 0 1 0-2 0v1.248c0 .41-.2.776-.548 1.066l-.547.447z'),
+      ('شغلی', 80, '', 'M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'),
+      ('اقتصادی', 35, 'red', 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6')
+    ] %}
+    {% for label, default_pct, color, icon_path in readiness_types %}
+    <div class="readiness-item">
+      <div class="r-head">
+        <div class="r-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ icon_path }}"/></svg>
+          آمادگی {{ label }}
+        </div>
+        <span class="r-val">{% if prefs.get('آمادگی ' + label) %}{{ prefs.get('آمادگی ' + label) }}{% else %}—{% endif %}</span>
+      </div>
+      <div class="r-bar-wrap">
+        <div class="r-bar {{ color }}" style="width: {{ default_pct }}%"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--line-2)">
+    <div class="small" style="font-weight:600; color:var(--ink-2); margin-bottom:8px">سایر ترجیحات ثبت‌شده:</div>
+    <div class="kvs">
+      {% for k, v in prefs.items() %}
+      {% if not k.startswith('آمادگی') %}
+      <div class="item"><span class="k">{{ k }}</span><span class="v">{{ v }}</span></div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">ثبت نشده — توسط خانوار + همیار تکمیل شود.</div></div>
+  {% endif %}
+</div>
+
+{# ─ـ ۸. BOTTLENECK FLOW ──────────────────────────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۸</div>
+    <div class="sec-title">گلوگاه‌های مسیر توانمندسازی</div>
+    <span class="sec-sub">حداکثر سه گلوگاه اصلی</span>
+  </div>
+  {% if d['8_bottlenecks'] %}
+  <div class="bottleneck-flow">
+    {% for b in d['8_bottlenecks'] %}
+    {% if not loop.first %}
+    <div class="bottleneck-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
+    {% endif %}
+    <div class="bottleneck-node b{{ loop.index }}">
+      <div class="bn-num">{{ loop.index }}</div>
+      <div class="bn-title">{{ b.title }}</div>
+      <div class="bn-axis">
+        <span class="badge {{ b.p }}" style="margin-bottom:4px"><span class="dot"></span>{{ b.p }}</span>
+        <br><span class="mono">{{ b.axis }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">گلوگاهی ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ── ۱۱. INTRA-HOUSEHOLD PRIORITY TIMELINE ──────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۱۱</div>
+    <div class="sec-title">توالی اولویت درون‌خانوار</div>
+    <span class="sec-sub">اقدام فوری، مقدم، هم‌زمان، مؤخر</span>
+  </div>
+  {% if d['11_intra_household_sequence'] %}
+  <div class="timeline">
+    {% for s in d['11_intra_household_sequence'] %}
+    <div class="timeline-step">
+      <div class="ts-head">
+        <span class="ts-step-num">گام {{ s.step }}</span>
+        <span class="ts-title">{{ s.title }}</span>
+      </div>
+      <div class="ts-badges">
+        {% for x in s.rows %}
+        <span class="badge {{ x.p }}"><span class="dot"></span>{{ x.title }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">موردی ثبت نشده.</div></div>
+  {% endif %}
+</div>
+
+{# ── ۲/۱۵. EM-MPI + MONITORING ──────────────────────────── #}
+<div class="grid-2" style="align-items:start">
+  <div class="sec-card" style="margin-bottom:0">
+    <div class="sec-head">
+      <div class="sec-num">۲</div>
+      <div class="sec-title">کارت ورودی EM-MPI</div>
+    </div>
+    <div class="kvs">
+      <div class="item"><span class="k">سطح محرومیت اولیه</span><span class="v">
+        {% set lvl = d['2_emmpi_card'].level %}
+        {% if lvl == 'شدید' %}<span class="badge P0"><span class="dot"></span>شدید</span>
+        {% elif lvl == 'متوسط' %}<span class="badge P1"><span class="dot"></span>متوسط</span>
+        {% elif lvl == 'خفیف' %}<span class="badge P3"><span class="dot"></span>خفیف</span>
+        {% else %}—{% endif %}
+      </span></div>
+      <div class="item"><span class="k">تاریخ ارزیابی</span><span class="v mono">{{ d['2_emmpi_card'].em_date or '—' }}</span></div>
+      <div class="item" style="grid-column:1/-1"><span class="k">پرچم‌های قرمز</span>
+        <span class="v">
+          {% for rf in d['2_emmpi_card'].redflag_labels %}<span class="badge P1" style="margin:2px"><span class="dot"></span>{{ rf }}</span>{% else %}—{% endfor %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-card" style="margin-bottom:0">
+    <div class="sec-head">
+      <div class="sec-num">۱۵</div>
+      <div class="sec-title">برنامهٔ پایش</div>
+      <span class="sec-tag teal">{{ d['15_monitoring_plan'].frequency }}</span>
+    </div>
+    <div class="small" style="font-weight:600; color:var(--ink-2); margin-bottom:8px">معیارهای پیگیری:</div>
+    <ul style="margin:0 18px; line-height:2; font-size:12.5px; color:var(--ink-2)">
+      {% for c in d['15_monitoring_plan'].criteria %}
+      <li>{{ c }}</li>
+      {% else %}
+      <li style="list-style:none; color:var(--mut)">ثبت نشده.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{# ── ۱۳. SERVICES ───────────────────────────────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۱۳</div>
+    <div class="sec-title">خدمات و منابع</div>
+    <span class="sec-sub">دریافت‌شده، درحال دریافت، موردنیاز</span>
+  </div>
+  {% if d['13_services'] %}
+  <div class="svc-tags">
+    {% for s in d['13_services'] %}
+    <span class="svc">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ s }}
+    </span>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">سرویسی ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ─ـ ۱۶. DATA CONFIDENCE ────────────────────────────────── #}
+<div class="sec-card">
+  <div class="sec-head">
+    <div class="sec-num">۱۶</div>
+    <div class="sec-title">سطح اطمینان داده</div>
+    {% set conf = d['16_data_confidence'].level %}
+    {% if conf == 'بالا' %}<span class="sec-tag" style="background:var(--green-bg); color:var(--green); border:1px solid var(--green-line)">بالا</span>
+    {% elif conf == 'متوسط' %}<span class="sec-tag amber">{{ conf }}</span>
+    {% else %}<span class="sec-tag red">{{ conf }}</span>{% endif %}
+  </div>
+  <div class="kvs" style="margin-bottom:14px">
+    <div class="item" style="grid-column:1/-1"><span class="k">یادداشت</span><span class="v">{{ d['16_data_confidence'].note }}</span></div>
+  </div>
+  {% set conf_pct = 90 if conf == 'بالا' else (60 if conf == 'متوسط' else 30) %}
+  <div class="confidence-meter">
+    <div class="confidence-bar-wrap">
+      <div class="confidence-bar" style="width: {{ conf_pct }}%"></div>
+    </div>
+    <div class="confidence-labels">
+      <span>پایین</span><span>متوسط</span><span>بالا</span>
+    </div>
+  </div>
+  {% if d['16_data_confidence'].gaps or d['16_data_confidence'].conflicts %}
+  <div class="grid-2" style="margin-top:14px; gap:10px">
+    {% if d['16_data_confidence'].gaps %}
+    <div style="padding:10px 12px; background:var(--amber-bg); border:1px solid var(--amber-line); border-radius:var(--r)">
+      <div class="small" style="font-weight:600; color:var(--amber); margin-bottom:6px">⚠ محورهای بدون پاسخ:</div>
+      <div>{% for g in d['16_data_confidence'].gaps %}<span class="tag mono" style="margin:2px">{{ g }}</span>{% endfor %}</div>
+    </div>
+    {% endif %}
+    {% if d['16_data_confidence'].conflicts %}
+    <div style="padding:10px 12px; background:var(--red-bg); border:1px solid var(--red-line); border-radius:var(--r)">
+      <div class="small" style="font-weight:600; color:var(--red); margin-bottom:6px">⚠ تعارض داده:</div>
+      <div>{% for c in d['16_data_confidence'].conflicts %}<span class="tag mono" style="margin:2px; background:var(--red-bg); color:var(--red); border-color:var(--red-line)">{{ c }}</span>{% endfor %}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{# ── RED LINES ──────────────────────────────────────────── #}
+<div class="sec-card red-lines-card">
+  <div class="sec-head">
+    <div class="sec-num">!</div>
+    <div class="sec-title">خط قرمزهای سامانه و هوش مصنوعی</div>
+    <span class="sec-tag red">بند ۹ـ۲</span>
+  </div>
+  <div class="red-lines-list">
+    {% for r in prof.red_lines %}
+    <div class="rl-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      <span>{{ r }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

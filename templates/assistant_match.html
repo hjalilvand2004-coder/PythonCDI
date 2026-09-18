@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block crumb %}تخصیص همیار{% endblock %}
+{% block body %}
+
+<style>
+/* Hero */
+.match-hero{
+  background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);
+  color:#fff; border-radius:var(--r-lg); padding:24px 28px; margin-bottom:18px;
+  box-shadow:var(--sh-lg); position:relative; overflow:hidden;
+}
+.match-hero::before{
+  content:""; position:absolute; top:-40px; inset-inline-end:-30px;
+  width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle,rgba(94,234,212,.25),transparent 65%);
+}
+.match-hero > *{position:relative; z-index:1}
+.match-hero h1{font-size:22px; font-weight:700; margin:0 0 6px}
+.match-hero .hero-sub{font-size:12.5px; color:rgba(255,255,255,.8); line-height:1.7; margin-bottom:14px}
+.match-hero .hero-meta{display:flex; gap:14px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,.15)}
+.match-hero .hm-item{display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,.85)}
+.match-hero .hm-item b{color:#5eead4}
+
+/* If assigned */
+.assigned-banner{
+  background:linear-gradient(135deg,var(--green-bg) 0%,#fff 60%);
+  border:1px solid var(--green-line); border-radius:var(--r-md); padding:18px 22px; margin-bottom:18px;
+  border-inline-start:4px solid var(--green);
+}
+.assigned-banner .ab-head{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.assigned-banner .ab-avatar{
+  width:54px; height:54px; border-radius:14px; display:grid; place-items:center;
+  font-weight:700; font-size:22px; color:#fff; flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),#15803d);
+  box-shadow:0 6px 16px rgba(22,163,74,.3)
+}
+.assigned-banner .ab-info{flex:1; min-width:200px}
+.assigned-banner .ab-title{font-size:11px; color:var(--mut); font-weight:600}
+.assigned-banner .ab-name{font-size:18px; font-weight:700; color:var(--ink)}
+.assigned-banner .ab-role{font-size:12px; color:var(--mut); margin-top:2px}
+.assigned-banner .ab-actions{display:flex; gap:8px; flex-wrap:wrap}
+
+/* Match cards (Snapp-like) */
+.match-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
+  padding:16px 18px; margin-bottom:12px; box-shadow:var(--sh-sm);
+  transition:all .2s var(--ease); position:relative; overflow:hidden;
+}
+.match-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
+.match-card.assigned{border-color:var(--green); background:linear-gradient(135deg,var(--green-bg) 0%,#fff 80%)}
+.match-card.top-pick{border-color:var(--p); border-width:2px}
+.match-card.top-pick::before{
+  content:"پیشنهاد برتر"; position:absolute; top:0; inset-inline-end:0;
+  background:linear-gradient(135deg,var(--p),var(--p-d)); color:#fff;
+  padding:3px 12px; font-size:10px; font-weight:700; border-radius:0 var(--r-md) 0 var(--r-sm)
+}
+
+.mc-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:12px}
+.mc-avatar{
+  width:48px; height:48px; border-radius:12px; display:grid; place-items:center;
+  font-weight:700; font-size:18px; color:#fff; flex-shrink:0;
+}
+.mc-info{flex:1; min-width:180px}
+.mc-name{font-size:15px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.mc-role{font-size:11.5px; color:var(--mut); margin-top:2px}
+.mc-status{display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; padding:2px 7px; border-radius:var(--r-sm)}
+.mc-status.online{background:var(--green-bg); color:var(--green); border:1px solid var(--green-line)}
+.mc-status.busy{background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-line)}
+.mc-status.offline{background:var(--bg-2); color:var(--mut); border:1px solid var(--line)}
+
+.mc-score{text-align:center; min-width:70px}
+.mc-score .ms-num{font-size:24px; font-weight:800; line-height:1; color:var(--p)}
+.mc-score .ms-lbl{font-size:10px; color:var(--mut); margin-top:2px}
+.mc-score .ms-bar{height:4px; background:var(--bg-2); border-radius:2px; margin-top:6px; overflow:hidden}
+.mc-score .ms-bar-fill{height:100%; background:linear-gradient(90deg,var(--green),var(--p)); border-radius:2px}
+
+.mc-body{display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line-2)}
+.mc-field{display:flex; flex-direction:column; gap:1px}
+.mc-field .mf-k{font-size:10.5px; color:var(--mut); font-weight:600}
+.mc-field .mf-v{font-size:12px; color:var(--ink-2); font-weight:500}
+
+.mc-specs{display:flex; flex-wrap:wrap; gap:4px; margin:8px 0}
+.mc-spec{font-size:10.5px; padding:2px 8px; border-radius:var(--r-full); background:var(--p-ll); color:var(--p-d); border:1px solid var(--p-l); font-weight:600}
+.mc-spec.matched{background:var(--green-bg); color:var(--green); border-color:var(--green-line)}
+
+.mc-reasons{font-size:11.5px; color:var(--ink-2); line-height:1.8; padding:8px 10px; background:var(--bg-2); border-radius:6px; margin-top:8px}
+.mc-reasons b{color:var(--green)}
+.mc-warnings{font-size:11px; color:var(--amber); margin-top:6px; line-height:1.7}
+
+.mc-actions{display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line-2); flex-wrap:wrap}
+.mc-cap-bar{height:6px; background:var(--bg-2); border-radius:3px; overflow:hidden; margin-top:4px}
+.mc-cap-bar-fill{height:100%; border-radius:3px; transition:width .3s ease}
+.mc-cap-bar-fill.low{background:var(--green)}
+.mc-cap-bar-fill.med{background:var(--amber)}
+.mc-cap-bar-fill.high{background:var(--red)}
+
+/* Criteria info */
+.criteria-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:8px}
+.criteria-card{background:var(--bg-2); border-radius:8px; padding:10px 12px; border-inline-start:3px solid var(--p)}
+.criteria-card .cc-name{font-size:12px; font-weight:700; color:var(--ink)}
+.criteria-card .cc-weight{font-size:10.5px; color:var(--p-d); font-weight:600; margin-top:2px}
+.criteria-card .cc-desc{font-size:10px; color:var(--mut); margin-top:3px; line-height:1.5}
+</style>
+
+{# ── Hero ─────────────────────────────────────────────── #}
+<div class="match-hero">
+  <h1>تخصیص هوشمند همیار مددکار</h1>
+  <p class="hero-sub">
+    سامانه بر اساس ۹ معیار (بند ۹ـ۲)، مناسب‌ترین همیاران را برای رسیدگی به پرونده پیشنهاد می‌دهد.
+    مانند اسنپ: درخواست به چند همیار نزدیک ارسال می‌شود و یکی از آنان پرونده را می‌پذیرد.
+  </p>
+  <div class="hero-meta">
+    <div class="hm-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      خانوار: <b>{{ h.identity.name or hid }}</b>
+    </div>
+    <div class="hm-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      امتیاز EM-MPI: <b>{{ emmpi_result.score }}</b>/۱۰۰۰
+    </div>
+    <div class="hm-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      محل: <b>{{ h.identity.location or '—' }}</b>
+    </div>
+    {% if emmpi_result.red_flags %}
+    <div class="hm-item" style="color:#fca5a5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <b>{{ emmpi_result.red_flags|length }} پرچم قرمز</b>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── If already assigned ──────────────────────────────── #}
+{% if assigned %}
+<div class="assigned-banner">
+  <div class="ab-head">
+    <div class="ab-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="ab-info">
+      <div class="ab-title">✓ همیار تخصیص یافت</div>
+      <div class="ab-name">{{ assigned.name }}</div>
+      <div class="ab-role">{{ assigned.role_label }} · تاریخ تخصیص: {{ assigned.assigned_at }}</div>
+    </div>
+    <div class="ab-actions">
+      <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        مشاهدهٔ پرونده
+      </a>
+      {% if emmpi_result.needs_cdi %}
+      <a class="btn sm" href="{{ url_for('household_view', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+        شروع CDI
+      </a>
+      {% endif %}
+      <form method="post" action="{{ url_for('unassign_assistant', hid=hid) }}" style="display:inline" onsubmit="return confirm('آیا از لغو تخصیص مطمئن هستید؟')">
+        <button class="btn warn sm" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          لغو تخصیص
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── Page actions ─────────────────────────────────────── #}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>{% if not assigned %}پیشنهاد همیاران{% else %}سایر همیاران{% endif %}</h1>
+    <p class="sub">مرتب‌شده بر اساس امتیاز تطبیق — ۹ معیار هوشمند بند ۹ـ۲</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('emmpi_result', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت به EM-MPI
+    </a>
+  </div>
+</div>
+
+{# ── Match cards (Snapp-like) ─────────────────────────── #}
+{% for m in matches %}
+<div class="match-card {{ 'assigned' if assigned and assigned.id == m.assistant.id else '' }} {{ 'top-pick' if loop.first and not assigned else '' }}">
+  <div class="mc-head">
+    <div class="mc-avatar" style="background:linear-gradient(135deg,{{ m.assistant.avatar_color }},{{ m.assistant.avatar_color }}dd)">
+      {{ m.assistant.name[:1] }}
+    </div>
+    <div class="mc-info">
+      <div class="mc-name">
+        {{ m.assistant.name }}
+        {% if m.assistant.status == 'online' %}
+        <span class="mc-status online"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>آنلاین</span>
+        {% elif m.assistant.status == 'busy' %}
+        <span class="mc-status busy"><span style="width:6px;height:6px;border-radius:50%;background:var(--amber);display:inline-block"></span>در حال مأموریت</span>
+        {% else %}
+        <span class="mc-status offline"><span style="width:6px;height:6px;border-radius:50%;background:var(--mut);display:inline-block"></span>آفلاین</span>
+        {% endif %}
+      </div>
+      <div class="mc-role">{{ m.assistant.role_label }} · {{ m.assistant.experience_years }} سال تجربه</div>
+    </div>
+    <div class="mc-score">
+      <div class="ms-num">{{ m.score }}</div>
+      <div class="ms-lbl">امتیاز تطبیق</div>
+      <div class="ms-bar"><div class="ms-bar-fill" style="width:{{ m.score }}%"></div></div>
+    </div>
+  </div>
+
+  {# Specializations #}
+  <div class="mc-specs">
+    {% for spec in m.assistant.specializations %}
+    <span class="mc-spec {{ 'matched' if spec in m.matched_specs else '' }}">{{ spec }}</span>
+    {% endfor %}
+  </div>
+
+  {# Details #}
+  <div class="mc-body">
+    <div class="mc-field">
+      <span class="mf-k">موقعیت</span>
+      <span class="mf-v">{{ m.assistant.areas|join('، ') }}</span>
+    </div>
+    <div class="mc-field">
+      <span class="mf-k">ظرفیت</span>
+      <span class="mf-v">{{ m.assistant.current_load }}/{{ m.assistant.capacity_max }} پرونده</span>
+      <div class="mc-cap-bar">
+        {% set cap_pct = (m.assistant.current_load / m.assistant.capacity_max * 100)|round %}
+        <div class="mc-cap-bar-fill {{ 'low' if cap_pct < 50 else ('med' if cap_pct < 80 else 'high') }}" style="width:{{ cap_pct }}%"></div>
+      </div>
+    </div>
+    <div class="mc-field">
+      <span class="mf-k">عملکرد</span>
+      <span class="mf-v">⭐ {{ m.assistant.performance }}/۵</span>
+    </div>
+    <div class="mc-field">
+      <span class="mf-k">زبان‌ها</span>
+      <span class="mf-v">{{ m.assistant.languages|join('، ') }}</span>
+    </div>
+  </div>
+
+  {# Reasons #}
+  {% if m.reasons %}
+  <div class="mc-reasons">
+    <b>✓ دلایل تطبیق:</b> {{ m.reasons|join('؛ ') }}
+  </div>
+  {% endif %}
+
+  {# Warnings #}
+  {% if m.warnings %}
+  <div class="mc-warnings">⚠ {{ m.warnings|join('؛ ') }}</div>
+  {% endif %}
+
+  {# Actions #}
+  <div class="mc-actions">
+    {% if not assigned %}
+    <form method="post" action="{{ url_for('assign_assistant', hid=hid, ast_id=m.assistant.id) }}" style="display:inline">
+      <button class="btn {{ 'lg' if loop.first else 'sm' }}" type="submit" {{ 'disabled' if not m.available else '' }} style="{{ '' if m.available else 'opacity:.5;cursor:not-allowed' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        {% if m.available %}تخصیص به این همیار{% else %}ظرفیت تکمیل{% endif %}
+      </button>
+    </form>
+    {% elif assigned.id == m.assistant.id %}
+    <span class="badge P3" style="font-size:12px;padding:5px 14px"><span class="dot"></span>تخصیص‌یافته</span>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+
+{# ── ۹ معیار هوشمند ────────────────────────────────────── #}
+<div class="card" style="margin-top:20px">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      ۹ معیار پیشنهاد هوشمند (بند ۹ـ۲)
+    </h2>
+  </div>
+  <div class="criteria-grid">
+    {% for c in match_criteria %}
+    <div class="criteria-card">
+      <div class="cc-name">{{ c.name }}</div>
+      <div class="cc-weight">وزن: {{ c.weight }}٪</div>
+      <div class="cc-desc">{{ c.desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── ۷ نوع نقش قابل واگذاری ────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      ۷ نوع نقش قابل واگذاری به همیار (بند ۸ـ۳)
+    </h2>
+  </div>
+  <div class="criteria-grid">
+    {% for r in assistant_roles %}
+    <div class="criteria-card" style="border-inline-start-color:var(--p-d)">
+      <div class="cc-name">{{ r.icon }} {{ r.name }}</div>
+      <div class="cc-desc">{{ r.desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="alert amber" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div><b>قاعدهٔ مهم:</b> تصمیمات نهایی، تشخیص‌های حساس، تعیین حمایت و تأیید ارجاع همچنان در اختیار مددکار رسمی، مقام مجاز و سازوکار رسمی کمیتهٔ امداد باقی می‌ماند.</div>
+  </div>
+</div>
+
+{% endblock %}

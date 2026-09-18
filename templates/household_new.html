@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block crumb %}ثبت درخواست جدید{% endblock %}
+{% block body %}
+
+<style>
+.reg-step-banner{
+  background:linear-gradient(135deg, var(--p-ll) 0%, #fff 100%);
+  border:1px solid var(--p-l); border-radius:var(--r-md); padding:18px 22px; margin-bottom:18px;
+}
+.reg-step-banner h2{font-size:15px; font-weight:700; color:var(--p-dd); margin:0 0 6px; display:flex; align-items:center; gap:8px}
+.reg-step-banner h2 svg{width:20px; height:20px; flex-shrink:0; color:var(--p)}
+.reg-step-banner h2 .step-badge{background:var(--p); color:#fff; padding:2px 10px; border-radius:var(--r-sm); font-size:11px; font-weight:700; margin-inline-start:auto}
+.reg-step-banner p{font-size:12.5px; color:var(--ink-2); line-height:1.7; margin:0}
+.reg-flow{display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); flex-wrap:wrap}
+.reg-flow-step{display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--mut)}
+.reg-flow-step svg{width:14px; height:14px; flex-shrink:0}
+.reg-flow-step.current{color:var(--p-d); font-weight:700}
+.reg-flow-arrow{color:var(--mut-3); font-size:14px}
+</style>
+
+{# بنر راهنمای مرحله #}
+<div class="reg-step-banner">
+  <h2>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+    ثبت درخواست
+    <span class="step-badge">مرحلهٔ ۱ از ۷</span>
+  </h2>
+  <p>اطلاعات اولیهٔ خانوار را ثبت کنید. پس از ذخیره، سامانه به‌صورت خودکار شما را به مرحلهٔ بعدی (غربالگری EM-MPI) هدایت می‌کند.</p>
+  <div class="reg-flow">
+    <div class="reg-flow-step current">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+      ثبت درخواست
+    </div>
+    <span class="reg-flow-arrow">›</span>
+    <div class="reg-flow-step">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      EM-MPI
+    </div>
+    <span class="reg-flow-arrow">›</span>
+    <div class="reg-flow-step">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg>
+      CDI
+    </div>
+    <span class="reg-flow-arrow">›</span>
+    <div class="reg-flow-step">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      پروفایل
+    </div>
+  </div>
+</div>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>ثبت پروندهٔ جدید</h1>
+    <p class="sub">اطلاعات هویتی پایهٔ خانوار را وارد کنید. در مرحلهٔ بعد، ۳۵ شاخص EM-MPI ارزیابی می‌شود.</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert red">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div>{{ error }}</div>
+</div>
+{% endif %}
+
+<form method="post">
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      شناسهٔ خانوار
+    </h2>
+  </div>
+  <p class="card-desc">فیلدهای ستاره‌دار الزامی هستند. سایر فیلدها را می‌توانید بعداً تکمیل کنید.</p>
+  <div class="grid">
+    <div><label>شناسهٔ خانوار *</label><input type="text" name="hid" required placeholder="مثال: H-1404-001"></div>
+    <div><label>نام سرپرست خانوار</label><input type="text" name="name" placeholder="نام و نام خانوادگی"></div>
+    <div><label>محل سکونت</label><input type="text" name="location" placeholder="استان، شهر، محله"></div>
+    <div><label>تعداد اعضا</label><input type="text" name="members" placeholder="عدد"></div>
+    <div><label>راه ارتباطی</label><input type="text" name="contact" placeholder="تلفن یا نشانی"></div>
+    <div><label>افراد در معرض خطر</label><input type="text" name="at_risk" placeholder="کودکان، سالمندان، بیماران..."></div>
+  </div>
+</div>
+
+<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px">
+  <a class="btn sec" href="{{ url_for('index') }}">انصراف</a>
+  <button class="btn lg" type="submit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    ثبت و شروع EM-MPI
+  </button>
+</div>
+</form>
+{% endblock %}

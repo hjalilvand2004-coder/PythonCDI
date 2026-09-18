@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block crumb %}داشبورد{% endblock %}
+{% block body %}
+
+{# ── Page header ─────────────────────────────────────── #}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>داشبورد پرونده‌ها</h1>
+    <p class="sub">نقش شما: <b style="color:var(--ink)">{{ u.label }}</b> · حلقهٔ {{ u.ring or 0 }} — مجموع پرونده‌های فعال در سامانه</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn" href="{{ url_for('household_new') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ایجاد پروندهٔ خانوار (لایه ۱)
+    </a>
+  </div>
+</div>
+
+{# ── Stats summary ─ استفاده از namespace برای شمارش امن ── #}
+{% set ns = namespace(total=0, p0=0, p1=0, l3=0, alerts=0) %}
+{% for row in households %}
+  {% set ns.total = ns.total + 1 %}
+  {% if row.res %}
+    {% if row.res.operational_priority == 'P0' %}{% set ns.p0 = ns.p0 + 1 %}{% endif %}
+    {% if row.res.operational_priority == 'P1' %}{% set ns.p1 = ns.p1 + 1 %}{% endif %}
+    {% if row.res.layer3_required %}{% set ns.l3 = ns.l3 + 1 %}{% endif %}
+    {% if row.res.conflicts or (row.res.gaps and row.res.gaps|length > 0) %}{% set ns.alerts = ns.alerts + 1 %}{% endif %}
+  {% endif %}
+{% endfor %}
+<div class="stat-grid">
+  <div class="stat teal">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="num">{{ ns.total }}</div>
+    <div class="lbl">پروندهٔ فعال</div>
+  </div>
+  <div class="stat red">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div class="num">{{ ns.p0 }}</div>
+    <div class="lbl">اولویت P0 (بحرانی)</div>
+  </div>
+  <div class="stat amber">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div class="num">{{ ns.p1 }}</div>
+    <div class="lbl">اولویت P1 (فوری)</div>
+  </div>
+  <div class="stat blue">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+    <div class="num">{{ ns.l3 }}</div>
+    <div class="lbl">نیازمند لایهٔ ۳</div>
+  </div>
+</div>
+
+{# ── Households list ──────────────────────────────────── #}
+{% for row in households %}
+{% set h = row.h %}{% set res = row.res %}
+<a href="{{ url_for('household_view', hid=row.hid) }}" class="card hover" style="display:block; text-decoration:none; color:inherit">
+  <div style="display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap">
+    <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, var(--p-ll), var(--p-l)); color:var(--p-dd); display:grid; place-items:center; font-weight:700; font-size:18px; flex-shrink:0">
+      {{ (h.identity.name or row.hid)[:1] }}
+    </div>
+    <div style="flex:1; min-width:200px">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px">
+        <h2 style="margin:0; font-size:16px">{{ h.identity.name or 'خانوار ' + row.hid }}</h2>
+        {% if res %}<span class="badge {{ res.operational_priority }}"><span class="dot"></span>{{ res.operational_priority }}</span>{% endif %}
+        {% if h.state.answers and h.state.answers.values() | selectattr('alert') | list %}<span class="badge sensitive"><span class="dot"></span>هشدار</span>{% endif %}
+        {% if res and res.layer3_required %}<span class="badge dim"><span class="dot"></span>لایه ۳</span>{% endif %}
+        {% if res and res.basket and res.basket.counts.A > 0 %}<span class="badge P0"><span class="dot"></span>{{ res.basket.counts.A }}A</span>{% endif %}
+      </div>
+      <div class="kvs" style="font-size:12.5px">
+        <div class="item"><span class="k">شناسه</span><span class="v mono">{{ row.hid }}</span></div>
+        <div class="item"><span class="k">محل</span><span class="v">{{ h.identity.location or '—' }}</span></div>
+        <div class="item"><span class="k">سطح EM-MPI</span><span class="v">{{ h.em_input.level or '—' }}</span></div>
+        {% if h.em_input.redflag_labels %}<div class="item"><span class="k">پرچم قرمز</span><span class="v" style="color:var(--red)">{{ h.em_input.redflag_labels|join('، ') }}</span></div>{% endif %}
+      </div>
+    </div>
+    {% if res %}
+    <div style="text-align:center; padding-inline-start:14px; border-inline-start:1px solid var(--line-2); min-width:120px">
+      <div style="font-size:24px; font-weight:700; color:var(--ink)">{{ res.active_axes|length }}</div>
+      <div class="small" style="margin-top:2px">محور فعال</div>
+      <div class="tiny" style="margin-top:8px">پاسخ‌داده: {{ res.active_axes|length - res.gaps|length }}</div>
+    </div>
+    {% if res.peh is defined %}
+    <div style="text-align:center; padding-inline-start:14px; border-inline-start:1px solid var(--line-2); min-width:90px">
+      <div style="font-size:24px; font-weight:700; color:var(--p-d)">{{ res.peh }}</div>
+      <div class="small" style="margin-top:2px">امتیاز PEH</div>
+      <div class="tiny" style="margin-top:8px">رتبه ~{{ res.rank_hint }}</div>
+    </div>
+    {% endif %}
+    {% endif %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px; color:var(--mut-2); margin-inline-start:auto; align-self:center"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
+  {% if res %}
+  <div style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--line-2); display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--mut)">
+    <span style="display:inline-flex; align-items:center; gap:5px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      وضعیت مداخله: <b style="color:var(--ink-2)">{{ res.stage }}</b>
+    </span>
+    <span style="display:inline-flex; align-items:center; gap:5px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      پایش: <b style="color:var(--ink-2)">{{ res.monitoring }}</b>
+    </span>
+    <span style="display:inline-flex; align-items:center; gap:5px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      اطمینان داده: <b style="color:var(--ink-2)">{{ res.confidence }}</b>
+    </span>
+  </div>
+  {% endif %}
+</a>
+{% else %}
+<div class="card">
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    <div class="e-title">هنوز پرونده‌ای ثبت نشده است</div>
+    <div class="e-sub">برای شروع، یک پروندهٔ خانوار جدید ایجاد کنید.</div>
+    <a class="btn" href="{{ url_for('household_new') }}" style="margin-top:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ایجاد اولین پرونده
+    </a>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

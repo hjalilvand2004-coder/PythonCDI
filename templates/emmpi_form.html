@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block crumb %}غربالگری EM-MPI{% endblock %}
+{% block body %}
+{% set by_dim = indicators_by_dim %}
+
+<style>
+.dim-section{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:18px;box-shadow:var(--sh-sm);overflow:hidden}
+.dim-section > h2{background:linear-gradient(135deg,var(--p-ll),#fff);padding:14px 18px;margin:0;font-size:15px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.dim-section > h2 .dim-ic{width:32px;height:32px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.dim-section > h2 .dim-ic svg{width:18px;height:18px}
+.dim-section > h2 .dim-max{margin-inline-start:auto;font-size:11px;color:var(--mut);font-weight:500}
+.dim-section > h2 .dim-score-live{font-family:ui-monospace,monospace;font-weight:700;color:var(--p-d);font-size:14px;background:#fff;padding:3px 10px;border-radius:6px;border:1px solid var(--line)}
+
+.indicator-row{padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.indicator-row:last-child{border-bottom:none}
+.indicator-row .ir-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.indicator-row .ir-code{font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:var(--p-d);background:var(--p-ll);padding:2px 7px;border-radius:4px;flex-shrink:0}
+.indicator-row .ir-title{font-size:13.5px;font-weight:700;color:var(--ink);flex:1;line-height:1.5}
+.indicator-row .ir-weight{font-size:11px;color:var(--mut);flex-shrink:0;background:var(--bg-2);padding:2px 8px;border-radius:4px}
+.indicator-row .ir-def{font-size:11.5px;color:var(--mut);line-height:1.7;margin-bottom:10px;padding:8px 10px;background:var(--bg-2);border-radius:6px;border-inline-start:3px solid var(--p-l)}
+.indicator-row .ir-rf{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:4px;border:1px solid var(--red-line);margin-inline-start:6px}
+
+.sev-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:640px){.sev-options{grid-template-columns:1fr}}
+.sev-opt{position:relative;cursor:pointer}
+.sev-opt input{position:absolute;opacity:0;pointer-events:none}
+.sev-opt .sev-card{border:1.5px solid var(--line);border-radius:var(--r);padding:10px 12px;background:#fff;transition:all .15s var(--ease);text-align:center}
+.sev-opt .sev-card:hover{border-color:var(--mut-3);background:var(--bg-2)}
+.sev-opt input:checked + .sev-card{border-width:2px;font-weight:600}
+.sev-opt input[value="0"]:checked + .sev-card{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.sev-opt input[value="0.5"]:checked + .sev-card{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
+.sev-opt input[value="1"]:checked + .sev-card{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.sev-opt .sev-label{font-size:12.5px;font-weight:700;display:block}
+.sev-opt .sev-desc{font-size:10.5px;color:var(--mut);margin-top:3px;line-height:1.5}
+.sev-opt .sev-pts{font-size:10px;color:var(--mut-2);margin-top:4px;font-family:ui-monospace,monospace}
+
+.sticky-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 0;margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:20}
+.sticky-bar .sb-score{display:flex;align-items:center;gap:10px}
+.sticky-bar .sb-num{font-size:24px;font-weight:800;color:var(--p);line-height:1;font-variant-numeric:tabular-nums}
+.sticky-bar .sb-max{font-size:14px;color:var(--mut)}
+.sticky-bar .sb-level{font-size:12px;color:var(--mut);font-weight:600}
+.sticky-bar .sb-spacer{flex:1}
+</style>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>غربالگری EM-MPI</h1>
+    <p class="sub">
+      <b>{{ h.identity.name or hid }}</b> — مدل بومی غربالگری و سطح‌بندی اولیه فقر چندبعدی (سند Emdad_sanadHemayt0004).
+      ۵ بُعد، ۳۵ شاخص، سقف ۱۰۰۰. خروجی این مرحله پیش‌نیاز ورود به CDI است.
+    </p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{# بنر راهنما #}
+<div class="alert blue">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  <div>
+    <b>راهنما:</b> برای هر شاخص، شدت محرومیت را در یکی از سه سطح انتخاب کنید:
+    <b style="color:var(--green)">فاقد محرومیت (۰)</b>،
+    <b style="color:var(--amber)">متوسط (۰٫۵)</b>، یا
+    <b style="color:var(--red)">شدید (۱)</b>.
+    امتیاز شاخص = وزن × ضریب شدت. پرچم‌های قرمز مستقل از امتیاز، مسیر ارجاع فوری ایجاد می‌کنند.
+  </div>
+</div>
+
+<form method="post">
+{% for dim_key, dim_info in by_dim.items() %}
+<div class="dim-section">
+  <h2>
+    <span class="dim-ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ DIMENSIONS[dim_key].icon }}"/></svg>
+    </span>
+    <span>بُعد {{ dim_key }}: {{ dim_info[0].dim_label if dim_info[0].dim_label is defined else DIMENSIONS[dim_key].name }}</span>
+    <span class="dim-max">سقف امتیاز: {{ DIMENSIONS[dim_key].max }}</span>
+    <span class="dim-score-live" id="score-{{ dim_key }}">۰</span>
+  </h2>
+
+  {% for ind in dim_info %}
+  <div class="indicator-row">
+    <div class="ir-head">
+      <span class="ir-code">{{ ind.code }}</span>
+      <span class="ir-title">{{ ind.title }}</span>
+      <span class="ir-weight">وزن: {{ ind.weight }}</span>
+      {% if ind.red_flags %}<span class="ir-rf">⚠ {{ ind.red_flags | join('، ') }}</span>{% endif %}
+    </div>
+    <div class="ir-def">{{ ind.definition }}</div>
+
+    <div class="sev-options" data-dim="{{ dim_key }}" data-weight="{{ ind.weight }}" data-code="{{ ind.code }}">
+      {% for opt in severity_options %}
+      <label class="sev-opt">
+        <input type="radio" name="ind_{{ ind.code }}" value="{{ opt.value }}"
+          {% if existing_data and existing_data.get(ind.code) == opt.value %}checked{% endif %}
+          onchange="updateScores()">
+        <div class="sev-card">
+          <span class="sev-label">{{ opt.label }}</span>
+          <span class="sev-desc">{{ opt.desc }}</span>
+          <span class="sev-pts">{{ (ind.weight * opt.value) | float }} از {{ ind.weight }} امتیاز</span>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+<div class="sticky-bar">
+  <div class="sb-score">
+    <span class="sb-num" id="total-score">۰</span>
+    <span class="sb-max">/ ۱۰۰۰</span>
+    <span class="sb-level" id="level-display">— محرومیت محدود</span>
+  </div>
+  <div class="sb-spacer"></div>
+  <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">انصراف</a>
+  <button class="btn lg" type="submit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    محاسبه و ثبت EM-MPI
+  </button>
+</div>
+</form>
+
+<script>
+const SEVERITY_OPTIONS = [
+  {value: 0, label: 'فاقد محرومیت', color: 'P3'},
+  {value: 0.5, label: 'محرومیت متوسط', color: 'P1'},
+  {value: 1, label: 'محرومیت شدید', color: 'P0'},
+];
+
+function toFa(n) {
+  // تبدیل اعداد به فارسی
+  return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+
+function updateScores() {
+  // محاسبهٔ امتیاز هر بُعد
+  const dimScores = {};
+  document.querySelectorAll('.sev-options').forEach(opt => {
+    const dim = opt.dataset.dim;
+    const weight = parseFloat(opt.dataset.weight);
+    const selected = opt.querySelector('input:checked');
+    const sev = selected ? parseFloat(selected.value) : 0;
+    if (!dimScores[dim]) dimScores[dim] = 0;
+    dimScores[dim] += weight * sev;
+  });
+
+  // به‌روزرسانی امتیاز هر بُعد
+  let total = 0;
+  Object.keys(dimScores).forEach(dim => {
+    const el = document.getElementById('score-' + dim);
+    if (el) el.textContent = toFa(Math.round(dimScores[dim]));
+    total += dimScores[dim];
+  });
+
+  // امتیاز کل
+  const totalEl = document.getElementById('total-score');
+  if (totalEl) totalEl.textContent = toFa(Math.round(total));
+
+  // سطح محرومیت
+  const levelEl = document.getElementById('level-display');
+  if (levelEl) {
+    let level = 'محرومیت محدود';
+    if (total >= 600) level = 'محرومیت بسیار زیاد';
+    else if (total >= 450) level = 'محرومیت زیاد';
+    else if (total >= 300) level = 'محرومیت متوسط';
+    else if (total >= 150) level = 'محرومیت خفیف';
+    levelEl.textContent = '— ' + level;
+  }
+}
+
+// اجرای اولیه
+updateScores();
+</script>
+{% endblock %}
