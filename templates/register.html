@@ -3,95 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ثبت‌نام نیازمند جدید — سامانه CDI</title>
+<title>ثبت‌نام نیازمند جدید</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <style>
 :root {
-  --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; --text: #1e293b;
-  --primary: #0284c7; --primary-dark: #0369a1; --accent: #f59e0b;
-  --danger: #dc2626; --success: #16a34a; --warn: #f97316; --muted: #64748b; --soft: #f8fafc;
+  --p:#0d9488; --p-d:#0f766e; --p-dd:#134e4a; --p-l:#5eead4; --p-ll:#ccfbf1;
+  --bg:#f8fafc; --ink:#0f172a; --ink-2:#334155; --mut:#64748b; --mut-2:#94a3b8;
+  --line:#e2e8f0; --soft:#f1f5f9;
+  --danger:#dc2626; --danger-bg:#fef2f2; --danger-line:#fecaca;
+  --success:#16a34a; --success-bg:#f0fdf4; --success-line:#bbf7d0;
+  --warn:#f59e0b; --warn-bg:#fffbeb; --warn-line:#fde68a;
+  --info:#0284c7; --info-bg:#eff6ff; --info-line:#bfdbfe;
+  --sh-lg:0 12px 40px rgba(15,23,42,.10), 0 4px 12px rgba(15,23,42,.06);
+  --r:10px; --r-md:12px; --r-lg:16px; --r-full:999px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Vazirmatn', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
-.container { max-width: 640px; width: 100%; }
-
-.card { background: var(--card); border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.header { text-align: center; margin-bottom: 24px; }
-.header h1 { color: var(--primary-dark); font-size: 24px; margin-bottom: 4px; }
-.header p { color: var(--muted); font-size: 14px; }
-
-.back-link { display: block; text-align: center; margin-top: 16px; color: var(--primary); text-decoration: none; font-size: 14px; }
-.back-link:hover { text-decoration: underline; }
-
-.kind-grid { display: grid; gap: 12px; margin-bottom: 24px; }
-.kind-card { border: 2px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
-.kind-card:hover { border-color: var(--primary); }
-.kind-card.selected { border-color: var(--primary); background: #eff6ff; }
-.kind-card input { display: none; }
-.kind-card .kind-label { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-.kind-card .kind-desc { font-size: 13px; color: var(--muted); }
-
-.field-group { margin-bottom: 16px; }
-.field-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
-.field-label .req { color: var(--danger); }
-.field-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.field-error { font-size: 12px; color: var(--danger); margin-top: 4px; min-height: 16px; }
-input[type="text"], input[type="password"], input[type="tel"] {
-  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
-  font-family: inherit; font-size: 15px; background: white; transition: border-color 0.2s;
+html, body { height: 100%; }
+body {
+  font-family: 'Vazirmatn', system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 90% -10%, rgba(13,148,136,.12), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(94,234,212,.15), transparent 60%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  color: var(--ink); min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px; -webkit-font-smoothing: antialiased;
 }
-input:focus { outline: none; border-color: var(--primary); }
+
+.card {
+  width: 100%; max-width: 680px;
+  background: #fff; border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--sh-lg); border: 1px solid var(--line);
+}
+
+/* هدر برند */
+.brand-header {
+  background: linear-gradient(135deg, var(--p-d) 0%, var(--p-dd) 100%);
+  color: #fff; padding: 28px 32px; position: relative; overflow: hidden;
+}
+.brand-header::before {
+  content: ""; position: absolute; top: -30px; left: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(94,234,212,.25), transparent 70%);
+}
+.brand-header::after {
+  content: ""; position: absolute; bottom: -40px; right: -40px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(13,148,136,.3), transparent 70%);
+}
+.brand-header > * { position: relative; z-index: 1; }
+.brand-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.brand-header p { font-size: 13px; opacity: 0.85; }
+
+/* بدنه فرم */
+.form-body { padding: 28px 32px; }
+
+.alert {
+  border-radius: var(--r); padding: 12px 16px; margin-bottom: 16px;
+  font-size: 13px; display: flex; align-items: flex-start; gap: 10px;
+  line-height: 1.7;
+}
+.alert-error { background: var(--danger-bg); color: #991b1b; border: 1px solid var(--danger-line); }
+.alert-info { background: var(--info-bg); color: #1e40af; border: 1px solid var(--info-line); }
+.alert-success { background: var(--success-bg); color: #166534; border: 1px solid var(--success-line); }
+
+/* نوع ثبت‌نام */
+.kind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+@media(max-width:560px){.kind-grid{grid-template-columns:1fr}}
+.kind-card {
+  border: 2px solid var(--line); border-radius: var(--r-md); padding: 14px;
+  cursor: pointer; transition: all 0.2s; position: relative;
+}
+.kind-card:hover { border-color: var(--p); background: var(--soft); }
+.kind-card.selected { border-color: var(--p); background: var(--p-ll); }
+.kind-card input { display: none; }
+.kind-card .kind-icon { font-size: 20px; margin-bottom: 6px; }
+.kind-card .kind-label { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+.kind-card .kind-desc { font-size: 11px; color: var(--mut); line-height: 1.6; }
+
+/* فیلدها */
+.field-group { margin-bottom: 16px; }
+.field-label {
+  display: block; font-size: 13px; font-weight: 600; color: var(--ink-2);
+  margin-bottom: 6px;
+}
+.field-label .req { color: var(--danger); }
+.field-hint { font-size: 11px; color: var(--mut); margin-top: 4px; }
+.field-error { font-size: 11px; color: var(--danger); margin-top: 4px; min-height: 14px; }
+.field-success { font-size: 11px; color: var(--success); margin-top: 4px; }
+
+input[type="text"], input[type="password"], input[type="tel"] {
+  width: 100%; padding: 11px 14px; border: 1px solid var(--line);
+  border-radius: var(--r); font-size: 14px; font-family: inherit;
+  background: #fff; color: var(--ink); transition: all 0.2s;
+}
+input:focus { outline: none; border-color: var(--p); box-shadow: 0 0 0 3px rgba(13,148,136,.12); }
 input.invalid { border-color: var(--danger); }
 input.valid { border-color: var(--success); }
 
-.agreement-box { background: var(--soft); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-.agreement-box h3 { font-size: 15px; margin-bottom: 12px; color: var(--primary-dark); }
-.agreement-section { margin-bottom: 10px; }
-.agreement-section h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-.agreement-section p { font-size: 12px; color: var(--muted); line-height: 1.6; }
-.consent-check { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 12px; background: white; border-radius: 8px; cursor: pointer; }
-.consent-check input { width: 20px; height: 20px; margin-top: 2px; }
+/* تاریخ‌گیر شمسی */
+.date-picker { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.date-picker select {
+  padding: 11px 10px; border: 1px solid var(--line); border-radius: var(--r);
+  font-size: 14px; font-family: inherit; background: #fff; color: var(--ink);
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: left 10px center;
+  padding-left: 28px;
+}
+.date-picker select:focus { outline: none; border-color: var(--p); }
+.date-picker-label { font-size: 11px; color: var(--mut); text-align: center; margin-top: 4px; }
 
-.btn { width: 100%; padding: 14px; border-radius: 10px; border: none; cursor: pointer;
-       font-family: inherit; font-size: 16px; font-weight: 700; transition: all 0.2s; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+/* تشخیص استان */
+.province-badge {
+  display: none; margin-top: 8px; padding: 8px 12px;
+  background: var(--success-bg); border: 1px solid var(--success-line);
+  border-radius: var(--r); font-size: 13px; color: #166534;
+  align-items: center; gap: 6px;
+}
+.province-badge.show { display: flex; }
+.province-badge .icon { font-size: 16px; }
+.province-badge.unknown {
+  background: var(--warn-bg); border-color: var(--warn-line); color: #92400e;
+}
 
-.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
-.alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-.alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+/* توافقنامه */
+.agreement-box {
+  background: var(--soft); border-radius: var(--r-md); padding: 16px; margin-bottom: 16px;
+  border: 1px solid var(--line);
+}
+.agreement-box h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--p-dd); }
+.agreement-section { margin-bottom: 8px; }
+.agreement-section h4 { font-size: 12px; font-weight: 700; margin-bottom: 2px; color: var(--ink-2); }
+.agreement-section p { font-size: 11px; color: var(--mut); line-height: 1.7; }
+.consent-check {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 10px;
+  padding: 10px; background: #fff; border-radius: var(--r); cursor: pointer;
+  border: 1px solid var(--line); transition: border-color 0.2s;
+}
+.consent-check:hover { border-color: var(--p); }
+.consent-check input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; }
+.consent-check label { font-size: 13px; cursor: pointer; }
 
+/* دکمه */
+.btn {
+  width: 100%; padding: 13px; border-radius: var(--r); border: none;
+  background: var(--p); color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:hover { background: var(--p-d); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(13,148,136,.3); }
+.btn:disabled { background: var(--mut); cursor: not-allowed; transform: none; box-shadow: none; }
+.btn svg { width: 18px; height: 18px; }
+
+/* فاز واکشی */
 .fetch-status { display: none; margin-bottom: 16px; }
 .fetch-status.show { display: block; }
-.fetch-step { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--soft); border-radius: 8px; margin-bottom: 4px; font-size: 13px; }
-.fetch-step .icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-.fetch-step.pending .icon { background: var(--muted); color: white; }
-.fetch-step.active .icon { background: var(--accent); color: white; animation: spin 1s linear infinite; }
-.fetch-step.ok .icon { background: var(--success); color: white; }
-.fetch-step.error .icon { background: var(--danger); color: white; }
-.fetch-step .badge { margin-right: auto; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: white; }
+.fetch-step {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  background: var(--soft); border-radius: var(--r); margin-bottom: 4px; font-size: 12px;
+}
+.fetch-step .icon {
+  width: 20px; height: 20px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;
+}
+.fetch-step.pending .icon { background: var(--mut); color: #fff; }
+.fetch-step.active .icon { background: var(--warn); color: #fff; animation: spin 1s linear infinite; }
+.fetch-step.ok .icon { background: var(--success); color: #fff; }
+.fetch-step.error .icon { background: var(--danger); color: #fff; }
+.fetch-step .badge { margin-right: auto; font-size: 10px; padding: 2px 8px; border-radius: 8px; background: #fff; }
 @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
 
-.disclaimer { font-size: 12px; color: var(--muted); margin-top: 16px; text-align: center; }
+/* لینک بازگشت */
+.back-link {
+  display: block; text-align: center; margin-top: 16px;
+  color: var(--p-d); text-decoration: none; font-size: 13px;
+}
+.back-link:hover { text-decoration: underline; }
+
+.disclaimer {
+  font-size: 11px; color: var(--mut); margin-top: 14px;
+  text-align: center; line-height: 1.7;
+}
 </style>
 </head>
 <body>
-<div class="container">
 <div class="card">
-  <div class="header">
+  <div class="brand-header">
     <h1>ثبت‌نام نیازمند جدید</h1>
-    <p>شناسایی، احراز، توانمندسازی — کمیته امداد</p>
+    <p>سامانه شناسایی، احراز، توانمندسازی — کمیته امداد</p>
   </div>
 
-  {% if error %}
-  <div class="alert alert-error">⚠ {{ error }}</div>
-  {% endif %}
+  <div class="form-body">
+    {% if error %}
+    <div class="alert alert-error">⚠ {{ error }}</div>
+    {% endif %}
 
-  <div class="alert alert-info">
-    با ثبت‌نام، اطلاعات هویتی شما از مراجع ثبتی (ثبت احوال، پست، بیمه و...) به‌صورت خودکار واکشی می‌شود و سپس به پرسشنامه غربالگری هدایت می‌شوید.
-  </div>
+    <div class="alert alert-info">
+      📋 با ثبت‌نام، اطلاعات هویتی شما از ۷ مرجع ثبتی (ثبت احوال، پست، بیمه و...) به‌صورت خودکار واکشی می‌شود و سپس به پرسشنامه خوداظهاری هدایت می‌شوید.
+    </div>
 
 <form method="POST" action="{{ url_for('register') }}" id="regForm" onsubmit="return onSubmit();">
 
@@ -101,13 +211,15 @@ input.valid { border-color: var(--success); }
     <div class="kind-grid">
       <label class="kind-card selected" id="kindNeed">
         <input type="radio" name="registrationKind" value="need_service" checked onchange="selectKind('need')">
-        <div class="kind-label">اعلام نیازمندی و دریافت خدمات دارم</div>
-        <div class="kind-desc">پرسشنامه غربالگری محرومیت خانوار (EM-MPI) برای شما آغاز می‌شود.</div>
+        <div class="kind-icon">🙏</div>
+        <div class="kind-label">اعلام نیازمندی</div>
+        <div class="kind-desc">پرسشنامه غربالگری برای شما آغاز می‌شود</div>
       </label>
       <label class="kind-card" id="kindProvide">
         <input type="radio" name="registrationKind" value="provide_service" onchange="selectKind('provide')">
-        <div class="kind-label">متقاضی ارائه خدمت به مددجویان هستم</div>
-        <div class="kind-desc">پرسشنامه محرومیت برای شما تکمیل نمی‌شود؛ به داشبورد حرفه‌ای هدایت می‌شوید.</div>
+        <div class="kind-icon">🤝</div>
+        <div class="kind-label">ارائه خدمت</div>
+        <div class="kind-desc">هدایت به داشبورد حرفه‌ای</div>
       </label>
     </div>
   </div>
@@ -115,7 +227,7 @@ input.valid { border-color: var(--success); }
   <div class="field-group">
     <label class="field-label">کد ملی سرپرست <span class="req">*</span></label>
     <input type="text" name="national_id" id="nid" maxlength="10" placeholder="۱۰ رقم" oninput="validateNid()" autocomplete="off">
-    <div class="field-hint">کلید شناسایی خانوار و مبنای استعلام همه مراجع ثبتی.</div>
+    <div class="field-hint">کلید شناسایی و مبنای استعلام همه مراجع ثبتی</div>
     <div class="field-error" id="nidErr"></div>
   </div>
 
@@ -125,29 +237,56 @@ input.valid { border-color: var(--success); }
     <div class="field-error" id="mobileErr"></div>
   </div>
 
+  <!-- تاریخ تولد شمسی -->
   <div class="field-group">
     <label class="field-label">تاریخ تولد (شمسی) <span class="req">*</span></label>
-    <input type="text" name="date_of_birth" id="birth" placeholder="YYYY/MM/DD یا ۸ رقم پیوسته" oninput="validateBirth()" autocomplete="off">
-    <div class="field-hint">سال ۱۳۰۰ تا ۱۴۲۰.</div>
+    <div class="date-picker">
+      <div>
+        <select id="birthYear" onchange="updateBirthDays(); validateBirth();">
+          <option value="">سال</option>
+        </select>
+        <div class="date-picker-label">سال</div>
+      </div>
+      <div>
+        <select id="birthMonth" onchange="updateBirthDays(); validateBirth();">
+          <option value="">ماه</option>
+        </select>
+        <div class="date-picker-label">ماه</div>
+      </div>
+      <div>
+        <select id="birthDay" onchange="validateBirth();">
+          <option value="">روز</option>
+        </select>
+        <div class="date-picker-label">روز</div>
+      </div>
+    </div>
+    <!-- فیلد مخفی برای ارسال تاریخ به سرور -->
+    <input type="hidden" name="date_of_birth" id="birthHidden">
     <div class="field-error" id="birthErr"></div>
   </div>
 
   <div class="field-group">
     <label class="field-label">کد پستی <span class="req">*</span></label>
-    <input type="text" name="postal_code" id="postal" maxlength="10" placeholder="۱۰ رقم" oninput="validatePostal()" autocomplete="off">
-    <div class="field-hint">کلید واکشی نشانی از سرویس پست.</div>
+    <input type="text" name="postal_code" id="postal" maxlength="10" placeholder="۱۰ رقم" oninput="validatePostal(); detectProvince();" autocomplete="off">
+    <div class="field-hint">کلید واکشی نشانی از سرویس پست</div>
+    <div class="province-badge" id="provinceBadge">
+      <span class="icon">📍</span>
+      <span id="provinceText"></span>
+    </div>
+    <input type="hidden" name="detected_province" id="detectedProvince">
     <div class="field-error" id="postalErr"></div>
   </div>
 
   <div class="field-group">
     <label class="field-label">رمز عبور <span class="req">*</span></label>
     <input type="password" name="password" id="pw" maxlength="6" placeholder="۶ کاراکتر، حروف+اعداد" oninput="validatePw()" autocomplete="new-password">
-    <div class="field-hint">دقیقاً ۶ کاراکتر، ترکیبی از حروف انگلیسی و اعداد.</div>
+    <div class="field-hint">دقیقاً ۶ کاراکتر، ترکیبی از حروف انگلیسی و اعداد</div>
     <div class="field-error" id="pwErr"></div>
   </div>
 
+  <!-- توافقنامه -->
   <div class="agreement-box">
-    <h3>توافقنامه دسترسی به اطلاعات بانکی</h3>
+    <h3>🔐 توافقنامه دسترسی به اطلاعات بانکی</h3>
     <div class="agreement-section">
       <h4>۱) هدف</h4>
       <p>راستی‌آزمایی معیشت و درآمد (بُعد D) از طریق شاپرک.</p>
@@ -166,25 +305,29 @@ input.valid { border-color: var(--success); }
     </div>
     <label class="consent-check">
       <input type="checkbox" name="consent_bank" id="consentBank">
-      <span>با استعلام شاپرک موافقم. (اختیاری)</span>
+      <label for="consentBank">با استعلام شاپرک موافقم (اختیاری)</label>
     </label>
   </div>
 
+  <!-- فاز واکشی -->
   <div class="fetch-status" id="fetchStatus">
-    <div class="alert alert-info">در حال واکشی خودکار از مراجع ثبتی...</div>
-    <div class="fetch-step pending" id="step_civil"><div class="icon">⏳</div><div class="name">ثبت احوال</div><div class="badge">در انتظار</div></div>
-    <div class="fetch-step pending" id="step_post"><div class="icon">⏳</div><div class="name">پست ایران</div><div class="badge">در انتظار</div></div>
-    <div class="fetch-step pending" id="step_insurance"><div class="icon">⏳</div><div class="name">تأمین اجتماعی</div><div class="badge">در انتظار</div></div>
-    <div class="fetch-step pending" id="step_property"><div class="icon">⏳</div><div class="name">اموال و املاک</div><div class="badge">در انتظار</div></div>
-    <div class="fetch-step pending" id="step_edu"><div class="icon">⏳</div><div class="name">آموزش‌وپرورش</div><div class="badge">در انتظار</div></div>
-    <div class="fetch-step pending" id="step_higher"><div class="icon">⏳</div><div class="name">وزارت علوم</div><div class="badge">در انتظار</div></div>
-    <div class="fetch-step pending" id="step_shaparak"><div class="icon">⏳</div><div class="name">شاپرک</div><div class="badge">در انتظار</div></div>
+    <div class="alert alert-info">⏳ در حال واکشی خودکار از مراجع ثبتی...</div>
+    <div class="fetch-step pending" id="step_civil"><div class="icon">⏳</div><span>ثبت احوال</span><span class="badge">در انتظار</span></div>
+    <div class="fetch-step pending" id="step_post"><div class="icon">⏳</div><span>پست ایران</span><span class="badge">در انتظار</span></div>
+    <div class="fetch-step pending" id="step_insurance"><div class="icon">⏳</div><span>تأمین اجتماعی</span><span class="badge">در انتظار</span></div>
+    <div class="fetch-step pending" id="step_property"><div class="icon">⏳</div><span>اموال و املاک</span><span class="badge">در انتظار</span></div>
+    <div class="fetch-step pending" id="step_edu"><div class="icon">⏳</div><span>آموزش‌وپرورش</span><span class="badge">در انتظار</span></div>
+    <div class="fetch-step pending" id="step_higher"><div class="icon">⏳</div><span>وزارت علوم</span><span class="badge">در انتظار</span></div>
+    <div class="fetch-step pending" id="step_shaparak"><div class="icon">⏳</div><span>شاپرک</span><span class="badge">در انتظار</span></div>
   </div>
 
-  <button type="submit" class="btn btn-primary" id="submitBtn">ثبت‌نام و شروع غربالگری</button>
+  <button type="submit" class="btn" id="submitBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+    ثبت‌نام و شروع پرسشنامه
+  </button>
 
   <div class="disclaimer">
-    کد ملی «کلید شناسایی» است. بدون کد ملی معتبر، واکشی مراجع انجام نمی‌شود ولی مسیر «فاقد مدرک» با پرچم R8 فعال می‌شود.
+    کد ملی «کلید شناسایی» است. بدون کد ملی معتبر، واکشی مراجع انجام نمی‌شود ولی مسیر «فاقد مدرک» فعال می‌شود.
   </div>
 </form>
 
@@ -193,6 +336,7 @@ input.valid { border-color: var(--success); }
 </div>
 
 <script>
+// ═══════ نرمال‌سازی ارقام ═══════
 function normalizeDigits(s) {
   const fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩', en = '0123456789';
   return (s || '').split('').map(c => {
@@ -202,6 +346,82 @@ function normalizeDigits(s) {
   }).join('').replace(/[\s\-_]/g, '');
 }
 
+function setErr(id, msg, ok) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = ok ? 'field-success' : 'field-error';
+}
+
+// ═══════ تاریخ‌گیر شمسی ═══════
+const JALALI_MONTHS = [
+  'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+  'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+];
+
+function jalaliMonthLength(year, month) {
+  if (month <= 6) return 31;
+  if (month <= 11) return 30;
+  const rem = year % 33;
+  const leap = [1,5,9,13,17,22,26,30].includes(rem);
+  return leap ? 30 : 29;
+}
+
+function initDatePicker() {
+  const yearSel = document.getElementById('birthYear');
+  const monthSel = document.getElementById('birthMonth');
+  // سال‌ها ۱۳۰۰ تا ۱۴۲۰
+  for (let y = 1420; y >= 1300; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y.toLocaleString('fa-IR');
+    yearSel.appendChild(opt);
+  }
+  // ماه‌ها
+  JALALI_MONTHS.forEach((name, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = name;
+    monthSel.appendChild(opt);
+  });
+}
+
+function updateBirthDays() {
+  const year = parseInt(document.getElementById('birthYear').value) || 0;
+  const month = parseInt(document.getElementById('birthMonth').value) || 0;
+  const daySel = document.getElementById('birthDay');
+  const currentDay = daySel.value;
+  daySel.innerHTML = '<option value="">روز</option>';
+  if (year && month) {
+    const maxDay = jalaliMonthLength(year, month);
+    for (let d = 1; d <= maxDay; d++) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d.toLocaleString('fa-IR');
+      daySel.appendChild(opt);
+    }
+    if (currentDay && currentDay <= maxDay) daySel.value = currentDay;
+  }
+}
+
+function validateBirth() {
+  const y = document.getElementById('birthYear').value;
+  const m = document.getElementById('birthMonth').value;
+  const d = document.getElementById('birthDay').value;
+  const err = document.getElementById('birthErr');
+  const hidden = document.getElementById('birthHidden');
+  if (!y || !m || !d) {
+    setErr('birthErr', 'تاریخ تولد اجباری است.', false);
+    hidden.value = '';
+    return false;
+  }
+  // قالب YYYY/MM/DD
+  const dateStr = `${y}/${m.padStart(2,'0')}/${d.padStart(2,'0')}`;
+  hidden.value = dateStr;
+  setErr('birthErr', '✓ تاریخ معتبر', true);
+  return true;
+}
+
+// ═══════ کد ملی ═══════
 function isValidNid(input) {
   const nid = normalizeDigits(input);
   if (!/^\d{10}$/.test(nid)) return false;
@@ -214,22 +434,17 @@ function isValidNid(input) {
   return rem < 2 ? check === rem : check === 11 - rem;
 }
 
-function setErr(id, msg, ok) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.style.color = ok ? 'var(--success)' : 'var(--danger)';
-}
-
 function validateNid() {
   const inp = document.getElementById('nid');
   const v = normalizeDigits(inp.value);
   inp.value = v;
   if (!v) { setErr('nidErr', 'کد ملی سرپرست اجباری است.', false); inp.className = 'invalid'; return false; }
-  if (v.length !== 10) { setErr('nidErr', `باید ۱۰ رقم باشد (${v.length}).`, false); inp.className = 'invalid'; return false; }
+  if (v.length !== 10) { setErr('nidErr', `باید ۱۰ رقم باشد (${v.length} رقم).`, false); inp.className = 'invalid'; return false; }
   if (!isValidNid(v)) { setErr('nidErr', 'با الگوریتم ثبت احوال تطبیق ندارد.', false); inp.className = 'invalid'; return false; }
   setErr('nidErr', '✓ معتبر', true); inp.className = 'valid'; return true;
 }
 
+// ═══════ موبایل ═══════
 function validateMobile() {
   const inp = document.getElementById('mobile');
   const v = normalizeDigits(inp.value);
@@ -240,34 +455,76 @@ function validateMobile() {
   setErr('mobileErr', '✓ معتبر', true); inp.className = 'valid'; return true;
 }
 
-function jalaliMonthLength(y, m) {
-  if (m <= 6) return 31; if (m <= 11) return 30;
-  const rem = y % 33; return [1,5,9,13,17,22,26,30].includes(rem) ? 30 : 29;
-}
-function validateBirth() {
-  const inp = document.getElementById('birth');
-  const s = normalizeDigits(inp.value).replace(/[.\-]/g, '/');
-  const parts = s.split('/').filter(Boolean);
-  let y, m, d;
-  if (parts.length === 3) [y, m, d] = parts;
-  else if (s.length === 8 && /^\d{8}$/.test(s)) { y = s.slice(0,4); m = s.slice(4,6); d = s.slice(6,8); }
-  else { setErr('birthErr', 'قالب: ۱۳۶۲/۰۵/۱۲.', false); inp.className = 'invalid'; return false; }
-  if (!/^\d{4}$/.test(y) || !/^\d{1,2}$/.test(m) || !/^\d{1,2}$/.test(d)) { setErr('birthErr', 'قالب نامعتبر.', false); inp.className = 'invalid'; return false; }
-  const yy = +y, mm = +m, dd = +d;
-  if (yy < 1300 || yy > 1420) { setErr('birthErr', 'سال ۱۳۰۰-۱۴۲۰.', false); inp.className = 'invalid'; return false; }
-  if (mm < 1 || mm > 12) { setErr('birthErr', 'ماه ۱-۱۲.', false); inp.className = 'invalid'; return false; }
-  if (dd < 1 || dd > jalaliMonthLength(yy, mm)) { setErr('birthErr', 'روز نامعتبر.', false); inp.className = 'invalid'; return false; }
-  setErr('birthErr', '✓ معتبر', true); inp.className = 'valid'; return true;
+// ═══════ کد پستی + تشخیص استان ═══════
+// نگاشت کد پستی → استان (port از iran_geo.py)
+const POSTAL_2DIGIT = {
+  '11':'تهران','13':'تهران','14':'تهران','15':'تهران','16':'تهران','17':'تهران','18':'تهران','19':'تهران',
+  '31':'اصفهان','33':'چهارمحال و بختیاری','38':'اصفهان',
+  '41':'فارس','43':'کهگیلویه و بویراحمد',
+  '51':'خراسان رضوی','56':'خراسان جنوبی','57':'خراسان شمالی',
+  '61':'خوزستان','63':'بوشهر','67':'هرمزگان',
+  '71':'آذربایجان شرقی','73':'آذربایجان غربی','75':'کردستان','77':'زنجان',
+  '81':'مازندران','83':'گلستان','85':'گیلان',
+  '91':'کرمان','93':'سیستان و بلوچستان','95':'یزد','97':'هرمزگان',
+  '01':'البرز','02':'قزوین','21':'قم','22':'قم',
+  '34':'مرکزی','39':'مرکزی','44':'ایلام','45':'لرستان',
+  '46':'چهارمحال و بختیاری','49':'همدان','58':'سمنان',
+  '64':'چهارمحال و بختیاری','66':'بوشهر','68':'کهگیلویه و بویراحمد','69':'هرمزگان',
+  '76':'کرمانشاه','78':'همدان','84':'گلستان','86':'اردبیل','88':'مازندران','96':'یزد','99':'کرمان'
+};
+const POSTAL_1DIGIT = {
+  '1':'تهران','0':'البرز','3':'اصفهان','4':'فارس','5':'خراسان رضوی',
+  '6':'خوزستان','7':'آذربایجان شرقی','8':'گیلان','9':'کرمان','2':'قم'
+};
+
+function detectProvince() {
+  const inp = document.getElementById('postal');
+  const badge = document.getElementById('provinceBadge');
+  const text = document.getElementById('provinceText');
+  const hidden = document.getElementById('detectedProvince');
+  const v = normalizeDigits(inp.value);
+  inp.value = v;
+
+  if (v.length < 1) {
+    badge.classList.remove('show');
+    hidden.value = '';
+    return false;
+  }
+
+  let province = null;
+  if (v.length >= 2 && POSTAL_2DIGIT[v.substring(0,2)]) {
+    province = POSTAL_2DIGIT[v.substring(0,2)];
+  } else if (POSTAL_1DIGIT[v.substring(0,1)]) {
+    province = POSTAL_1DIGIT[v.substring(0,1)];
+  }
+
+  if (province) {
+    badge.classList.remove('unknown');
+    badge.classList.add('show');
+    text.textContent = `استان: ${province}`;
+    hidden.value = province;
+  } else if (v.length >= 2) {
+    badge.classList.add('unknown');
+    badge.classList.add('show');
+    text.textContent = 'استان قابل تشخیص نیست — پس از واکشی پست مشخص می‌شود';
+    hidden.value = '';
+  } else {
+    badge.classList.remove('show');
+    hidden.value = '';
+  }
+
+  return validatePostal();
 }
 
 function validatePostal() {
   const inp = document.getElementById('postal');
   const v = normalizeDigits(inp.value);
-  inp.value = v;
-  if (!/^\d{10}$/.test(v)) { setErr('postalErr', 'باید ۱۰ رقم باشد.', false); inp.className = 'invalid'; return false; }
+  if (!v) { setErr('postalErr', 'کد پستی اجباری است.', false); inp.className = 'invalid'; return false; }
+  if (!/^\d{10}$/.test(v)) { setErr('postalErr', `باید ۱۰ رقم باشد (${v.length}).`, false); inp.className = 'invalid'; return false; }
   setErr('postalErr', '✓ معتبر', true); inp.className = 'valid'; return true;
 }
 
+// ═══════ رمز عبور ═══════
 const FORBIDDEN = '&<>"\\/;,*|=%';
 function validatePw() {
   const inp = document.getElementById('pw');
@@ -281,28 +538,31 @@ function validatePw() {
   setErr('pwErr', '✓ معتبر', true); inp.className = 'valid'; return true;
 }
 
+// ═══════ نوع ثبت‌نام ═══════
 function selectKind(kind) {
   document.getElementById('kindNeed').classList.toggle('selected', kind === 'need');
   document.getElementById('kindProvide').classList.toggle('selected', kind === 'provide');
 }
 
+// ═══════ Submit ═══════
 function onSubmit() {
   const ok = validateNid() && validateMobile() && validateBirth() && validatePostal() && validatePw();
   if (!ok) { alert('لطفاً خطاهای فرم را برطرف کنید.'); return false; }
   const btn = document.getElementById('submitBtn');
   const fs = document.getElementById('fetchStatus');
   btn.disabled = true;
-  btn.textContent = 'در حال پردازش...';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> در حال پردازش...';
   fs.classList.add('show');
   const steps = [
-    ['step_civil', 'ثبت احوال'], ['step_post', 'پست ایران'],
-    ['step_insurance', 'تأمین اجتماعی'], ['step_property', 'اموال و املاک'],
-    ['step_edu', 'آموزش‌وپرورش'], ['step_higher', 'وزارت علوم'],
-    ['step_shaparak', 'شاپرک'],
+    ['step_civil'], ['step_post'], ['step_insurance'],
+    ['step_property'], ['step_edu'], ['step_higher'], ['step_shaparak'],
   ];
   let i = 0;
   function nextStep() {
-    if (i >= steps.length) { btn.textContent = 'هدایت به پرسشنامه...'; return; }
+    if (i >= steps.length) {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> هدایت به پرسشنامه...';
+      return;
+    }
     const [id] = steps[i];
     const el = document.getElementById(id);
     el.classList.remove('pending'); el.classList.add('active');
@@ -313,11 +573,15 @@ function onSubmit() {
       el.querySelector('.icon').textContent = '✓';
       el.querySelector('.badge').textContent = 'موفق';
       i++; nextStep();
-    }, 350);
+    }, 300);
   }
-  setTimeout(() => { document.getElementById('regForm').submit(); }, 3000);
+  nextStep();
+  setTimeout(() => { document.getElementById('regForm').submit(); }, 2800);
   return false;
 }
+
+// راه‌اندازی
+initDatePicker();
 </script>
 </body>
 </html>

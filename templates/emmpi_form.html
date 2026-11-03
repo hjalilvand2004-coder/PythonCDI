@@ -162,7 +162,7 @@ textarea { min-height: 60px; resize: vertical; }
 <!-- نوار پیشرفت -->
 <div class="progress-bar" id="progressBar"></div>
 
-<form method="POST" action="{{ url_for('emmpi_submit') }}" id="emmpiForm">
+<form method="POST" action="{{ url_for('self_declaration', hid=hid) if hid else url_for('emmpi_submit') }}" id="emmpiForm">
 
 <!-- ═══════ گام ۱: هویت، محرمانگی، واکشی ═══════ -->
 <section class="step-section active" data-step="1">

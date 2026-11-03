@@ -76,7 +76,8 @@ from web_services import (fetch_all_services, fetch_civil_registry,
 
 # ─── داده‌های جغرافیایی ایران (۳۱ استان + شهرها + مختصات) ───
 from iran_geo import (PROVINCES, get_province_choices, get_cities_for_province,
-                      get_province_name, get_province_coords, get_all_province_coords)
+                      get_province_name, get_province_coords, get_all_province_coords,
+                      detect_province_from_postal_code)
 
 # ─── سیستم مالی (کیف پول + هزینه خدمات) ───
 from finance_engine import (SERVICE_COSTS, COMPLEXITY_MULTIPLIERS, ROLE_MULTIPLIERS,
@@ -540,7 +541,7 @@ def register():
                             session["uid"] = new_uid
                             session["role"] = "beneficiary"
                             session["beneficiary_hid"] = hid
-                            return redirect(url_for("beneficiary_status", hid=hid))
+                            return redirect(url_for("self_declaration", hid=hid))
 
     return render_template("register.html", error=error)
 
@@ -781,7 +782,7 @@ def beneficiary_new_request():
         save_db(db)
 
         session["beneficiary_hid"] = hid
-        return redirect(url_for("beneficiary_status", hid=hid))
+        return redirect(url_for("self_declaration", hid=hid))
 
     # GET: نمایش فرم
     return render_template("beneficiary_new_request.html", u=u)
@@ -797,6 +798,192 @@ def beneficiary_status(hid):
     if not h:
         return redirect(url_for("index"))
     return render_template("beneficiary_status.html", h=h, hid=hid, u=u)
+
+
+# ─────────────────────────────────────────────────────────
+# خوداظهاری نیازمند — تکمیل پرسشنامه EM-MPI توسط خود نیازمند
+# ─────────────────────────────────────────────────────────
+@app.route("/self-declaration/<hid>", methods=["GET", "POST"])
+@login_required
+def self_declaration(hid):
+    """پرسشنامه خوداظهاری EM-MPI — نیازمند پس از ثبت‌نام اینجا هدایت می‌شود.
+    GET: نمایش ویزارد با داده پیش‌تکمیل‌شده از سرویس‌ها
+    POST: ذخیره پاسخ‌ها، محاسبه EM-MPI، انتقال به استخر درخواست‌ها"""
+    u = current_user()
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return redirect(url_for("index"))
+
+    assessment = h.get("assessment", {})
+
+    if request.method == "POST":
+        # جمع‌آوری پاسخ‌های فرم
+        answers = {}
+        simple_fields = [
+            "A4_burden", "A6_now", "A7_disrupt",
+            "B3_lit", "B4_barriers", "B4_detail", "B5_digital", "B7_path", "B7_skills",
+            "C1_place", "C1_eviction", "C2_constr",
+            "C3_right", "C3_lease_end", "C4_rooms", "C4_area", "C4_safesleep",
+            "C5_water", "C5_elec", "C5_cook", "C5_effect", "C6_san",
+            "C7_impact", "C8_arrears_severity", "C8_installments",
+            "C9_access", "D1_no_provider",
+            "E1_outlook", "E1_evidence", "E2_support", "E2_hours",
+            "E3_support", "E3_who", "E4_barrier", "E4_service",
+        ]
+        for f in simple_fields:
+            v = request.form.get(f)
+            if v is not None and v != "":
+                answers[f] = v
+        # فیلدهای چندانتخابی
+        multi_fields = ["A4_effects", "A6_exp", "A7_danger", "C2_issues",
+                        "C7_missing", "E4_types"]
+        for f in multi_fields:
+            vals = request.form.getlist(f)
+            if vals:
+                answers[f] = vals
+        # فیلدهای عضومحور با پسوند #memberId
+        member_q_prefixes = [
+            "A1_disease", "A1_impact", "A2_limit", "A2_aid",
+            "A3_treatment", "A3_urgent", "A3_cause", "A5_cover", "A5_barrier",
+            "A_malnut", "A_pregnant",
+            "B1_status", "B1_months", "B1_reason", "B2_risks",
+            "B6_need",
+            "D1_ability", "D1_continuity", "D1_seasonal",
+        ]
+        for key in request.form.keys():
+            for prefix in member_q_prefixes:
+                if key.startswith(prefix + "#"):
+                    answers[key] = request.form.get(key)
+                    break
+
+        # اعضا
+        members = []
+        member_ids_raw = request.form.get("member_ids", "")
+        if member_ids_raw:
+            for mid in member_ids_raw.split(","):
+                if not mid.strip():
+                    continue
+                mid = mid.strip()
+                age_str = request.form.get(f"member_{mid}_age", "0")
+                try:
+                    age = int(age_str)
+                except (ValueError, TypeError):
+                    age = 0
+                members.append({
+                    "id": mid,
+                    "firstName": request.form.get(f"member_{mid}_firstName", ""),
+                    "lastName": request.form.get(f"member_{mid}_lastName", ""),
+                    "age": age,
+                    "gender": request.form.get(f"member_{mid}_gender", "male"),
+                    "relation": request.form.get(f"member_{mid}_relation", "سایر"),
+                    "memberType": request.form.get(f"member_{mid}_memberType", "companion"),
+                    "nationalId": request.form.get(f"member_{mid}_nationalId", ""),
+                    "isHead": request.form.get(f"member_{mid}_isHead") == "true",
+                    "isResponder": request.form.get(f"member_{mid}_isResponder") == "true",
+                    "isMainProvider": request.form.get(f"member_{mid}_isMainProvider") == "true",
+                    "isMainCaregiver": request.form.get(f"member_{mid}_isMainCaregiver") == "true",
+                    "needsCare": request.form.get(f"member_{mid}_needsCare") == "true",
+                    "schoolAge": 6 <= age <= 18,
+                    "educationStatus": request.form.get(f"member_{mid}_educationStatus", "na"),
+                    "employmentStatus": request.form.get(f"member_{mid}_employmentStatus", "na"),
+                })
+        if not members:
+            members = assessment.get("members", [])
+
+        # خانوار
+        household = assessment.get("household", {})
+        household["tenureType"] = request.form.get("tenureType", household.get("tenureType", "tenant"))
+        household["monthlyRent"] = _safe_float(request.form.get("monthlyRent"))
+        household["monthlyCharge"] = _safe_float(request.form.get("monthlyCharge"))
+        household["monthlyBills"] = _safe_float(request.form.get("monthlyBills"))
+        household["deposit"] = _safe_float(request.form.get("deposit"))
+        household["arrears"] = _safe_float(request.form.get("arrears"))
+        household["memberCount"] = len(members)
+
+        # منابع درآمد
+        income_sources = []
+        income_count = int(request.form.get("income_count", 0) or 0)
+        for i in range(income_count):
+            income_sources.append({
+                "kind": request.form.get(f"income_{i}_kind", ""),
+                "monthlyAmount": _safe_float(request.form.get(f"income_{i}_amount")),
+                "continuity": request.form.get(f"income_{i}_continuity", "regular"),
+                "reliability": request.form.get(f"income_{i}_reliability", "reliable"),
+                "receiverMemberId": request.form.get(f"income_{i}_receiver", ""),
+            })
+
+        # خط فقر
+        poverty_line = {
+            "monthlyPerCapita": _safe_float(request.form.get("pl_monthlyPerCapita")),
+            "region": request.form.get("pl_region", ""),
+            "source": request.form.get("pl_source", ""),
+            "validAsOf": request.form.get("pl_validAsOf", ""),
+            "status": request.form.get("pl_status", "unverified"),
+        }
+        household["povertyLine"] = poverty_line
+
+        # به‌روزرسانی assessment
+        assessment["answers"] = answers
+        assessment["members"] = members
+        assessment["household"] = household
+        assessment["incomeSources"] = income_sources
+        assessment["updatedAt"] = datetime.now().isoformat(timespec="seconds")
+        assessment["status"] = "submitted"
+
+        # محاسبه EM-MPI
+        result = compute_emmpi(answers, members, household, income_sources, poverty_line)
+        assessment["mpiResult"] = result
+
+        # به‌روزرسانی پرونده خانوار
+        h["assessment"] = assessment
+        h["status"] = "pending"  # آماده تخصیص همیار
+        h["history"].append({
+            "at": datetime.now().isoformat(timespec="seconds"),
+            "by": u.get("role", "beneficiary"),
+            "action": f"تکمیل خوداظهاری EM-MPI — امتیاز: {result.get('total', 'ناتمام')} — تکمیل: {result.get('completeness', 0)}%"
+        })
+
+        # ذخیره EM-MPI در ساختار قدیمی برای سازگاری با CDI
+        if result.get("total") is not None:
+            h["emmpi"] = {
+                "indicators": answers,
+                "result": {
+                    "score": result["total"],
+                    "level": result.get("level", {}),
+                    "red_flags": result.get("flags", []),
+                    "referral_path": result.get("referrals", [{}])[0] if result.get("referrals") else {},
+                    "dominant_dims": result.get("dimensions", []),
+                    "needs_cdi": result["total"] >= 300 or any(f["code"] in ("R1","R2","R5") for f in result.get("flags", [])),
+                },
+                "computed_at": datetime.now().isoformat(timespec="seconds"),
+                "computed_by": u.get("role", "beneficiary"),
+            }
+            h["em_input"]["emmpi_score"] = result["total"]
+            h["em_input"]["emmpi_level"] = result.get("level", {}).get("label", "")
+            h["em_input"]["em_date"] = datetime.now().strftime("%Y-%m-%d")
+            # پرچم‌ها
+            rf_map = {"R1": "housing", "R2": "health", "R3": "food", "R4": "education",
+                      "R5": "safety", "R6": "caregiving", "R7": "utilities", "R8": "legal", "R9": "shock"}
+            redflags = []
+            for f in result.get("flags", []):
+                cdi_flag = rf_map.get(f["code"])
+                if cdi_flag and cdi_flag not in redflags:
+                    redflags.append(cdi_flag)
+            h["em_input"]["redflags"] = redflags
+            h["state"]["redflags"] = redflags
+
+        save_db(db)
+
+        # انتقال به صفحه وضعیت (نمایش نتیجه و انتظار برای تخصیص همیار)
+        return redirect(url_for("beneficiary_status", hid=hid))
+
+    # GET: نمایش فرم با داده پیش‌تکمیل
+    return render_template("emmpi_form.html", u=u, h=h, hid=hid,
+                           assessment=assessment,
+                           DIMENSIONS=EMMPI_DIMENSIONS,
+                           INDICATOR_TITLES=EMMPI_INDICATOR_TITLES,
+                           WEIGHTS=EMMPI_WEIGHTS)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -1336,7 +1523,7 @@ def emmpi_result(hid):
 def emmpi_v2_form():
     """ویزارد ۱۰ گامی پرسشنامه غربالگری خانوار مبتنی بر EM-MPI نسخه ۲."""
     u = current_user()
-    return render_template("emmpi_form.html", u=u)
+    return render_template("emmpi_form.html", u=u, hid=None, h=None, assessment={})
 
 
 @app.route("/emmpi-v2/submit", methods=["POST"], endpoint="emmpi_submit")

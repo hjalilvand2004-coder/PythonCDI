@@ -75,6 +75,102 @@ def get_province_choices():
     return [(key, info["name"]) for key, info in PROVINCES.items()]
 
 
+# ═══════════════════════════════════════════════════════════
+# نگاشت کد پستی → استان (بر اساس رقم اول کد پستی ۱۰ رقمی ایران)
+# ═══════════════════════════════════════════════════════════
+# کد پستی ایران ۱۰ رقمی است. رقم اول نشان‌دهنده منطقه/استان است.
+# این نگاشت تقریبی است و برای پیش‌تکمیل فرم استفاده می‌شود.
+POSTAL_PREFIX_TO_PROVINCE = {
+    "1": ("tehran", "تهران"),
+    "0": ("alborz", "البرز"),
+    "3": ("isfahan", "اصفهان"),
+    "4": ("fars", "فارس"),
+    "5": ("khorasan_razavi", "خراسان رضوی"),
+    "6": ("khuzestan", "خوزستان"),
+    "7": ("east_azarbaijan", "آذربایجان شرقی"),
+    "8": ("gilan", "گیلان"),
+    "9": ("kerman", "کرمان"),
+    "2": ("qom", "قم"),
+}
+
+# نگاشت دقیق‌تر بر اساس ۲ رقم اول (در صورت موجود بودن)
+POSTAL_2DIGIT_TO_PROVINCE = {
+    "11": ("tehran", "تهران"),
+    "13": ("tehran", "تهران"),
+    "14": ("tehran", "تهران"),
+    "15": ("tehran", "تهران"),
+    "16": ("tehran", "تهران"),
+    "17": ("tehran", "تهران"),
+    "18": ("tehran", "تهران"),
+    "19": ("tehran", "تهران"),
+    "31": ("isfahan", "اصفهان"),
+    "33": ("chaharmahal", "چهارمحال و بختیاری"),
+    "38": ("isfahan", "اصفهان"),
+    "41": ("fars", "فارس"),
+    "43": ("kohgiluyeh", "کهگیلویه و بویراحمد"),
+    "51": ("khorasan_razavi", "خراسان رضوی"),
+    "56": ("khorasan_south", "خراسان جنوبی"),
+    "57": ("khorasan_north", "خراسان شمالی"),
+    "61": ("khuzestan", "خوزستان"),
+    "63": ("bushehr", "بوشهر"),
+    "67": ("hormozgan", "هرمزگان"),
+    "71": ("east_azarbaijan", "آذربایجان شرقی"),
+    "73": ("west_azarbaijan", "آذربایجان غربی"),
+    "75": ("kurdistan", "کردستان"),
+    "77": ("zanjan", "زنجان"),
+    "81": ("mazandaran", "مازندران"),
+    "83": ("golestan", "گلستان"),
+    "85": ("gilan", "گیلان"),
+    "91": ("kerman", "کرمان"),
+    "93": ("sistan", "سیستان و بلوچستان"),
+    "95": ("yazd", "یزد"),
+    "97": ("hormozgan", "هرمزگان"),
+    "01": ("alborz", "البرز"),
+    "02": ("qazvin", "قزوین"),
+    "21": ("qom", "قم"),
+    "22": ("qom", "قم"),
+    "34": ("arak", "مرکزی"),
+    "39": ("arak", "مرکزی"),
+    "44": ("ilam", "ایلام"),
+    "45": ("lorestan", "لرستان"),
+    "46": ("chaharmahal", "چهارمحال و بختیاری"),
+    "49": ("hamedan", "همدان"),
+    "58": ("semnan", "سمنان"),
+    "64": ("chaharmahal", "چهارمحال و بختیاری"),
+    "66": ("bushehr", "بوشهر"),
+    "68": ("kohgiluyeh", "کهگیلویه و بویراحمد"),
+    "69": ("hormozgan", "هرمزگان"),
+    "76": ("kermanshah", "کرمانشاه"),
+    "78": ("hamedan", "همدان"),
+    "84": ("golestan", "گلستان"),
+    "86": ("ardabil", "اردبیل"),
+    "88": ("mazandaran", "مازندران"),
+    "96": ("yazd", "یزد"),
+    "99": ("kerman", "کرمان"),
+}
+
+def detect_province_from_postal_code(postal_code):
+    """تشخیص استان از کد پستی ۱۰ رقمی.
+    خروجی: (province_key, province_name) یا None"""
+    import re
+    # نرمال‌سازی ارقام فارسی/عربی
+    fa_to_en = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+    pc = str(postal_code or "").strip().translate(fa_to_en)
+    pc = re.sub(r"[^\d]", "", pc)
+    if len(pc) < 1:
+        return None
+    # ابتدا با ۲ رقم دقیق
+    if len(pc) >= 2:
+        two = pc[:2]
+        if two in POSTAL_2DIGIT_TO_PROVINCE:
+            return POSTAL_2DIGIT_TO_PROVINCE[two]
+    # سپس با ۱ رقم
+    one = pc[0]
+    if one in POSTAL_PREFIX_TO_PROVINCE:
+        return POSTAL_PREFIX_TO_PROVINCE[one]
+    return None
+
+
 def get_cities_for_province(province_key):
     """برگرداندن شهرهای یک استان."""
     info = PROVINCES.get(province_key)
