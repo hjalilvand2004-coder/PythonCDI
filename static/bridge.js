@@ -68,12 +68,12 @@
         const result = await resp.json();
         console.log('[Bridge] Saved to Flask:', result);
         if (result.hid) {
-          // هدایت به صفحه وضعیت یا بازبینی همیار
+          // هدایت به صفحه موفقیت (برای نیازمند) یا بازبینی (برای همیار)
           setTimeout(() => {
             if (role === 'assistant') {
               window.location.href = `/assistant/review/${result.hid}?done=1`;
             } else {
-              window.location.href = `/beneficiary/status/${result.hid}`;
+              window.location.href = `/registration-success/${result.hid}`;
             }
           }, 1500);
         }

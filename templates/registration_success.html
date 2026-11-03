@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ثبت موفق — سامانه CDI</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --p: #1d3d63; --p-d: #162d4a; --bg: #f4f7fa; --ink: #1a2b3c;
+  --mut: #64748b; --line: #dbe3ec; --green: #16a34a; --green-bg: #f0fdf4;
+  --r: 12px; --r-lg: 16px;
+}
+body { font-family: 'Vazirmatn', system-ui, sans-serif; background: var(--bg); color: var(--ink);
+       min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.card { background: #fff; border-radius: var(--r-lg); max-width: 560px; width: 100%;
+        padding: 40px; box-shadow: 0 12px 40px rgba(15,23,42,.10); text-align: center; }
+.icon-circle { width: 72px; height: 72px; margin: 0 auto 20px; border-radius: 50%;
+               background: var(--green-bg); display: flex; align-items: center; justify-content: center; }
+.icon-circle svg { width: 36px; height: 36px; color: var(--green); }
+h1 { font-size: 22px; margin-bottom: 8px; color: var(--p); }
+.subtitle { color: var(--mut); font-size: 14px; margin-bottom: 24px; line-height: 1.7; }
+.info-box { background: var(--bg); border-radius: var(--r); padding: 16px; margin: 20px 0; text-align: right; }
+.info-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid var(--line); }
+.info-row:last-child { border-bottom: none; }
+.info-row .label { color: var(--mut); }
+.info-row .value { font-weight: 600; }
+.score-box { background: var(--green-bg); border: 1px solid #bbf7d0; border-radius: var(--r);
+             padding: 16px; margin: 16px 0; }
+.score-box .score { font-size: 32px; font-weight: 700; color: var(--green); }
+.score-box .label { font-size: 13px; color: #166534; }
+.alert { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--r);
+         padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #1e40af; line-height: 1.7; }
+.btn { display: inline-block; padding: 12px 28px; background: var(--p); color: #fff;
+       text-decoration: none; border-radius: var(--r); font-weight: 600; font-size: 15px;
+       font-family: inherit; margin-top: 16px; transition: background .2s; }
+.btn:hover { background: var(--p-d); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon-circle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <h1>خوداظهاری شما با موفقیت ثبت شد</h1>
+  <p class="subtitle">پرونده شما در استخر درخواست‌ها قرار گرفت و در انتظار تخصیص همیار است.</p>
+
+  <div class="info-box">
+    <div class="info-row">
+      <span class="label">شماره پرونده:</span>
+      <span class="value">{{ hid }}</span>
+    </div>
+    {% if h.identity.name %}
+    <div class="info-row">
+      <span class="label">نام سرپرست:</span>
+      <span class="value">{{ h.identity.name }}</span>
+    </div>
+    {% endif %}
+    {% if h.identity.location %}
+    <div class="info-row">
+      <span class="label">استان/شهر:</span>
+      <span class="value">{{ h.identity.location }}</span>
+    </div>
+    {% endif %}
+    <div class="info-row">
+      <span class="label">تعداد اعضا:</span>
+      <span class="value">{{ h.identity.members or '—' }}</span>
+    </div>
+  </div>
+
+  {% if h.emmpi and h.emmpi.result and h.emmpi.result.score is defined %}
+  <div class="score-box">
+    <div class="score">{{ h.emmpi.result.score }}</div>
+    <div class="label">امتیاز EM-MPI (از ۱۰۰۰)</div>
+    {% if h.emmpi.result.level and h.emmpi.result.level.label %}
+    <div style="font-size: 13px; margin-top: 4px;">{{ h.emmpi.result.level.label }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if h.emmpi and h.emmpi.result and h.emmpi.result.red_flags %}
+  <div class="alert">
+    🚩 <strong>{{ h.emmpi.result.red_flags|length }} نشانه خطر</strong> شناسایی شد — پرونده شما اولویت بالایی برای رسیدگی دارد.
+  </div>
+  {% endif %}
+
+  <div class="alert">
+    📋 همیار به‌زودی پرونده شما را بررسی و در صورت نیاز با شما تماس می‌گیرد.
+  </div>
+
+  <a href="{{ url_for('login') }}" class="btn">بازگشت به صفحه ورود</a>
+</div>
+</body>
+</html>

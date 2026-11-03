@@ -991,10 +991,10 @@ def self_declaration(hid):
 # ═══════════════════════════════════════════════════════════
 @app.route("/questionnaire/")
 @app.route("/questionnaire")
-@login_required
 def questionnaire_new():
-    """صفحه پرسشنامه برای ثبت‌نام جدید (بدون hid) — نیازمند جدید."""
-    u = current_user()
+    """صفحه پرسشنامه برای ثبت‌نام جدید (بدون hid) — نیازمند جدید.
+    نیاز به لاگین ندارد — برنامه استاتیک مودال ثبت‌نام خودش را نشان می‌دهد."""
+    u = current_user() or {"role": "beneficiary"}
     role = u.get("role", "beneficiary")
     idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
     try:
@@ -1008,6 +1008,16 @@ def questionnaire_new():
     bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
+
+
+@app.route("/registration-success/<hid>")
+def registration_success(hid):
+    """صفحه موفقیت پس از تکمیل پرسشنامه — بدون نیاز به لاگین."""
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return redirect(url_for("login"))
+    return render_template("registration_success.html", h=h, hid=hid)
 
 
 @app.route("/questionnaire/<hid>")
@@ -1034,10 +1044,10 @@ def questionnaire_app(hid):
 
 
 @app.route("/api/assessment/create", methods=["POST"])
-@login_required
 def api_create_assessment():
-    """ایجاد household جدید از داده پرسشنامه — حالت ثبت‌نام نیازمند."""
-    u = current_user()
+    """ایجاد household جدید از داده پرسشنامه — حالت ثبت‌نام نیازمند.
+    نیاز به لاگین ندارد — نیازمند از طریق پرسشنامه ثبت‌نام می‌کند."""
+    u = current_user() or {"role": "beneficiary", "name": "نیازمند"}
     data = request.get_json()
     if not data or "assessments" not in data:
         return jsonify({"error": "invalid data"}), 400
