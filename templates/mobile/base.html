@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1d3d63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CDI امداد">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="/static/mobile.css">
+<title>سامانه CDI — {{ title or "موبایل" }}</title>
+</head>
+<body class="app-shell">
+
+<!-- Header -->
+<div class="app-header" id="appHeader">
+  <button class="icon-btn" onclick="history.back()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div style="flex:1">
+    <div class="title">{{ title or "سامانه CDI" }}</div>
+    {% if subtitle %}<div class="subtitle">{{ subtitle }}</div>{% endif %}
+  </div>
+  <button class="icon-btn" onclick="location.href='/logout'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+  </button>
+</div>
+
+<!-- Content -->
+<div class="app-content">
+{% block content %}{% endblock %}
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav" id="bottomNav">
+  {% set role = u.role if u else 'default' %}
+  {% if role == 'beneficiary' %}
+    <a href="/m" class="tab {% if active_tab == 'home' %}active{% endif %}"><span style="font-size:20px">🏠</span><span>خانه</span></a>
+    <a href="/m/pool" class="tab {% if active_tab == 'pool' %}active{% endif %}"><span style="font-size:20px">📋</span><span>وضعیت</span></a>
+    <a href="/questionnaire" class="tab {% if active_tab == 'questionnaire' %}active{% endif %}"><span style="font-size:20px">📝</span><span>پرسشنامه</span></a>
+    <a href="/profile" class="tab {% if active_tab == 'profile' %}active{% endif %}"><span style="font-size:20px">👤</span><span>پروفایل</span></a>
+  {% elif role in ('assistant', 'worker', 'rose', 'swclinic', 'employ') %}
+    <a href="/m/pool" class="tab {% if active_tab == 'pool' %}active{% endif %}"><span style="font-size:20px">🏊</span><span>استخر</span></a>
+    <a href="/m" class="tab {% if active_tab == 'cases' %}active{% endif %}"><span style="font-size:20px">📁</span><span>پرونده‌ها</span></a>
+    <a href="/questionnaire" class="tab {% if active_tab == 'questionnaire' %}active{% endif %}"><span style="font-size:20px">📝</span><span>پرسشنامه</span></a>
+    <a href="/profile" class="tab {% if active_tab == 'profile' %}active{% endif %}"><span style="font-size:20px">👤</span><span>پروفایل</span></a>
+  {% else %}
+    <a href="/" class="tab {% if active_tab == 'home' %}active{% endif %}"><span style="font-size:20px">🏠</span><span>خانه</span></a>
+    <a href="/hq/oversight" class="tab {% if active_tab == 'oversight' %}active{% endif %}"><span style="font-size:20px">👁️</span><span>نظارت</span></a>
+    <a href="/hq/performance" class="tab {% if active_tab == 'reports' %}active{% endif %}"><span style="font-size:20px">📈</span><span>گزارش</span></a>
+    <a href="/profile" class="tab {% if active_tab == 'profile' %}active{% endif %}"><span style="font-size:20px">👤</span><span>پروفایل</span></a>
+  {% endif %}
+</div>
+
+<script src="/static/mobile.js"></script>
+</body>
+</html>

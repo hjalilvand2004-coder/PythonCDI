@@ -1,0 +1,97 @@
+{% extends "mobile/base.html" %}
+{% set title = "داشبورد" %}
+{% set subtitle = u.name %}
+{% set active_tab = "home" %}
+
+{% block content %}
+<div style="text-align:center; margin-bottom:20px;">
+  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1d3d63,#12938d);margin:0 auto 12px;display:grid;place-items:center;font-size:28px;color:#fff;font-weight:700;">
+    {{ u.name[:1] if u.name else '👤' }}
+  </div>
+  <h2 style="font-size:18px;color:#1d3d63;">{{ u.name }}</h2>
+  <div class="role-badge {% if u.role == 'beneficiary' %}beneficiary{% elif u.role in ('assistant','worker') %}assistant{% else %}manager{% endif %}">
+    {% if u.role == 'beneficiary' %}📝 نیازمند{% elif u.role == 'assistant' %}🤝 همیار{% elif u.role == 'worker' %}🔍 کارشناس{% elif u.role == 'manager' %}📊 مدیر{% else %}{{ u.role }}{% endif %}
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+  <div class="stat-card {% if stats.urgent > 0 %}danger{% else %}ok{% endif %}">
+    <div class="num">{{ stats.urgent }}</div>
+    <div class="lbl">فوری</div>
+  </div>
+  <div class="stat-card warn">
+    <div class="num">{{ stats.pending }}</div>
+    <div class="lbl">در انتظار</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.claimed }}</div>
+    <div class="lbl">در حال رسیدگی</div>
+  </div>
+  <div class="stat-card ok">
+    <div class="num">{{ stats.done }}</div>
+    <div class="lbl">تکمیل‌شده</div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="m-card">
+  <h3>⚡ دسترسی سریع</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+    <a href="/questionnaire" class="m-btn" style="font-size:13px;padding:12px;">
+      📝 ثبت‌نام نیازمند
+    </a>
+    <a href="/m/pool" class="m-btn outline" style="font-size:13px;padding:12px;">
+      🏊 استخر درخواست‌ها
+    </a>
+  </div>
+</div>
+
+<!-- My Cases -->
+{% if my_cases %}
+<div class="m-card">
+  <h3>📁 پرونده‌های من</h3>
+  <div class="m-list" style="margin-top:12px;">
+    {% for item in my_cases %}
+    <a href="/m/case/{{ item.hid }}" class="m-list-item">
+      <div class="avatar">{{ item.h.identity.name[:1] if item.h.identity.name else '؟' }}</div>
+      <div class="info">
+        <div class="title">{{ item.h.identity.name or item.hid }}</div>
+        <div class="desc">{{ item.h.identity.location or '—' }}</div>
+      </div>
+      <span class="badge {% if item.h.status == 'pending' %}pending{% elif item.h.status == 'claimed' %}claimed{% else %}done{% endif %}">
+        {% if item.h.status == 'pending' %}در انتظار{% elif item.h.status == 'claimed' %}در رسیدگی{% else %}تکمیل{% endif %}
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- PWA Install Hint -->
+<div class="m-card" style="background:linear-gradient(135deg,#e6f7f6,#dbeafe);border:none;">
+  <h3>📱 نصب اپلیکیشن</h3>
+  <p style="margin-bottom:12px;">برای نصب روی گوشی، این صفحه را در منوی مرورگر «Add to Home Screen» کنید.</p>
+  <button class="m-btn outline" onclick="installPWA()" id="installBtn" style="display:none;">
+    📲 نصب اپلیکیشن
+  </button>
+</div>
+
+<script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('installBtn').style.display = 'none';
+    });
+  }
+}
+</script>
+{% endblock %}

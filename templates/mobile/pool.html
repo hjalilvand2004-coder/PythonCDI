@@ -1,0 +1,31 @@
+{% extends "mobile/base.html" %}
+{% set title = "استخر درخواست‌ها" %}
+{% set subtitle = "پرونده‌های در انتظار تخصیص" %}
+{% set active_tab = "pool" %}
+
+{% block content %}
+{% if cases %}
+<div class="m-list">
+  {% for item in cases %}
+  <a href="/m/case/{{ item.hid }}" class="m-list-item">
+    <div class="avatar">{{ item.h.identity.name[:1] if item.h.identity.name else '؟' }}</div>
+    <div class="info">
+      <div class="title">{{ item.h.identity.name or item.hid }}</div>
+      <div class="desc">
+        {% if item.h.identity.location %}📍 {{ item.h.identity.location }}{% endif %}
+        {% if item.h.emmpi and item.h.emmpi.result and item.h.emmpi.result.score is defined %}
+         • 📊 {{ item.h.emmpi.result.score }}
+        {% endif %}
+      </div>
+    </div>
+    <span class="badge pending">در انتظار</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+  <p>هیچ درخواست در انتظاری وجود ندارد</p>
+</div>
+{% endif %}
+{% endblock %}

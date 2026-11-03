@@ -1,0 +1,92 @@
+{% extends "mobile/base.html" %}
+{% set title = h.identity.name or hid %}
+{% set subtitle = hid %}
+{% set active_tab = "cases" %}
+
+{% block content %}
+<!-- Score Card -->
+{% if h.emmpi and h.emmpi.result and h.emmpi.result.score is defined %}
+<div class="m-card" style="text-align:center;">
+  <div class="score-circle" style="--pct: {{ (h.emmpi.result.score / 10)|round }};">
+    <div class="val">{{ h.emmpi.result.score }}</div>
+    <div class="lbl">از ۱۰۰۰</div>
+  </div>
+  {% if h.emmpi.result.level and h.emmpi.result.level.label %}
+  <div style="font-size:14px;color:#1d3d63;font-weight:600;margin-top:8px;">{{ h.emmpi.result.level.label }}</div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Info Card -->
+<div class="m-card">
+  <h3>📋 اطلاعات پرونده</h3>
+  <div style="font-size:13px;line-height:2;">
+    <div style="display:flex;justify-content:space-between;border-bottom:1px solid #dbe3ec;padding:6px 0;">
+      <span style="color:#64748b;">شماره پرونده:</span>
+      <span style="font-weight:600;">{{ hid }}</span>
+    </div>
+    {% if h.identity.name %}
+    <div style="display:flex;justify-content:space-between;border-bottom:1px solid #dbe3ec;padding:6px 0;">
+      <span style="color:#64748b;">نام:</span>
+      <span style="font-weight:600;">{{ h.identity.name }}</span>
+    </div>
+    {% endif %}
+    {% if h.identity.location %}
+    <div style="display:flex;justify-content:space-between;border-bottom:1px solid #dbe3ec;padding:6px 0;">
+      <span style="color:#64748b;">استان/شهر:</span>
+      <span style="font-weight:600;">{{ h.identity.location }}</span>
+    </div>
+    {% endif %}
+    {% if h.identity.members %}
+    <div style="display:flex;justify-content:space-between;border-bottom:1px solid #dbe3ec;padding:6px 0;">
+      <span style="color:#64748b;">تعداد اعضا:</span>
+      <span style="font-weight:600;">{{ h.identity.members }}</span>
+    </div>
+    {% endif %}
+    <div style="display:flex;justify-content:space-between;padding:6px 0;">
+      <span style="color:#64748b;">وضعیت:</span>
+      <span class="badge {% if h.status == 'pending' %}pending{% elif h.status == 'claimed' %}claimed{% else %}done{% endif %}">
+        {% if h.status == 'pending' %}در انتظار{% elif h.status == 'claimed' %}در رسیدگی{% else %}تکمیل{% endif %}
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Red Flags -->
+{% if h.emmpi and h.emmpi.result and h.emmpi.result.red_flags %}
+<div class="m-card" style="border-right:4px solid #dc2626;">
+  <h3 style="color:#dc2626;">🚩 نشانه‌های خطر</h3>
+  {% for rf in h.emmpi.result.red_flags %}
+  <div style="padding:8px;background:#fef2f2;border-radius:8px;margin-bottom:6px;font-size:13px;">
+    <strong>{{ rf.code }}</strong>: {{ rf.title }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Actions -->
+<div style="display:grid;gap:10px;margin-top:16px;">
+  {% if h.status == 'pending' and u.role in ('assistant', 'worker', 'rose', 'swclinic', 'employ') %}
+  <form method="POST" action="/assistant/claim/{{ hid }}">
+    <button type="submit" class="m-btn success">✅ تخصیص به من</button>
+  </form>
+  {% endif %}
+  {% if h.status == 'claimed' or h.status == 'emmpi_done' %}
+  <a href="/questionnaire/{{ hid }}?role=assistant" class="m-btn">📝 بازبینی پرسشنامه</a>
+  {% endif %}
+  <a href="/m" class="m-btn outline">← بازگشت</a>
+</div>
+
+<!-- History -->
+{% if h.history %}
+<div class="m-card">
+  <h3>📜 تاریخچه</h3>
+  {% for event in h.history[-5:] %}
+  <div style="padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px;">
+    <div style="color:#1d3d63;font-weight:600;">{{ event.action }}</div>
+    <div style="color:#94a3b8;">{{ event.at[:16] }} • {{ event.by }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

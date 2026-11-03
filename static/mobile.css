@@ -1,0 +1,178 @@
+/* ═══════════════════════════════════════════════════════════
+   Mobile App CSS — سامانه CDI
+   رابط کاربری لمسی، responsive، app-like
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --p: #1d3d63; --p-d: #162d4a; --p-dd: #0f1f33;
+  --p-l: #3a5a7a; --p-ll: #e8eef4;
+  --bg: #f4f7fa; --ink: #1a2b3c; --ink-2: #334155;
+  --mut: #64748b; --line: #dbe3ec;
+  --ring: #12938d; --ring-l: #e6f7f6;
+  --green: #16a34a; --red: #dc2626; --amber: #f59e0b;
+  --sh: 0 2px 8px rgba(15,23,42,.08), 0 1px 3px rgba(15,23,42,.06);
+  --r: 10px; --r-md: 14px; --r-lg: 18px;
+  --tab-h: 60px;
+  --header-h: 56px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ═══════ App Shell ═══════ */
+body.app-shell {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  padding-top: var(--header-h);
+  padding-bottom: calc(var(--tab-h) + var(--safe-bottom));
+}
+
+/* ═══════ Header (Top Bar) ═══════ */
+.app-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+  color: #fff;
+  display: flex; align-items: center; padding: 0 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.15);
+}
+.app-header .title { font-size: 16px; font-weight: 700; flex: 1; }
+.app-header .subtitle { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+.app-header .icon-btn {
+  background: rgba(255,255,255,.12); border: none; color: #fff;
+  width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center; cursor: pointer;
+}
+.app-header .icon-btn:active { background: rgba(255,255,255,.2); }
+
+/* ═══════ Bottom Tab Bar ═══════ */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: calc(var(--tab-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: #fff; border-top: 1px solid var(--line);
+  display: flex; box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+}
+.bottom-nav .tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  text-decoration: none; color: var(--mut); font-size: 10px;
+  padding-top: 8px; transition: color .2s;
+}
+.bottom-nav .tab.active { color: var(--p); }
+.bottom-nav .tab svg { width: 22px; height: 22px; }
+.bottom-nav .tab:active { background: var(--bg); }
+
+/* ═══════ Content ═══════ */
+.app-content { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+/* ═══════ Cards ═══════ */
+.m-card {
+  background: #fff; border-radius: var(--r-md); padding: 16px;
+  margin-bottom: 12px; box-shadow: var(--sh);
+}
+.m-card h3 { font-size: 15px; margin-bottom: 8px; color: var(--p-d); }
+.m-card p { font-size: 13px; color: var(--mut); line-height: 1.6; }
+
+/* ═══════ Stat Cards ═══════ */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-card {
+  background: #fff; border-radius: var(--r-md); padding: 14px;
+  box-shadow: var(--sh); text-align: center;
+}
+.stat-card .num { font-size: 24px; font-weight: 700; color: var(--p); }
+.stat-card .lbl { font-size: 11px; color: var(--mut); margin-top: 2px; }
+.stat-card.warn .num { color: var(--amber); }
+.stat-card.danger .num { color: var(--red); }
+.stat-card.ok .num { color: var(--green); }
+
+/* ═══════ List ═══════ */
+.m-list { background: #fff; border-radius: var(--r-md); overflow: hidden; box-shadow: var(--sh); }
+.m-list-item {
+  display: flex; align-items: center; padding: 14px 16px;
+  border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink);
+  transition: background .15s;
+}
+.m-list-item:active { background: var(--bg); }
+.m-list-item:last-child { border-bottom: none; }
+.m-list-item .avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--p-ll); color: var(--p);
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  margin-left: 12px; flex-shrink: 0;
+}
+.m-list-item .info { flex: 1; }
+.m-list-item .title { font-size: 14px; font-weight: 600; }
+.m-list-item .desc { font-size: 12px; color: var(--mut); }
+.m-list-item .badge {
+  font-size: 10px; padding: 3px 8px; border-radius: 10px;
+  font-weight: 600;
+}
+.badge.pending { background: #fef3c7; color: #92400e; }
+.badge.claimed { background: #dbeafe; color: #1e40af; }
+.badge.done { background: #d1fae5; color: #166534; }
+.badge.urgent { background: #fee2e2; color: #991b1b; }
+
+/* ═══════ Buttons ═══════ */
+.m-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px; border-radius: var(--r);
+  border: none; background: var(--p); color: #fff;
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all .15s; text-decoration: none;
+}
+.m-btn:active { transform: scale(.98); background: var(--p-d); }
+.m-btn.outline { background: transparent; border: 2px solid var(--p); color: var(--p); }
+.m-btn.danger { background: var(--red); }
+.m-btn.success { background: var(--green); }
+
+/* ═══════ Forms ═══════ */
+.m-field { margin-bottom: 14px; }
+.m-field label { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; }
+.m-field input, .m-field select, .m-field textarea {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: var(--r); font-size: 15px; font-family: inherit;
+  background: #fff; transition: border-color .15s;
+}
+.m-field input:focus { outline: none; border-color: var(--p); }
+.m-field .hint { font-size: 11px; color: var(--mut); margin-top: 4px; }
+
+/* ═══════ Score Display ═══════ */
+.score-circle {
+  width: 120px; height: 120px; margin: 16px auto;
+  border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(var(--ring) 0deg, var(--ring) calc(var(--pct, 0) * 3.6deg), var(--line) calc(var(--pct, 0) * 3.6deg));
+  position: relative;
+}
+.score-circle::before {
+  content: ''; position: absolute; inset: 8px;
+  background: #fff; border-radius: 50%;
+}
+.score-circle .val { position: relative; font-size: 28px; font-weight: 700; color: var(--p); }
+.score-circle .lbl { position: relative; font-size: 10px; color: var(--mut); }
+
+/* ═══════ Role Badge ═══════ */
+.role-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.role-badge.beneficiary { background: var(--ring-l); color: var(--ring); }
+.role-badge.assistant { background: #dbeafe; color: #1e40af; }
+.role-badge.manager { background: #ede9fe; color: #6d28d9; }
+
+/* ═══════ Empty State ═══════ */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--mut); }
+.empty-state svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* ═══════ Responsive ═══════ */
+@media (min-width: 768px) {
+  .app-content { max-width: 800px; }
+  .stat-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* مخفی کردن scrollbar */
+::-webkit-scrollbar { width: 0; }

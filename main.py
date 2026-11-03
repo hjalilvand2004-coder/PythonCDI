@@ -86,6 +86,9 @@ from finance_engine import (SERVICE_COSTS, COMPLEXITY_MULTIPLIERS, ROLE_MULTIPLI
                              approve_transaction, approve_all_pending,
                              get_all_wallets, get_all_pending)
 
+# ─── مسیرهای موبایل اپ (PWA) ───
+# import در انتهای فایل برای جلوگیری از circular import
+
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cdi_data.json")
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -4296,3 +4299,6 @@ if __name__ == "__main__":
 else:
     # When imported as module, ensure app is available
     pass
+
+# ─── مسیرهای موبایل اپ (PWA) ───
+import mobile_routes
