@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 from functools import wraps
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify, send_from_directory
 
 from cdi_catalog import (ACTORS, AI_RED_LINES, AXES, AXES_BY_CODE, DIMENSIONS,
                          LAYER3_TRIGGERS, LAYERS, PRIORITY_CLASSES, RINGS,
@@ -88,7 +88,7 @@ from finance_engine import (SERVICE_COSTS, COMPLEXITY_MULTIPLIERS, ROLE_MULTIPLI
 
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cdi_data.json")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = "cdi-prototype-secret-key"  # نمونهٔ اولیه
 
 USERS = {
@@ -541,7 +541,7 @@ def register():
                             session["uid"] = new_uid
                             session["role"] = "beneficiary"
                             session["beneficiary_hid"] = hid
-                            return redirect(url_for("self_declaration", hid=hid))
+                            return redirect(url_for("questionnaire_app", hid=hid))
 
     return render_template("register.html", error=error)
 
@@ -782,7 +782,7 @@ def beneficiary_new_request():
         save_db(db)
 
         session["beneficiary_hid"] = hid
-        return redirect(url_for("self_declaration", hid=hid))
+        return redirect(url_for("questionnaire_app", hid=hid))
 
     # GET: نمایش فرم
     return render_template("beneficiary_new_request.html", u=u)
@@ -984,6 +984,169 @@ def self_declaration(hid):
                            DIMENSIONS=EMMPI_DIMENSIONS,
                            INDICATOR_TITLES=EMMPI_INDICATOR_TITLES,
                            WEIGHTS=EMMPI_WEIGHTS)
+
+
+# ═══════════════════════════════════════════════════════════
+# پرسشنامه استاتیک (port از porseshnameh-static-v0.9.6)
+# ═══════════════════════════════════════════════════════════
+@app.route("/questionnaire/<hid>")
+@login_required
+def questionnaire_app(hid):
+    """سرو کردن برنامه استاتیک پرسشنامه با bridge script."""
+    u = current_user()
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return redirect(url_for("index"))
+    role = request.args.get("role", u.get("role", "beneficiary"))
+    # خواندن index.html استاتیک و تزریق bridge script
+    # os در ابتدای فایل import شده
+    idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
+    try:
+        with open(idx_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except Exception:
+        return "فایل پرسشنامه یافت نشد", 500
+    # تزریق bridge script قبل از </body>
+    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="{hid}";window.BRIDGE_ROLE="{role}";</script>'
+    # اصلاح مسیرهای نسبی
+    html = html.replace('href="./_next', 'href="/static/porsesh/_next')
+    html = html.replace('src="./_next', 'src="/static/porsesh/_next')
+    html = html.replace('href="./logo.svg"', 'href="/static/porsesh/logo.svg"')
+    html = html.replace('href="./help.html"', 'href="/static/porsesh/help.html" target="_blank"')
+    html = html.replace('</body>', bridge + '</body>')
+    return html
+
+
+@app.route("/api/assessment/<hid>")
+@login_required
+def api_get_assessment(hid):
+    """بازگرداندن داده assessment برای bridge script."""
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return jsonify({"error": "not found"}), 404
+    assessment = h.get("assessment", {})
+    # ساخت ساختار منطبق با Zustand store
+    assessments = {hid: assessment} if assessment else {}
+    return jsonify({"assessments": assessments, "hid": hid})
+
+
+@app.route("/api/assessment/<hid>", methods=["POST"])
+@login_required
+def api_save_assessment(hid):
+    """ذخیره داده assessment از bridge script."""
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return jsonify({"error": "not found"}), 404
+    data = request.get_json()
+    if not data or "assessments" not in data:
+        return jsonify({"error": "invalid data"}), 400
+    assessments = data["assessments"]
+    assessment = assessments.get(hid, {})
+    if assessment:
+        h["assessment"] = assessment
+        h["assessment"]["updatedAt"] = datetime.now().isoformat(timespec="seconds")
+        save_db(db)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/assessment/<hid>/complete", methods=["POST"])
+@login_required
+def api_complete_assessment(hid):
+    """تکمیل نهایی assessment — ذخیره و انتقال به استخر."""
+    u = current_user()
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return jsonify({"error": "not found"}), 404
+    data = request.get_json()
+    if not data or "assessments" not in data:
+        return jsonify({"error": "invalid data"}), 400
+    assessments = data["assessments"]
+    assessment = assessments.get(hid, {})
+    if assessment:
+        assessment["status"] = "submitted"
+        assessment["updatedAt"] = datetime.now().isoformat(timespec="seconds")
+        h["assessment"] = assessment
+        # محاسبه EM-MPI اگر answers موجود است
+        answers = assessment.get("answers", {})
+        members = assessment.get("members", [])
+        household = assessment.get("household", {})
+        income_sources = assessment.get("incomeSources", [])
+        poverty_line = household.get("povertyLine", {})
+        try:
+            result = compute_emmpi(answers, members, household, income_sources, poverty_line)
+            assessment["mpiResult"] = result
+            # ذخیره در ساختار قدیمی برای CDI
+            if result.get("total") is not None:
+                h["emmpi"] = {
+                    "indicators": answers,
+                    "result": {
+                        "score": result["total"],
+                        "level": result.get("level", {}),
+                        "red_flags": result.get("flags", []),
+                        "referral_path": result.get("referrals", [{}])[0] if result.get("referrals") else {},
+                        "needs_cdi": result["total"] >= 300 or any(f["code"] in ("R1","R2","R5") for f in result.get("flags", [])),
+                    },
+                    "computed_at": datetime.now().isoformat(timespec="seconds"),
+                    "computed_by": u.get("role", "beneficiary"),
+                }
+                h["em_input"]["emmpi_score"] = result["total"]
+                h["em_input"]["emmpi_level"] = result.get("level", {}).get("label", "")
+                h["em_input"]["em_date"] = datetime.now().strftime("%Y-%m-%d")
+                rf_map = {"R1": "housing", "R2": "health", "R3": "food", "R4": "education",
+                          "R5": "safety", "R6": "caregiving", "R7": "utilities", "R8": "legal", "R9": "shock"}
+                redflags = []
+                for f in result.get("flags", []):
+                    cdi_flag = rf_map.get(f["code"])
+                    if cdi_flag and cdi_flag not in redflags:
+                        redflags.append(cdi_flag)
+                h["em_input"]["redflags"] = redflags
+                h["state"]["redflags"] = redflags
+        except Exception as e:
+            print(f"[api_complete] EM-MPI computation error: {e}")
+        # وضعیت پرونده
+        role = data.get("role", "beneficiary")
+        if role == "assistant":
+            # همیار در حال بازبینی است
+            h["status"] = "emmpi_done" if h.get("emmpi") else "claimed"
+        else:
+            # نیازمند تکمیل کرده → آماده تخصیص همیار
+            h["status"] = "pending"
+        h["history"].append({
+            "at": datetime.now().isoformat(timespec="seconds"),
+            "by": u.get("role", role),
+            "action": f"تکمیل پرسشنامه استاتیک — امتیاز: {result.get('total', 'ناتمام') if 'result' in dir() else 'نامشخص'}"
+        })
+        save_db(db)
+    return jsonify({"ok": True})
+
+
+@app.route("/assistant/review/<hid>")
+@login_required
+def assistant_review(hid):
+    """همیار پرسشنامه را با داده پیش‌تکمیل‌شده می‌بیند و می‌تواند اصلاح کند."""
+    u = current_user()
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return redirect(url_for("index"))
+    if u["role"] not in ("assistant", "worker", "rose", "swclinic", "caseworker", "manager"):
+        return "این بخش فقط برای همیاران قابل دسترسی است.", 403
+    # تخصیص به همیار
+    if not h.get("claimed_by"):
+        h["claimed_by"] = {"id": u.get("id", u.get("role")), "name": u.get("name", ""), "at": datetime.now().isoformat(timespec="seconds")}
+        h["status"] = "claimed"
+        h["history"].append({
+            "at": datetime.now().isoformat(timespec="seconds"),
+            "by": u.get("role"),
+            "action": f"تخصیص پرونده به همیار: {u.get('name', '')}"
+        })
+        save_db(db)
+    # هدایت به برنامه استاتیک با role=assistant
+    return redirect(f"/questionnaire/{hid}?role=assistant")
 
 
 # ═══════════════════════════════════════════════════════════
@@ -1249,8 +1412,8 @@ def assistant_claim(hid):
     })
     save_db(db)
 
-    # هدایت به فرم EM-MPI برای انجام غربالگری
-    return redirect(url_for("emmpi_form", hid=hid))
+    # هدایت به بازبینی پرسشنامه (برنامه استاتیک با داده پیش‌تکمل‌شده)
+    return redirect(url_for("assistant_review", hid=hid))
 
 
 # ─────────────────────────────────────────────────────────

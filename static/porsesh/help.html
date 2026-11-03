@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>راهنمای سامانه پرسش‌نامه EM-MPI — غربالگری محرومیت چندبعدی خانوار</title>
+<meta name="description" content="راهنمای تصویری سامانه پرسش‌نامه EM-MPI: پنج بُعد، ۳۰ شاخص، پرچم‌های قرمز، وب‌سرویس‌های متولی و نگاشت نسخه قبلی به جدید.">
+<style>
+/* ===================== فونت ===================== */
+@font-face{font-family:"Vazirmatn";src:url("./fonts/Vazirmatn-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Vazirmatn";src:url("./fonts/Vazirmatn-Medium.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Vazirmatn";src:url("./fonts/Vazirmatn-SemiBold.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Vazirmatn";src:url("./fonts/Vazirmatn-Bold.woff2") format("woff2");font-weight:700;font-display:swap}
+
+/* ===================== متغیرها ===================== */
+:root{
+  --bg:#071a2b;--bg2:#0a2338;--card:rgba(255,255,255,.055);--card-strong:rgba(255,255,255,.09);
+  --line:rgba(255,255,255,.12);--line-soft:rgba(255,255,255,.07);
+  --text:#eaf4f6;--muted:#9db8c4;
+  --teal:#2dd4bf;--teal-deep:#14b8a6;--emerald:#34d399;--amber:#fbbf24;--rose:#fb7185;
+  --sky:#38bdf8;--violet:#a78bfa;
+  --radius:22px;--radius-s:14px;
+  --shadow:0 20px 60px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.9;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(45,212,191,.35)}
+a{color:var(--teal);text-decoration:none}
+.wrap{max-width:1080px;margin-inline:auto;padding-inline:22px}
+section{padding-block:74px;position:relative}
+
+/* ===================== پس‌زمینه رؤیایی ===================== */
+.aurora{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(1100px 620px at 82% -8%,rgba(20,184,166,.20),transparent 62%),
+  radial-gradient(900px 560px at 8% 12%,rgba(56,189,248,.14),transparent 60%),
+  radial-gradient(1000px 700px at 50% 115%,rgba(52,211,153,.13),transparent 65%),
+  linear-gradient(180deg,#071a2b 0%,#0a2338 48%,#082132 100%);
+}
+.orb{position:fixed;border-radius:50%;filter:blur(70px);opacity:.5;z-index:-1;pointer-events:none;animation:float 16s ease-in-out infinite}
+.orb.o1{width:420px;height:420px;background:rgba(20,184,166,.35);top:-120px;left:-120px}
+.orb.o2{width:340px;height:340px;background:rgba(56,189,248,.26);top:34%;right:-140px;animation-delay:-6s}
+.orb.o3{width:300px;height:300px;background:rgba(52,211,153,.25);bottom:-110px;left:22%;animation-delay:-11s}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-34px) scale(1.06)}}
+.grid-lines{position:fixed;inset:0;z-index:-2;opacity:.05;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(ellipse 70% 60% at 50% 30%,#000 30%,transparent 75%)}
+
+/* ===================== ناوبری ===================== */
+.nav{position:fixed;top:0;right:0;left:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:rgba(7,26,43,.72);border-bottom:1px solid var(--line-soft)}
+.nav .wrap{display:flex;align-items:center;gap:14px;height:60px}
+.nav .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--text)}
+.nav .brand .dot{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--teal),var(--sky));color:#06283a;flex-shrink:0}
+.nav .links{display:flex;gap:4px;margin-inline-start:auto;flex-wrap:wrap}
+.nav .links a{color:var(--muted);font-size:13px;padding:7px 12px;border-radius:999px;transition:.25s}
+.nav .links a:hover{color:var(--text);background:var(--card)}
+.progress-top{position:fixed;top:60px;right:0;left:0;height:3px;z-index:50;background:transparent}
+.progress-top b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--emerald));transition:width .15s}
+
+/* ===================== قهرمان ===================== */
+.hero{min-height:100svh;display:grid;place-items:center;text-align:center;padding-top:90px}
+.hero .kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--teal);
+  border:1px solid rgba(45,212,191,.4);background:rgba(45,212,191,.08);padding:7px 16px;border-radius:999px;margin-bottom:26px}
+.hero h1{font-size:clamp(28px,5.2vw,54px);font-weight:700;line-height:1.55;max-width:840px}
+.hero h1 .grad{background:linear-gradient(120deg,var(--teal) 15%,var(--sky) 55%,var(--emerald));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--muted);max-width:680px;margin:22px auto 0;font-size:clamp(14px,1.7vw,17px)}
+.hero .stats{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:40px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:18px 30px;min-width:130px;backdrop-filter:blur(8px)}
+.stat b{display:block;font-size:clamp(24px,3.4vw,36px);font-weight:700;background:linear-gradient(120deg,var(--teal),var(--emerald));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{font-size:12.5px;color:var(--muted)}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:38px}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 26px;border-radius:14px;font-size:14.5px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.3s;font-family:inherit}
+.btn.primary{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#04222b;box-shadow:0 12px 32px rgba(20,184,166,.35)}
+.btn.primary:hover{transform:translateY(-3px);box-shadow:0 18px 42px rgba(20,184,166,.45)}
+.btn.ghost{background:var(--card);border-color:var(--line);color:var(--text)}
+.btn.ghost:hover{background:var(--card-strong);transform:translateY(-3px)}
+.scroll-hint{position:absolute;bottom:26px;right:50%;transform:translateX(50%);color:var(--muted);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.scroll-hint i{display:block;width:22px;height:34px;border:2px solid var(--muted);border-radius:12px;position:relative}
+.scroll-hint i::after{content:"";position:absolute;top:6px;right:50%;transform:translateX(50%);width:4px;height:8px;border-radius:3px;background:var(--teal);animation:wheel 1.6s infinite}
+@keyframes wheel{0%{opacity:1;top:6px}70%{opacity:0;top:16px}100%{opacity:0;top:6px}}
+
+/* ===================== عمومی ===================== */
+.head{max-width:720px;margin-inline:auto;text-align:center;margin-bottom:46px}
+.head .tag{font-size:12.5px;color:var(--teal);letter-spacing:.06em;border:1px solid rgba(45,212,191,.35);border-radius:999px;padding:4px 14px;display:inline-block;margin-bottom:14px;background:rgba(45,212,191,.07)}
+.head h2{font-size:clamp(22px,3.4vw,34px);font-weight:700;line-height:1.6}
+.head p{color:var(--muted);margin-top:12px;font-size:14.5px}
+.glass{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.65,.3,1),transform .8s cubic-bezier(.2,.65,.3,1)}
+.reveal.in{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+/* ===================== معماری سه‌لایه ===================== */
+.layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.layer{padding:30px 26px;position:relative;overflow:hidden}
+.layer .num{position:absolute;top:14px;left:18px;font-size:56px;font-weight:700;color:rgba(255,255,255,.06)}
+.layer .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;margin-bottom:16px}
+.layer h3{font-size:17px;margin-bottom:9px}
+.layer p{color:var(--muted);font-size:13.5px}
+.lc1 .ic{background:rgba(45,212,191,.14);color:var(--teal)}
+.lc2 .ic{background:rgba(56,189,248,.14);color:var(--sky)}
+.lc3 .ic{background:rgba(52,211,153,.14);color:var(--emerald)}
+
+/* ===================== تایم‌لاین ۱۰ گام ===================== */
+.timeline{position:relative;max-width:760px;margin-inline:auto}
+.timeline::before{content:"";position:absolute;top:8px;bottom:8px;right:23px;width:2px;background:linear-gradient(180deg,var(--teal),rgba(45,212,191,.05))}
+.tl-item{position:relative;padding:0 66px 26px 0}
+.tl-item .n{position:absolute;right:0;top:0;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;
+  background:var(--bg2);border:2px solid var(--teal);color:var(--teal);box-shadow:0 0 0 6px rgba(45,212,191,.08)}
+.tl-item.scored .n{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#04222b;border-color:transparent}
+.tl-item h4{font-size:15.5px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tl-item p{color:var(--muted);font-size:13.5px;margin-top:5px}
+.pill{font-size:10.5px;border-radius:999px;padding:2px 10px;border:1px solid var(--line);color:var(--muted)}
+.pill.noscore{color:var(--amber);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.07)}
+
+/* ===================== ابعاد ===================== */
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.dim{padding:26px;transition:transform .35s,box-shadow .35s;position:relative;overflow:hidden}
+.dim:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+.dim .top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.dim .letter{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:22px;font-weight:700;flex-shrink:0}
+.dim h3{font-size:16px}
+.dim .cap{font-size:12px;color:var(--muted)}
+.dim .bar{height:9px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:12px 0 15px}
+.dim .bar b{display:block;height:100%;width:0;border-radius:99px;transition:width 1.3s cubic-bezier(.2,.65,.3,1)}
+.dim ul{list-style:none;display:flex;flex-wrap:wrap;gap:7px}
+.dim ul li{font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:3.5px 11px;color:var(--muted);background:rgba(255,255,255,.03)}
+.dim ul li b{color:var(--text);font-weight:600}
+.dA .letter{background:rgba(251,113,133,.15);color:var(--rose)}.dA .bar b{background:linear-gradient(90deg,var(--rose),#f43f5e)}
+.dB .letter{background:rgba(56,189,248,.15);color:var(--sky)}.dB .bar b{background:linear-gradient(90deg,var(--sky),#0ea5e9)}
+.dC .letter{background:rgba(45,212,191,.15);color:var(--teal)}.dC .bar b{background:linear-gradient(90deg,var(--teal),#0d9488)}
+.dD .letter{background:rgba(251,191,36,.15);color:var(--amber)}.dD .bar b{background:linear-gradient(90deg,var(--amber),#f59e0b)}
+.dE .letter{background:rgba(52,211,153,.15);color:var(--emerald)}.dE .bar b{background:linear-gradient(90deg,var(--emerald),#10b981)}
+
+/* ===================== امتیازدهی و سطوح ===================== */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media(max-width:820px){.two-col{grid-template-columns:1fr}}
+.panel{padding:28px}
+.panel h3{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.panel p{color:var(--muted);font-size:13.5px}
+.formula{background:rgba(45,212,191,.09);border:1px dashed rgba(45,212,191,.45);border-radius:var(--radius-s);padding:14px 18px;margin-top:14px;font-size:14px;color:var(--teal);font-weight:600}
+.levels{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.level{display:flex;align-items:center;gap:12px;border-radius:var(--radius-s);border:1px solid var(--line);padding:11px 15px;font-size:13px;background:rgba(255,255,255,.03)}
+.level .rng{font-family:inherit;font-weight:700;font-size:13px;min-width:96px;text-align:center;border-radius:9px;padding:3px 8px}
+.level b{font-weight:600}
+.level span{color:var(--muted);font-size:12px;margin-inline-start:auto;text-align:left}
+.lv1 .rng{background:rgba(52,211,153,.16);color:var(--emerald)}
+.lv2 .rng{background:rgba(56,189,248,.16);color:var(--sky)}
+.lv3 .rng{background:rgba(251,191,36,.16);color:var(--amber)}
+.lv4 .rng{background:rgba(251,146,60,.16);color:#fb923c}
+.lv5 .rng{background:rgba(251,113,133,.16);color:var(--rose)}
+
+/* ===================== پرچم‌های قرمز ===================== */
+.flags{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.flag{padding:20px;border-radius:var(--radius-s);border:1px solid rgba(251,113,133,.28);background:rgba(251,113,133,.05);transition:.3s;display:flex;gap:14px;align-items:flex-start}
+.flag:hover{background:rgba(251,113,133,.1);transform:translateY(-3px)}
+.flag .code{font-weight:700;color:var(--rose);background:rgba(251,113,133,.14);border-radius:10px;min-width:44px;height:40px;display:grid;place-items:center;font-size:13.5px;flex-shrink:0}
+.flag h4{font-size:14px;margin-bottom:3px}
+.flag p{font-size:12px;color:var(--muted)}
+.flag .acts{margin-top:7px;display:flex;flex-wrap:wrap;gap:5px}
+.flag .acts i{font-style:normal;font-size:10.5px;border:1px solid rgba(251,113,133,.35);color:var(--rose);border-radius:999px;padding:1.5px 9px}
+
+/* ===================== وب‌سرویس‌ها ===================== */
+.services{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.service{padding:22px;transition:.3s}
+.service:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.service .top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.service .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(45,212,191,.13);color:var(--teal);flex-shrink:0}
+.service h4{font-size:14.5px}
+.service .org{font-size:11.5px;color:var(--muted)}
+.service .lock{margin-inline-start:auto;font-size:10.5px;color:var(--teal);border:1px solid rgba(45,212,191,.4);border-radius:999px;padding:2px 10px;background:rgba(45,212,191,.08)}
+.service ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.service ul li{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.service .feeds{margin-top:10px;font-size:11.5px;color:var(--muted)}
+.service .feeds b{color:var(--sky);font-weight:600}
+.ladder{margin-top:16px;display:flex;flex-direction:column;gap:9px}
+.rung{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 15px;background:rgba(255,255,255,.03);font-size:13px}
+.rung .r{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0;background:linear-gradient(135deg,rgba(45,212,191,.25),rgba(56,189,248,.25));color:var(--teal)}
+.rung span{color:var(--muted);font-size:12px}
+
+/* ===================== نگاشت ===================== */
+.map-note{padding:24px 26px;border-radius:var(--radius);border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.06);margin-bottom:20px}
+.map-note b{color:var(--amber)}
+.map-note p{color:var(--muted);font-size:13.5px;margin-top:6px}
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:13px}
+.map-card{padding:19px;border-radius:var(--radius-s);border:1px solid var(--line);background:rgba(255,255,255,.035)}
+.map-card .t{display:flex;align-items:center;gap:9px;margin-bottom:7px;flex-wrap:wrap}
+.map-card .t b{font-size:13.5px}
+.badge{font-size:10.5px;border-radius:999px;padding:2px 10px;border:1px solid}
+.b-keep{color:var(--emerald);border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
+.b-re{color:var(--amber);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+.b-split{color:var(--violet);border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08)}
+.b-ctrl{color:var(--sky);border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.08)}
+.b-new{color:var(--teal);border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.08)}
+.map-card .old{font-size:12px;color:var(--muted)}
+.map-card .note{font-size:11.5px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.8}
+
+/* ===================== ملاحظات مهاجرت ===================== */
+.leg-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:11px;margin-bottom:14px}
+.leg{border:1px solid var(--line);border-radius:var(--radius-s);padding:13px 15px;background:var(--card);font-size:12.3px;line-height:1.85;color:var(--muted)}
+.leg b{display:block;font-size:12.8px;margin-bottom:3px}
+.leg.l-ok b{color:#6ee7b7}.leg.l-ctx b{color:#7dd3fc}.leg.l-serv b{color:#c4b5fd}.leg.l-out b{color:#fda4af}.leg.l-pre b{color:var(--teal)}
+.leg-note{max-width:860px;margin:0 auto 30px;text-align:center;color:rgba(255,255,255,.45);font-size:12px;line-height:1.9}
+.mig-tabs{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:30px}
+.mtab{padding:9px 18px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.25s}
+.mtab:hover{color:var(--text);border-color:rgba(45,212,191,.45)}
+.mtab.on{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#04222b;border-color:transparent;box-shadow:0 8px 22px rgba(20,184,166,.3)}
+.mig-panel{display:none}
+.mig-panel.on{display:block;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.mgroup{margin-bottom:34px}
+.mgroup:last-child{margin-bottom:0}
+.mgroup>h3{font-size:16.5px;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mgroup>h3 .cnt{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-weight:500}
+.mgroup .gdesc{color:var(--muted);font-size:12.8px;margin-bottom:14px;max-width:860px;line-height:1.9}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-s);background:rgba(255,255,255,.03);-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.mtable{width:100%;min-width:900px;border-collapse:collapse;font-size:12.6px}
+.mtable.slim{min-width:760px}
+.mtable th{text-align:right;padding:11px 14px;border-bottom:1px solid var(--line);font-size:11.8px;color:var(--teal);font-weight:600;white-space:nowrap;background:rgba(45,212,191,.06)}
+.mtable td{padding:10.5px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;line-height:1.9}
+.mtable tbody tr:last-child td{border-bottom:none}
+.mtable tbody tr{transition:background .2s}
+.mtable tbody tr:hover{background:rgba(45,212,191,.045)}
+.mtable td.f{font-weight:600;min-width:170px}
+.mtable td.u{min-width:125px;white-space:nowrap}
+.mtable td.p{color:var(--teal);font-weight:600;min-width:88px}
+.mtable td.n2{min-width:280px}
+.mtable td.n{color:var(--muted);min-width:230px}
+.mtable td.idx{font-weight:700;color:var(--teal);white-space:nowrap}
+.ub{display:inline-block;font-size:10.4px;border-radius:999px;padding:2px 9px;border:1px solid;white-space:nowrap;line-height:1.8}
+.u-ok{color:#6ee7b7;border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.08)}
+.u-ctx{color:#7dd3fc;border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.08)}
+.u-serv{color:#c4b5fd;border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.08)}
+.u-out{color:#fda4af;border-color:rgba(251,113,133,.45);background:rgba(251,113,133,.08)}
+.u-hint{color:#fcd34d;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.08)}
+.mnote{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.06);border-radius:var(--radius-s);padding:14px 18px;margin-top:14px;font-size:12.8px;line-height:2}
+.mnote b{color:var(--amber)}
+.mnote.teal{border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.06)}
+.mnote.teal b{color:var(--teal)}
+.mnote.rose{border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.06)}
+.mnote.rose b{color:var(--rose)}
+.mchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.mchips span{font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:4px 13px;color:var(--text);background:rgba(255,255,255,.04)}
+.mcard{border:1px solid var(--line);border-radius:var(--radius-s);padding:16px 18px;background:var(--card);font-size:12.8px;line-height:2}
+.mcard h4{font-size:13.8px;margin-bottom:8px;color:var(--teal)}
+.mcard .old{display:inline-block;border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.07);color:#fcd34d;border-radius:9px;padding:3px 11px;font-size:11.8px;margin-bottom:9px}
+.mcard ul{list-style:none}
+.mcard li{border-bottom:1px dashed var(--line-soft);padding:4px 0}
+.mcard li:last-child{border-bottom:none;font-weight:600;color:var(--teal)}
+.mgrid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:13px;margin-top:14px}
+.msummary{counter-reset:ms;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:13px;margin-top:16px}
+.msummary .it{border:1px solid rgba(45,212,191,.3);border-radius:var(--radius-s);padding:15px 17px 15px 15px;background:rgba(45,212,191,.05);font-size:13px;line-height:1.95;display:flex;gap:12px;align-items:flex-start}
+.msummary .it::before{counter-increment:ms;content:counter(ms,persian);flex-shrink:0;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:700;background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#04222b;font-size:14px}
+@media print{.mig-tabs{display:none}.mig-panel{display:block!important}}
+
+/* ===================== پرسش‌های متداول ===================== */
+.faq{max-width:780px;margin-inline:auto;display:flex;flex-direction:column;gap:11px}
+.charter-grid{max-width:980px;margin:26px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.charter-card{background:var(--card-strong);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.charter-card b{color:var(--teal)}
+.charter-card span{font-size:13px;line-height:1.9;color:var(--muted)}
+.charter-card.wide{grid-column:1/-1;border-color:rgba(18,147,141,.4)}
+.charter-note{max-width:980px;margin:14px auto 0;font-size:13px;line-height:2;color:var(--text);background:rgba(18,147,141,.08);border:1px solid rgba(18,147,141,.25);border-radius:14px;padding:12px 16px}
+.q{border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);overflow:hidden;transition:.3s}
+.q:hover{border-color:rgba(45,212,191,.4)}
+.q button{width:100%;display:flex;align-items:center;gap:12px;padding:17px 20px;background:none;border:none;color:var(--text);font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;text-align:right}
+.q button .plus{margin-inline-start:auto;transition:.35s;color:var(--teal);font-size:20px;flex-shrink:0}
+.q.open button .plus{transform:rotate(45deg)}
+.q .a{max-height:0;overflow:hidden;transition:max-height .45s ease}
+.q .a p{padding:0 20px 18px;color:var(--muted);font-size:13.5px}
+
+/* ===================== فوتر ===================== */
+footer{border-top:1px solid var(--line-soft);padding:34px 0 44px;text-align:center;color:var(--muted);font-size:12.5px}
+footer .warn{max-width:760px;margin:0 auto 14px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.06);border-radius:var(--radius-s);padding:13px 18px;color:#fcd34d;font-size:12.5px}
+#toTop{position:fixed;bottom:24px;left:24px;width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:rgba(7,26,43,.8);color:var(--teal);font-size:19px;cursor:pointer;opacity:0;pointer-events:none;transition:.3s;z-index:40;backdrop-filter:blur(8px)}
+#toTop.show{opacity:1;pointer-events:auto}
+#toTop:hover{background:var(--teal);color:#04222b}
+
+@media(max-width:640px){
+  section{padding-block:52px}
+  .nav .links{display:none}
+  .tl-item{padding-left:6px}
+}
+@media print{.nav,.scroll-hint,#toTop,.orb{display:none}body{background:#fff;color:#111}}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+<div class="grid-lines" aria-hidden="true"></div>
+<div class="orb o1" aria-hidden="true"></div>
+<div class="orb o2" aria-hidden="true"></div>
+<div class="orb o3" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="ناوبری راهنما">
+  <div class="wrap">
+    <span class="brand"><span class="dot" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>راهنمای سامانه پرسش‌نامه EM-MPI</span>
+    <div class="links">
+      <a href="#how">چگونه کار می‌کند</a>
+      <a href="#fetch">واکشی هویتی</a>
+      <a href="#steps">۱۰ گام</a>
+      <a href="#dims">پنج بُعد</a>
+      <a href="#score">امتیاز و سطوح</a>
+      <a href="#flags">پرچم‌های قرمز</a>
+      <a href="#services">وب‌سرویس‌ها</a>
+      <a href="#charter">شناسنامه شاخص‌ها</a>
+      <a href="#smart">پرسش‌های هوشمند</a>
+      <a href="#map">نگاشت نسخه‌ها</a>
+      <a href="#migration">ملاحظات مهاجرت</a>
+      <a href="#faq">پرسش‌ها</a>
+    </div>
+  </div>
+</nav>
+<div class="progress-top" aria-hidden="true"><b id="readProgress"></b></div>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">سند راهنمای تصویری — نسخه نمایشی EM-MPI-RF 1.0.0</span>
+    <h1>غربالگری محرومیت چندبعدی خانوار<br><span class="grad">شفاف، عادلانه و انسان‌محور</span></h1>
+    <p class="lead">
+      این راهنما نشان می‌دهد سامانه پرسش‌نامه EM-MPI چگونه با «صفحه ورود» (لاگین جذاب‌شده الگوی سامانه امداد) آغاز می‌کند، چگونه با «فرم ثبت‌نام مودالی» حساب ساخته می‌شود و اطلاعات هویتی و نشانی از مراجع متولی به‌صورت خودکار واکشی می‌شود؛
+      چگونه با ۳۰ شاخص در ۵ بُعد، وضعیت خانوار را سطح‌بندی اولیه می‌کند؛ کدام داده‌ها «ملاک» و غیرقابل تغییر هستند، پرچم‌های قرمز کدام خطرها را فوری می‌کنند
+      و از پرسشنامه قبلی چه چیزهایی حفظ، بازتعریف یا تجزیه شده است. ماتریس کامل مهاجرت فیلدبه‌فیلد از نسخه قبلی به جدید نیز در بخش «ملاحظات مهاجرت» آمده است.
+    </p>
+    <div class="stats">
+      <div class="stat"><b data-count="30">۰</b><span>شاخص سنجش</span></div>
+      <div class="stat"><b data-count="5">۰</b><span>بُعد محرومیت</span></div>
+      <div class="stat"><b data-count="1000">۰</b><span>امتیاز کل</span></div>
+      <div class="stat"><b data-count="9">۰</b><span>پرچم قرمز R1–R9</span></div>
+      <div class="stat"><b data-count="7">۰</b><span>وب‌سرویس متولی</span></div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#how">شروع مرور راهنما</a>
+      <a class="btn ghost" href="rahnama-emmpi.pdf" download>دانلود نسخه PDF راهنما</a>
+      <a class="btn ghost" href="#migration">ملاحظات مهاجرت از پرسشنامه قدیمی</a>
+      <a class="btn ghost" href="index.html">بازگشت به سامانه</a>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true"><i></i>پیمایش</div>
+</header>
+<!-- ================= معماری ================= -->
+<section id="how">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">معماری سنجش</span>
+      <h2>سامانه چگونه کار می‌کند؟ سه لایه، یک حقیقت</h2>
+      <p>EM-MPI ابزار «سطح‌بندی اولیه» است؛ نه تصمیم‌گیرنده پذیرش یا میزان حمایت. تصمیم نهایی همیشه انسانی، مستند و قابل اعتراض است.</p>
+    </div>
+    <div class="layers">
+      <div class="layer glass lc1 reveal d1">
+        <span class="num">۱</span>
+        <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <h3>اطلاعات پرونده‌ای و مراجع ثبتی</h3>
+        <p>هویت، ترکیب خانوار، بیمه، نشانی و مالکیت از وب‌سرویس سازمان‌های متولی دریافت و «ملاک» قرار می‌گیرد؛ در فرم قابل تغییر نیست.</p>
+      </div>
+      <div class="layer glass lc2 reveal d2">
+        <span class="num">۲</span>
+        <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <h3>پرسشنامه عملیاتی ۳۰ شاخص</h3>
+        <p>شدت محرومیت مستقیم پرسیده نمی‌شود؛ ابتدا شواهد عملیاتی جمع می‌شود و موتور قواعد قطعی، ضریب مجاز را تعیین می‌کند.</p>
+      </div>
+      <div class="layer glass lc3 reveal d3">
+        <span class="num">۳</span>
+        <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+        <h3>بازبینی انسانی و ارجاع</h3>
+        <p>مددکار با دلیل و مدرک داده را تأیید یا اصلاح می‌کند؛ پرچم قرمز مسیر رسیدگی فوری مستقل از امتیاز فعال می‌کند.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================= واکشی هویتی ================= -->
+<section id="fetch">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">صفحه ورود + ثبت‌نام مودالی — الگوی سامانه امداد</span>
+      <h2>اول صفحه ورود؛ حساب دارید وارد شوید، ندارید ثبت‌نام کنید — سپس واکشی خودکار و پرسشنامه</h2>
+      <p>در آغاز، صفحه ورود با پس‌زمینه آورورا و کارت گلس باز می‌شود: <b>کد ملی + رمز عبور</b> و دکمه «ورود به سامانه». اگر حساب ندارید، دکمه «ثبت‌نام» همان‌جا فرم مودالی را باز می‌کند (کد ملی، موبایل، تاریخ تولد، کد پستی، رمز، نوع درخواست و توافقنامه بانکی). با ثبت، هفت مرجع متولی با کلید کد ملی خودکار استعلام می‌شوند، نشست شما ساخته می‌شود و مستقیماً به پرسشنامه منتقل می‌شوید. ورودهای بعدی با همان کد ملی و رمز انجام می‌شود و پرونده باز ادامه می‌یابد.</p>
+    </div>
+    <div class="layers">
+      <div class="layer glass lc1 reveal d1">
+        <span class="num">۱</span>
+        <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <h3>صفحه ورود — کد ملی و رمز عبور</h3>
+        <p>کد ملی با الگوریتم ثبت احوال زنده اعتبارسنجی می‌شود؛ رمز با نمایش/پنهان‌سازی وارد می‌شود. پیام خطای دقیق: «حسابی با این کد ملی یافت نشد» یا «رمز عبور نادرست است». لینک راهنما و دکمه «ورود نمایشی» برای بازدید سریع بانک نمونه‌ها در پایین کارت است. نشست در هدر سامانه نمایش داده می‌شود و دکمه «خروج» بازمی‌گرداند.</p>
+      </div>
+      <div class="layer glass lc2 reveal d2">
+        <span class="num">۲</span>
+        <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg></span>
+        <h3>ثبت‌نام مودالی — هفت ورودی و حساب جدید</h3>
+        <p>کد ملی (اجباری و کلید)، موبایل (۰۹ + ۹ رقم)، تاریخ تولد شمسی، کد پستی، رمز (دقیقاً ۶ کاراکتر حروف انگلیسی + عدد، بدون &lt;&gt;"/;,*|=%)، تکرار رمز، نوع درخواست (اعلام نیازمندی / متقاضی ارائه خدمت) و توافقنامه بانکی. حساب با هش رمز ساخته می‌شود و از همان لحظه نشست فعال است.</p>
+      </div>
+      <div class="layer glass lc3 reveal d3">
+        <span class="num">۳</span>
+        <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <h3>واکشی خودکار هفت مرجع و ورود به پرسشنامه</h3>
+        <p>ثبت احوال (هویت و اعضا — ملاک و قفل)، پست (نشانی از کدپستی — ملاک)، شاپرک (اجرای توافقنامه)، تأمین، املاک، علوم/آزاد و آموزش‌وپرورش (پیش‌تکمیل با حفظ منبع). اعلام نیازمندی: ورود مستقیم به گام ۱ با داده پیش‌پرشده. ارائه‌دهنده خدمت: بدون پرونده، هدایت به داشبورد حرفه‌ای.</p>
+      </div>
+    </div>
+    <div class="map-note reveal" style="margin-top:18px">
+      <b>امنیت و محرمانگی ورود و ثبت‌نام</b>
+      <p>رمز عبور هرگز به‌صورت متن ساده ذخیره نمی‌شود (فقط هش یک‌طرفه — در استقرار عملیاتی، احراز هویت سمت سرور با هش نمکی و کد تأیید پیامکی انجام می‌شود). در نسخه نمایشی، نشست در مرورگر شما نگهداری می‌شود و دکمه «خروج» آن را پاک می‌کند. توافقنامه دسترسی بانکی فقط برای راستی‌آزمایی معیشت (بُعد D) است، امتیاز مستقل ندارد، جزئیات خرید مشاهده نمی‌شود و در هر زمان قابل لغو است. در نسخه نمایشی آفلاین، پاسخ واکشی از کدهای واردشده به‌طور قطعی شبیه‌سازی می‌شود (همان کد ← همان پاسخ).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ۱۰ گام ================= -->
+<section id="steps">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">مسیر تکمیل</span>
+      <h2>پرسشنامه در ۱۰ گام — با نوار پیشرفت همیشه جلوی چشم شما</h2>
+      <p>بالای صفحه در همه گام‌ها، درصد تکمیل پاسخ‌های سنجش و پیشرفت هر بُعد به‌صورت زنده نمایش داده می‌شود. پاسخ‌ها خودکار ذخیره می‌شوند و می‌توانید بعداً ادامه دهید.</p>
+    </div>
+    <div class="timeline">
+      <div class="tl-item reveal"><span class="n">۱</span><h4>صفحه ورود + ثبت‌نام مودالی و واکشی مراجع <span class="pill noscore">بدون امتیاز</span> <span class="pill">۷ ورودی</span></h4><p>اول صفحه ورود (کد ملی + رمز)؛ اگر حساب ندارید، دکمه ثبت‌نام فرم مودالی را باز می‌کند. با ثبت، حساب ساخته می‌شود، هویت و اعضا از ثبت احوال، نشانی از پست، وضعیت حساب از شاپرک و سایر مراجع خودکار واکشی و ملاک می‌شود و به‌صورت پیش‌پرشده به پرسشنامه منتقل می‌شوید. ورودهای بعدی پرونده باز را ادامه می‌دهد؛ درخواست از ثبت‌نام مقدار اولیه می‌گیرد و در گام آخر قابل اصلاح است.</p></div>
+      <div class="tl-item reveal"><span class="n">۲</span><h4>بررسی اولیه نشانه‌های فوریت <span class="pill noscore">بدون امتیاز</span></h4><p>خطر جانی یا بی‌خانمانی؟ همین‌جا ثبت کنید؛ رسیدگی فوری به تکمیل بقیه فرم وابسته نیست. دکمه «فوریت» در همه گام‌ها در دسترس است.</p></div>
+      <div class="tl-item reveal"><span class="n">۳</span><h4>اطلاعات پایه و اعضای خانوار <span class="pill noscore">بدون امتیاز</span> <span class="pill">استعلام وب‌سرویس</span></h4><p>واکشی هویت در گام ۱ انجام شده است؛ اینجا اعضای واکشی‌شده را تأیید/اصلاح می‌کنید و سایر مراجع (بیمه، املاک، آموزش‌وپرورش، علوم) با کد ملی استعلام و «پیش‌تکمیل» می‌شوند.</p></div>
+      <div class="tl-item scored reveal"><span class="n">۴</span><h4>سلامت و امنیت زیستی (A) <span class="pill">۷ شاخص — سقف ۲۵۰</span></h4><p>بیماری مؤثر، محدودیت عملکرد، درمان انجام‌نشده، فشار هزینه درمان، پوشش بیمه، ناامنی غذایی و ایمنی روان.</p></div>
+      <div class="tl-item scored reveal"><span class="n">۵</span><h4>آموزش و رشد انسانی (B) <span class="pill">۷ شاخص — سقف ۲۰۰</span></h4><p>ترک تحصیل، خطر ترک تحصیل، سواد کارکردی، دسترسی آموزشی، ابزار دیجیتال، نیاز ویژه و مسیر مهارت.</p></div>
+      <div class="tl-item scored reveal"><span class="n">۶</span><h4>استاندارد زندگی و مسکن (C) <span class="pill">۹ شاخص — سقف ۳۰۰</span></h4><p>بی‌خانمانی، ایمنی مسکن، امنیت تصرف، تراکم، خدمات پایه، بهداشت، وسایل ضروری، فشار هزینه و دسترسی.</p></div>
+      <div class="tl-item scored reveal"><span class="n">۷</span><h4>معیشت، اشتغال و درآمد (D) <span class="pill">۳ شاخص — سقف ۱۵۰</span></h4><p>استمرار درآمد تأمین‌کننده، بیکاری سایر اعضای توانمند و نسبت منابع قابل اتکا به خط فقر منطقه‌ای.</p></div>
+      <div class="tl-item scored reveal"><span class="n">۸</span><h4>ظرفیت مراقبت و پشتوانه اجتماعی (E) <span class="pill">۴ شاخص — سقف ۱۰۰</span></h4><p>چشم‌انداز معیشت ۱۲ ماه آینده، بار مراقبت، شبکه حمایتی در بحران و موانع حقوقی/اداری.</p></div>
+      <div class="tl-item reveal"><span class="n">۹</span><h4>مدارک، کیفیت داده و موارد نیازمند بررسی <span class="pill noscore">بدون امتیاز</span></h4><p>منبع شواهد هر شاخص ثبت می‌شود؛ تناقض‌ها با «هشدار کیفیت داده» مشخص و تصمیم خودکار متوقف می‌شود.</p></div>
+      <div class="tl-item reveal"><span class="n">۱۰</span><h4>خلاصه، درخواست خانوار و بازبینی انسانی <span class="pill noscore">بدون امتیاز</span></h4><p>نتیجه اولیه، تکمیل/اصلاح «درخواست خانوار» (مقدار اولیه از ثبت‌نام — خدماتی و خارج از امتیاز تا با نیاز سنجیده‌شده مخلوط نشود)، شناسنامه ارزیابی (کد ملی کلید، موبایل، زمان ثبت‌نام، منشأ داده) و داشبورد حرفه‌ای مددکار.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= پنج بُعد ================= -->
+<section id="dims">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">ساختار پنج‌بعدی</span>
+      <h2>پنج بُعد، ۳۰ شاخص، سقف ۱۰۰۰ امتیاز</h2>
+      <p>امتیاز هر شاخص = وزن شاخص × ضریب شدت محرومیت. ضرایب شاخص سه‌حالته ۰ / ۰٫۵ / ۱ و شاخص پنج‌حالته ۰ / ۰٫۲۵ / ۰٫۵ / ۰٫۷۵ / ۱ است.</p>
+    </div>
+    <div class="dims">
+      <div class="dim glass dA reveal d1"><div class="top"><span class="letter">A</span><div><h3>سلامت و امنیت زیستی</h3><span class="cap">سقف ۲۵۰ امتیاز — ۷ شاخص</span></div></div><div class="bar"><b data-w="100"></b></div><ul><li><b>A1</b> بیماری مزمن مؤثر</li><li><b>A2</b> محدودیت عملکردی</li><li><b>A3</b> درمان انجام‌نشده</li><li><b>A4</b> فشار هزینه درمان</li><li><b>A5</b> پوشش بیمه مؤثر</li><li><b>A6</b> ناامنی غذایی</li><li><b>A7</b> سلامت روان و ایمنی</li></ul></div>
+      <div class="dim glass dB reveal d2"><div class="top"><span class="letter">B</span><div><h3>آموزش و رشد انسانی</h3><span class="cap">سقف ۲۰۰ امتیاز — ۷ شاخص</span></div></div><div class="bar"><b data-w="80"></b></div><ul><li><b>B1</b> ترک تحصیل</li><li><b>B2</b> خطر ترک تحصیل</li><li><b>B3</b> سواد کارکردی</li><li><b>B4</b> مانع دسترسی آموزش</li><li><b>B5</b> ابزار دیجیتال</li><li><b>B6</b> نیاز آموزشی ویژه</li><li><b>B7</b> مسیر مهارت</li></ul></div>
+      <div class="dim glass dC reveal d3"><div class="top"><span class="letter">C</span><div><h3>استاندارد زندگی و مسکن</h3><span class="cap">سقف ۳۰۰ امتیاز — ۹ شاخص</span></div></div><div class="bar"><b data-w="120"></b></div><ul><li><b>C1</b> بی‌خانمانی</li><li><b>C2</b> ایمنی مسکن</li><li><b>C3</b> امنیت تصرف</li><li><b>C4</b> تراکم سکونت</li><li><b>C5</b> خدمات پایه</li><li><b>C6</b> بهداشت محیط</li><li><b>C7</b> وسایل ضروری</li><li><b>C8</b> فشار هزینه مسکن</li><li><b>C9</b> دسترسی خدمات</li></ul></div>
+      <div class="dim glass dD reveal d4"><div class="top"><span class="letter">D</span><div><h3>معیشت، اشتغال و درآمد</h3><span class="cap">سقف ۱۵۰ امتیاز — ۳ شاخص</span></div></div><div class="bar"><b data-w="60"></b></div><ul><li><b>D1</b> اشتغال تأمین‌کننده</li><li><b>D2</b> بیکاری سایر اعضا</li><li><b>D3</b> کفایت منابع به خط فقر</li></ul></div>
+      <div class="dim glass dE reveal d1"><div class="top"><span class="letter">E</span><div><h3>ظرفیت مراقبت و پشتوانه</h3><span class="cap">سقف ۱۰۰ امتیاز — ۴ شاخص</span></div></div><div class="bar"><b data-w="40"></b></div><ul><li><b>E1</b> چشم‌انداز معیشت</li><li><b>E2</b> بار مراقبت</li><li><b>E3</b> پشتوانه بحران</li><li><b>E4</b> مانع حقوقی/اداری</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= امتیاز و سطوح ================= -->
+<section id="score">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">فرمول و سطوح</span>
+      <h2>امتیازدهی شفاف و پنج سطح محرومیت</h2>
+    </div>
+    <div class="two-col">
+      <div class="panel glass reveal d1">
+        <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6M9 13h6M9 17h4"/></svg> قاعده مشترک امتیازدهی</h3>
+        <p>
+          هر شاخص یکی از حالت‌های مصوب معیار عملیاتی خود را می‌گیرد؛ سطوح «خفیف، متوسط، زیاد و شدید» فقط نام سطوح انتخاب ضریب‌اند و انتخاب باید بر اساس شواهد و آستانه‌های جدول شاخص انجام شود، نه برداشت شخصی ارزیاب. اطلاعات ناکافی، «نیازمند تکمیل اطلاعات» می‌شود و هرگز خودکار صفر یا یک نمی‌گیرد.
+        </p>
+        <div class="formula">EM-MPI = A + B + C + D + E</div>
+        <p style="margin-top:12px">
+          شاخص‌های پنج‌حالته نسخه حاضر: <b style="color:var(--text)">A6 (ناامنی غذایی)، C4 (تراکم)، C8 (فشار هزینه مسکن) و D3 (کفایت منابع)</b> — بقیه سه‌حالته‌اند. پرچم قرمز امتیاز اضافه نمی‌کند؛ فقط مسیر فوری فعال می‌کند.
+        </p>
+      </div>
+      <div class="panel glass reveal d2">
+        <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg> پنج سطح محرومیت اولیه</h3>
+        <p>نتیجه، مسیر پیشنهادی رسیدگی را تعیین می‌کند؛ سطح به‌تنهایی درباره پذیرش یا رد خانوار تصمیم نمی‌گیرد.</p>
+        <div class="levels">
+          <div class="level lv1"><span class="rng">۰ تا ۱۴۹</span><b>سطح ۱ — محدود</b><span>پایش و اطلاع‌رسانی خدمات</span></div>
+          <div class="level lv2"><span class="rng">۱۵۰ تا ۲۹۹</span><b>سطح ۲ — خفیف</b><span>بررسی تکمیلی محدود</span></div>
+          <div class="level lv3"><span class="rng">۳۰۰ تا ۴۴۹</span><b>سطح ۳ — متوسط</b><span>ارجاع عادی به CDI</span></div>
+          <div class="level lv4"><span class="rng">۴۵۰ تا ۵۹۹</span><b>سطح ۴ — زیاد</b><span>ارجاع اولویت‌دار</span></div>
+          <div class="level lv5"><span class="rng">۶۰۰ تا ۱۰۰۰</span><b>سطح ۵ — بسیار زیاد</b><span>ارزیابی سریع و مداخله چندبخشی</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ================= پرچم‌های قرمز ================= -->
+<section id="flags">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">فوریت مستقل از امتیاز</span>
+      <h2>پرچم‌های قرمز R1 تا R9</h2>
+      <p>وجود پرچم قرمز معتبر، حتی با امتیاز پایین، مسیر ارجاع فوری را فعال می‌کند. پرچم امتیاز اضافی ندارد؛ فقط هشدار و مسیر رسیدگی است و فعال‌سازی/خاتمه آن با تأیید انسانی انجام می‌شود.</p>
+    </div>
+    <div class="flags">
+      <div class="flag reveal d1"><span class="code">R1</span><div><h4>بی‌خانمانی یا خطر فوری تخلیه</h4><p>سرپناه ناپایدار، سکونت در خودرو یا فضای عمومی، اخطار تخلیه معتبر.</p><div class="acts"><i>C1</i><i>C3</i><i>C8</i></div></div></div>
+      <div class="flag reveal d1"><span class="code">R2</span><div><h4>بیماری حیاتی یا نیاز درمانی فوری</h4><p>تأخیر در درمان می‌تواند به سلامت یا زندگی آسیب جدی بزند.</p><div class="acts"><i>A1</i><i>A3</i></div></div></div>
+      <div class="flag reveal d2"><span class="code">R3</span><div><h4>فقدان غذا یا سوءتغذیه شدید</h4><p>حذف مکرر وعده، گرسنگی، سوءتغذیه نیازمند بررسی فوری.</p><div class="acts"><i>A6</i></div></div></div>
+      <div class="flag reveal d2"><span class="code">R4</span><div><h4>کودک در معرض آسیب یا ترک تحصیل بحرانی</h4><p>کار کودک، حذف از آموزش، مراقبت اجباری سنگین.</p><div class="acts"><i>B1</i><i>B2</i><i>B6</i></div></div></div>
+      <div class="flag reveal d3"><span class="code">R5</span><div><h4>خشونت خانوادگی یا تهدید امنیتی</h4><p>با محرمانگی کامل؛ دسترسی محدود و ارجاع تخصصی فوری.</p><div class="acts"><i>A7</i><i>E3</i></div></div></div>
+      <div class="flag reveal d3"><span class="code">R6</span><div><h4>سالمند/بیمار/معلول بدون مراقب</h4><p>فرد نیازمند مراقبت مستمر که پشتیبان در دسترس ندارد.</p><div class="acts"><i>A2</i><i>E2</i><i>E3</i></div></div></div>
+      <div class="flag reveal d4"><span class="code">R7</span><div><h4>قطع خدمات حیاتی در شرایط بحرانی</h4><p>قطع آب، برق یا سوخت به‌دلیل بدهی یا زیرساخت در بحران.</p><div class="acts"><i>C5</i></div></div></div>
+      <div class="flag reveal d4"><span class="code">R8</span><div><h4>بحران حقوقی مؤثر بر امنیت یا سکونت</h4><p>مانع حقوقی/هویتی/اداری که دسترسی به حق و خدمات را بسته است.</p><div class="acts"><i>E4</i><i>C3</i></div></div></div>
+      <div class="flag reveal d4"><span class="code">R9</span><div><h4>احتمال قریب‌الوقوع از دست رفتن درآمد اصلی یا مسکن</h4><p>خطر پیشگیرانه؛ ارجاع فوری یا پیشگیرانه حسب شدت.</p><div class="acts"><i>D3</i><i>C1</i><i>C8</i><i>E1</i></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= وب‌سرویس‌ها ================= -->
+<section id="services">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">منابع ثبتی — ملاک غیرقابل تغییر</span>
+      <h2>بخش مهمی از پرسشنامه از وب‌سرویس سازمان‌های متولی می‌آید</h2>
+      <p>شروع با ثبت‌نام مودالی انجام می‌شود و بلافاصله هویت و اعضا از ثبت احوال و نشانی از پست واکشی و ملاک می‌شود؛ استعلام شاپرک/بانکی در حدود توافقنامه‌ای که در ثبت‌نام پذیرفته‌اید اجرا می‌شود و سایر مراجع با کد ملی سرپرست استعلام و «پیش‌تکمیل» می‌شوند. پس از دریافت موفق، فیلد مرتبط قفل می‌شود؛ اصلاح آن فقط از مسیر درخواست به مرجع ثبتی ممکن است. در نسخه نمایشی آفلاین، پاسخ استعلام به‌طور قطعی شبیه‌سازی می‌شود.</p>
+    </div>
+    <div class="services">
+      <div class="service glass reveal d1"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/><path d="M12 3v2M9.5 4.5l1 1.7M14.5 4.5l-1 1.7"/></svg></span><div><h4>ثبت احوال</h4><div class="org">هویت و ترکیب خانوار</div></div><span class="lock">ملاک</span></div><ul><li>نام و کد ملی اعضا</li><li>نسبت خویشاوندی</li><li>سن و تاریخ تولد</li><li>ازدواج و رویدادهای حیاتی</li></ul><div class="feeds">خوراک: <b>A2، A7، E1، E2، E4</b></div></div>
+      <div class="service glass reveal d2"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><div><h4>پست</h4><div class="org">نشانی و موقعیت جغرافیایی</div></div><span class="lock">ملاک</span></div><ul><li>نشانی استاندارد از کدپستی</li><li>استان / شهرستان / منطقه</li><li>موقعیت جغرافیایی سکونت</li></ul><div class="feeds">خوراک: <b>C1، C9، D3</b> (خط فقر منطقه‌ای)</div></div>
+      <div class="service glass reveal d2"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-5h6v5"/><path d="M9 11h.01M15 11h.01M12 11h.01"/></svg></span><div><h4>شاپرک و بانک‌ها</h4><div class="org">راستی‌آزمایی معیشت با توافقنامه</div></div><span class="lock">با رضایت</span></div><ul><li>وضعیت حساب با کد ملی</li><li>گردش تجمیعی ۹۰ روز — بدون جزئیات خرید</li><li>تسهیلات و چک برگشتی</li><li>قابل لغو در هر زمان</li></ul><div class="feeds">خوراک: <b>D1، D2</b> (راستی‌آزمایی معیشت — امتیاز مستقل ندارد)</div></div>
+      <div class="service glass reveal d3"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></span><div><h4>بیمه‌ها</h4><div class="org">تأمین اجتماعی و سایر صندوق‌ها</div></div><span class="lock">ملاک</span></div><ul><li>پوشش پایه اعضا</li><li>نوع صندوق و اعتبار</li><li>سابقه بیمه اجتماعی</li></ul><div class="feeds">خوراک: <b>A5</b> (پوشش مؤثر)</div></div>
+      <div class="service glass reveal d1"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4M9 11h.01M15 11h.01M12 11h.01"/></svg></span><div><h4>اموال و املاک</h4><div class="org">وضعیت مالکیت مسکن</div></div><span class="lock">ملاک</span></div><ul><li>سابقه سند به نام سرپرست</li><li>وضعیت مالکیت</li><li>راستی‌آزمایی حق سکونت</li></ul><div class="feeds">خوراک: <b>C3</b> (امنیت تصرف)</div></div>
+      <div class="service glass reveal d2"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg></span><div><h4>آموزش‌وپرورش</h4><div class="org">وضعیت تحصیل مدارس</div></div><span class="lock">ملاک</span></div><ul><li>ثبت‌نام و حضور</li><li>وقفه / ترک تحصیل</li><li>مدرک تحصیلی مدارس</li></ul><div class="feeds">خوراک: <b>B1، B2، B4</b></div></div>
+      <div class="service glass reveal d3"><div class="top"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><div><h4>علوم / دانشگاه آزاد</h4><div class="org">مدارک تحصیلی دانشگاهی</div></div><span class="lock">ملاک</span></div><ul><li>مدارک دانشگاهی اعضا</li><li>وضعیت تحصیل دانشگاهی</li></ul><div class="feeds">خوراک: <b>B3، B7</b> (داده زمینه‌ای)</div></div>
+    </div>
+
+    <div class="ladder reveal">
+      <div class="rung"><span class="r">۱</span><b>مراجع ثبتی و استعلام وب‌سرویس</b><span>بالاترین تقدم — ملاک و قابل تغییر در فرم نیست</span></div>
+      <div class="rung"><span class="r">۲</span><b>مدارک معتبر خانوار</b><span>گواهی پزشکی، قرارداد، قبض، اخطار و اسناد هزینه</span></div>
+      <div class="rung"><span class="r">۳</span><b>خوداظهاری ساختاریافته خانوار</b><span>شرایط جاری و موضوعات فاقد داده ثبتی</span></div>
+      <div class="rung"><span class="r">۴</span><b>ابزارک مددکار</b><span>تماس، بازدید میدانی و راستی‌آزمایی وضعیت واقعی</span></div>
+      <div class="rung"><span class="r">۵</span><b>تأیید / اصلاح / رد مددکار</b><span>قضاوت حرفه‌ای با ثبت دلیل و نهایی‌سازی شاخص</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= شناسنامه عملیاتی شاخص‌ها ================= -->
+<section id="charter">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">شناسنامه عملیاتی سنجش — شاهد محور به‌جای برچسب محور</span>
+      <h2>روی هر شاخص، دکمه «شناسنامه سنجش» راهنمای کامل ارزیابی را باز می‌کند</h2>
+      <p>ماهیت برخی شاخص‌ها کیفی است و عبارت‌های کلی («شدید»، «مکرر»، «دشوار») بین ارزیابان تفسیرهای متفاوت می‌سازد. برای یکسان‌سازی سنجش، هر ۳۰ شاخص یک «شناسنامه عملیاتی سنجش» دارد: در فرم پرسشنامه کنار کارت هر شاخص و در جدول ۳۰ شاخص داشبورد حرفه‌ای، دکمه «شناسنامه سنجش» مودالی با نُه جزء استاندارد باز می‌کند.</p>
+    </div>
+    <div class="charter-grid reveal">
+      <div class="charter-card"><b>۱) مفهوم اصلی شاخص</b><span>دقیقاً چه محرومیتی سنجیده می‌شود و چه چیزی خارج از دامنه است (جلوگیری از هم‌پوشانی شاخص‌ها).</span></div>
+      <div class="charter-card"><b>۲) واحد سنجش و تجمیع</b><span>فرد، عضو نیازمند یا کل خانوار؟ وضعیت چند عضو چگونه به یک سطح خانوار تبدیل می‌شود (بیشینه/شمارش/محاسبه).</span></div>
+      <div class="charter-card"><b>۳) دوره زمانی</b><span>وضعیت جاری، ۳۰ روز، سه ماه یا افق ۱۲ ماه — مطابق دوره مصوب هر شاخص.</span></div>
+      <div class="charter-card"><b>۴) پرسش‌های واقعه‌محور</b><span>پرسش روشن درباره رخداد، تداوم، فراوانی و پیامد — همراه شناسه پرسش‌های همان فرم.</span></div>
+      <div class="charter-card"><b>۵) داده‌های کمی</b><span>تعداد، مدت، نسبت، هزینه یا زمان — هر جا شاخص قابل کمی‌شدن است.</span></div>
+      <div class="charter-card"><b>۶) شواهد زمینه‌ای و عملکردی</b><span>اثر واقعی بر غذا، درمان، تحصیل، امنیت، مراقبت و زندگی روزمره.</span></div>
+      <div class="charter-card"><b>۷) قواعد تعیین سطح + مصداق‌ها</b><span>شرایط هر ضریب با «و»/«یا» و تقدم قواعد؛ برای هر ضریب یک «مصداق/شاهد مثال» عینی تا دو ارزیاب مختلف به یک عدد برسند.</span></div>
+      <div class="charter-card"><b>۸) وضعیت شواهد</b><span>منبع و تقدم آن، کفایت، تعارض و وضعیت تأیید — هم‌راستا با نردبان پنج‌سطحی منابع.</span></div>
+      <div class="charter-card"><b>۹) استثناها و مرز شاخص</b><span>شرایط خاص، تفکیک از شاخص‌های همسایه و موارد نیازمند بررسی تخصصی مددکار.</span></div>
+      <div class="charter-card wide"><b>+ سهم وب‌سرویس‌های متولی</b><span>برای هر شاخص مشخص است کدام استعلام ثبتی چه بخشی را پر یا راستی‌آزمایی می‌کند؛ اگر همان پرونده استعلام را گرفته باشد، وضعیت زنده («واکشی شد — ملاک» یا «استعلام نشده») کنار سهم سرویس نمایش داده می‌شود. ضریب فعلی پرونده و امتیاز همان شاخص هم در سربرگ مودال دیده می‌شود.</span></div>
+    </div>
+    <p class="charter-note reveal">قواعد هر شناسنامه با موتور محاسبه قطعی سامانه هم‌راستاست؛ مصداق‌ها لنگر تفسیری ارزیاب‌اند نه قاعده امتیاز جدید. آستانه‌های نیازمند تصویب مرجع در همان مودال برچسب «نیازمند تصویب» دارند.</p>
+  </div>
+</section>
+
+<!-- ================= پرسش‌های هوشمند v0.9.0 — بروزرسانی v0.9.1 ================= -->
+<section id="smart">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">بدون سوال تکراری — هر پاسخ مستند و شاهد‌محور</span>
+      <h2>هر شاخص فقط یک‌بار پرسیده می‌شود؛ با «بله»، ماتریس «کدام اعضا؟» باز می‌شود</h2>
+      <p>در بازنگری این نسخه، سوال‌هایی که دوبار پرسیده می‌شدند حذف شدند. مهم‌ترین اصلاح: شاخص‌های عضومحور (بیماری، محدودیت، درمان، بیمه، تحصیل و…) که پیش‌تر به‌ازای هر عضو خانوار یک کارت جداگانه داشتند (خانوار سه‌نفره ⇒ سه‌بار سوال A1)، اکنون فقط یک‌بار پرسیده می‌شوند — یک پرسش سطح خانوار، و با پاسخ «بله»، بلافاصله ماتریس انتساب اعضا باز می‌شود تا وضعیت به عضو یا اعضای مشخص مستند گردد. بخشی از پاسخ‌ها هم به‌صورت خودکار از استعلام مراجع ثبتی پر و ملاک می‌شود — جایگاه و مقدارشان حفظ است و ثبت دستی لازم ندارند.</p>
+    </div>
+    <div class="charter-grid reveal">
+      <div class="charter-card"><b>هر شاخص، فقط یک پرسش</b><span>شاخص‌های عضومحور (A1، A2، A3، A5، تغذیه ویژه، B1، B2، B6) به‌جای کارت تکراری به‌ازای هر عضو، یک کارت واحد دارند: پرسش سطح خانوار («آیا یکی از اعضای خانوار…؟») + ماتریس اعضا. با «خیر»، پاسخ «ندارد» به‌صورت خودکار برای همه اعضا ثبت می‌شود.</span></div>
+      <div class="charter-card"><b>ماتریس «کدام اعضا؟»</b><span>با پاسخ «بله»، فهرست اعضا با تیک باز می‌شود؛ برای هر عضوِ تیک‌خورده، فیلدهای همان عضو (وضعیت، شدت، اثر، توضیح) در همان ردیف ثبت می‌شود. اعضای بدون تیک «ندارد» ثبت می‌شوند و مصداق دقیقاً به عضو مستند می‌ماند.</span></div>
+      <div class="charter-card"><b>حذف پرسش‌های تکراری درون‌گامی</b><span>نوع محل سکونت و حق سکونت فقط در گام مسکن (C1/C3) پرسیده می‌شود و تعداد اتاق/زیربنا فقط در شاخص C4 — داده ثبتی موجود به‌صورت فقط‌خواندنی کنار همان شاخص نمایش داده می‌شود.</span></div>
+      <div class="charter-card"><b>ثبت مدرک مثبت</b><span>در شاخص‌های نیازمند شاهد، کنترل ثبت مدرک در همان کارت باز می‌شود: نوع مدرک (درمانی/آموزشی/حقوقی/اداری/…)، عنوان، شماره مرجع و فایل تصویر یا PDF تا ۴۰۰ کیلوبایت — مدرک به شاخص مبدا متصل می‌ماند و در گام ۹ فهرست می‌شود.</span></div>
+      <div class="charter-card"><b>استعلام خودکار و قفل</b><span>پوشش بیمه هر عضو (A5) از استعلام بیمه و وضعیت ثبت‌نام تحصیلی (B1) از استعلام آموزش‌وپرورش، با کد ملی به‌صورت خودکار پر و ملاک می‌شود — در ماتریس، ردیف همان عضو قفل است و برچسب «ملاک استعلام — غیرقابل ویرایش» با منبع و زمان می‌نشیند؛ نیازی به ثبت کاربر نیست.</span></div>
+      <div class="charter-card"><b>همگام‌سازی ثبت‌نام</b><span>اطلاعاتی که در فرم ثبت‌نام گرفته شده (موبایل سرپرست و…) در فرم‌های پرسشنامه همان‌جا که مرتبط است نشان داده می‌شود و قفل است — از خانوار دوباره پرسیده نمی‌شود.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= نگاشت نسخه‌ها ================= -->
+<section id="map">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">میراث داده — از پرسشنامه قبلی چه می‌آید؟</span>
+      <h2>نگاشت نسخه قبلی (اکسل) به نسخه جدید (EM-MPI)</h2>
+      <p>روی هر شاخص در فرم، برچسب «منبع نسخه قبلی» را ببینید؛ جدول کامل ۳۰ شاخص در سامانه، بخش «نقشه مهاجرت» قرار دارد.</p>
+    </div>
+    <div class="map-note reveal">
+      <b>نکته مهم مهاجرت داده:</b>
+      <p>«حذف» به معنای حذف از پرسشنامه عمومی غربالگری است، نه حذف از سوابق سازمانی. از داده تاریخی ناقص، ضریب شدت جدید ساخته نمی‌شود؛ بخش عمده شدت محرومیت باید با معیارهای عملیاتی جدید دوباره جمع‌آوری شود — از «بیمه دارد» یا «گوشی دارد» نمی‌توان امتیاز معتبر استخراج کرد.</p>
+      <p style="margin-top:8px"><a href="#migration" style="font-weight:600">◂ مشاهده ماتریس کامل ملاحظات مهاجرت (فیلدبه‌فیلد خانوار و فردی + پوشش ۳۰ شاخص)</a></p>
+    </div>
+    <div class="map-grid">
+      <div class="map-card reveal d1"><div class="t"><b>A5 — پوشش بیمه مؤثر</b><span class="badge b-re">بازتعریف</span></div><div class="old">از: «بیمه پایه درمانی دارد؟» + سابقه بیمه اجتماعی</div><div class="note">به‌جای دارد/ندارد، قابلیت استفاده واقعی (اعتبار، فرانشیز، دسترسی) سنجیده می‌شود.</div></div>
+      <div class="map-card reveal d1"><div class="t"><b>C1 + C2 + C3 — مسکن</b><span class="badge b-split">تجزیه</span></div><div class="old">از: «وضعیت سکونت» (ملکی، رهن و اجاره، آلونک و ...)</div><div class="note">یک فیلد ترکیبی به سه شاخص مستقل (خانمانی، ایمنی، امنیت تصرف) تفکیک شد.</div></div>
+      <div class="map-card reveal d2"><div class="t"><b>C9 — دسترسی خدمات</b><span class="badge b-ctrl">کنترل</span></div><div class="old">از: «محل زندگی» (شهر / روستا / حاشیه)</div><div class="note">شهر یا روستا بودن امتیاز مستقیم ندارد؛ فقط برای خط فقر منطقه‌ای و دسترسی خدمات.</div></div>
+      <div class="map-card reveal d2"><div class="t"><b>E1 / E2 / E3 — وضعیت سرپرست</b><span class="badge b-re">بازتعریف</span></div><div class="old">از: «ویژگی‌های فردی» (سالمند، مطلقه، زندانی و ...)</div><div class="note">عنوان‌ها بدون امتیاز خودکار؛ اثر واقعی بر معیشت، مراقبت و پشتوانه سنجیده می‌شود.</div></div>
+      <div class="map-card reveal d3"><div class="t"><b>D3 — کفایت منابع</b><span class="badge b-re">بازتعریف</span></div><div class="old">از: «منبع درآمدی خانوار» + نیازسنجی</div><div class="note">نسبت منابع قابل اتکا به خط فقر منطقه‌ای متناسب با خانوار محاسبه می‌شود.</div></div>
+      <div class="map-card reveal d3"><div class="t"><b>A4 / B2 / B6 / C4 / C7 / E3</b><span class="badge b-new">جدید</span></div><div class="old">بدون معادل مستقیم در پرسشنامه قبلی</div><div class="note">فشار مالی درمان، خطر ترک تحصیل، نیاز ویژه، تراکم، وسایل ضروری و پشتوانه بحران افزوده شدند.</div></div>
+    </div>
+
+    <div class="two-col" style="margin-top:22px">
+      <div class="panel glass reveal d1">
+        <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg> قواعد تکلیف داده قبلی — داده قدیمی حذف یا بازنویسی نمی‌شود</h3>
+        <ul style="margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:.86rem;line-height:1.9">
+          <li>◂ <b>هم‌معنا و دارای تاریخ معتبر:</b> انتقال یا پیش‌تکمیل با حفظ منشأ و کنترل شرایط جاری (مثل نوع تصرف).</li>
+          <li>◂ <b>بخشی از مفهوم جدید:</b> همان بخش منتقل و سؤال‌های تکمیلی طرح می‌شود (بیمه دارد ← اعتبار و دسترسی مؤثر).</li>
+          <li>◂ <b>عنوان کلی/مبهم:</b> حفظ سابقه و توقف نگاشت تا روشن‌شدن معنا (ناسالم، معلولیت روانی، نگهداری کودک).</li>
+          <li>◂ <b>صرفاً سابقه خدمت:</b> به سوابق خدمات می‌رود، نه پاسخ شاخص (برنامه تغذیه، اکرام).</li>
+          <li>◂ <b>حساس و غیرضروری:</b> از فرم عمومی خارج؛ نگهداری تابع سیاست مصوب (عنوان جرم، دین).</li>
+          <li>◂ <b>داده جدید:</b> «نیازمند تکمیل» ثبت و هدفمند جمع‌آوری می‌شود (تعداد اتاق، حذف وعده، شبکه حمایت).</li>
+        </ul>
+      </div>
+      <div class="panel glass reveal d2">
+        <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg> سه مثال تعیین‌کننده — پیش‌تکمیل ≠ تأیید خودکار</h3>
+        <div style="display:grid;gap:10px;margin-top:10px;font-size:.86rem">
+          <div><b>بیمه:</b> قدیم «بیمه پایه = بله» ← وجود پوشش پیش‌تکمیل با تاریخ و منبع؛ اعتبار نیازمند بررسی؛ ضریب A5 تا تکمیل شواهد تعیین‌نشده.</div>
+          <div><b>مسکن:</b> قدیم «ملکی نیازمند تعمیر» ← نوع حق تصرف = ملکی؛ سابقه نقص = تعمیر در تاریخ قبلی؛ شدت نقص جاری نیازمند بررسی؛ C2 از عنوان قدیمی تعیین نمی‌شود.</div>
+          <div><b>بیکاری:</b> قدیم «غیرشاغل» ← فعالیت درآمدزا نامشخص؛ توان/امکان/آمادگی/جست‌وجو نیازمند تکمیل؛ واجد شرایط D1/D2 هنوز احراز نشده.</div>
+        </div>
+        <p style="margin-top:12px;font-size:.82rem;color:var(--muted)">تبدیل ساختار داده ممکن است؛ تبدیل معتبر همه داده‌های قبلی به امتیاز EM-MPI ممکن نیست و برآورد مدل هوش مصنوعی جای داده لازم برای امتیاز رسمی را نمی‌گیرد.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= ملاحظات مهاجرت ================= -->
+<section id="migration">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">ملاحظات مهاجرت — سند ماتریس‌های تغییرات</span>
+      <h2>از پرسشنامه «ثبت وضعیت و عناوین خانوار» به «سنجش عملیاتی محرومیت»</h2>
+      <p>بخش قابل‌توجهی از داده‌های پرسشنامه قبلی قابل حفظ و پیش‌تکمیل است؛ اما بیشتر آن‌ها به‌تنهایی برای تعیین ضریب شدت EM-MPI کافی نیستند. پرسشنامه جدید باید در کنار «وجود یک وضعیت»، اثر واقعی، شدت، استمرار، نیاز تأمین‌نشده و شواهد آن را نیز ثبت کند. دو ماتریس فیلدبه‌فیلد (خانوار و فردی) به همراه ماتریس پوشش ۳۰ شاخص، فیلدهای کنترلی، قواعد تکلیف داده قبلی و موارد نیازمند تصویب در تب‌های زیر آمده است.</p>
+    </div>
+
+    <div class="leg-legend reveal">
+      <div class="leg l-ok"><b>قابل استفاده با تکمیل</b>داده قبلی بخشی از ورودی شاخص است، نه ضریب شدت آماده.</div>
+      <div class="leg l-ctx"><b>زمینه‌ای</b>برای شناخت خانوار، نمایش شرطی سؤال یا اعتبارسنجی استفاده می‌شود؛ امتیاز مستقل ندارد.</div>
+      <div class="leg l-serv"><b>خدماتی</b>برای درخواست، ارجاع یا توانمندسازی مفید است؛ جزو امتیاز نیست.</div>
+      <div class="leg l-out"><b>خارج از غربالگری</b>از پرسشنامه عمومی EM-MPI خارج می‌شود؛ نگهداری در پرونده تخصصی فقط در صورت ضرورت و مجوز.</div>
+      <div class="leg l-pre"><b>پیش‌تکمیل</b>انتقال مقدار قبلی با حفظ منبع و تاریخ و سپس بررسی شرایط جاری؛ نه تأیید خودکار آن.</div>
+    </div>
+    <p class="leg-note reveal">گزینه‌های زیرمجموعه یک فیلد در همان ردیف بررسی شده‌اند؛ در بخش «ویژگی‌های فردی» که گزینه‌های آن ماهیت‌های کاملاً متفاوتی دارند، گزینه‌ها جداگانه آمده‌اند. اطلاعات هویتی و تماس، مطابق تصمیم بازطراحی، از بررسی کنار گذاشته شده است.</p>
+
+    <div class="mig-tabs reveal" role="tablist" aria-label="تب‌های ملاحظات مهاجرت">
+      <button type="button" class="mtab on" data-mtab="house">۱. ماتریس پرسشنامه خانوار</button>
+      <button type="button" class="mtab" data-mtab="person">۲. ماتریس پرسشنامه فردی</button>
+      <button type="button" class="mtab" data-mtab="cover">۳. پوشش ۳۰ شاخص</button>
+      <button type="button" class="mtab" data-mtab="ctrl">۴. فیلدهای کنترلی</button>
+      <button type="button" class="mtab" data-mtab="legacy">۵. تکلیف داده قبلی</button>
+      <button type="button" class="mtab" data-mtab="approve">۶. نیازمند تصویب</button>
+    </div>
+
+    <!-- پنل ۱: خانوار -->
+    <div class="mig-panel on" data-mpanel="house">
+      <div class="mgroup">
+        <h3>۱−۱. وضعیت حمایتی و مسکن <span class="cnt">۲۵ فیلد</span></h3>
+        <p class="gdesc">هسته بازطراحی مسکن: تفکیک «نوع بنا»، «حق تصرف» و «ایمنی فیزیکی» که در فیلد قدیمی «وضعیت سکونت» درهم آمیخته بودند، به‌همراه تبدیل «وجود انشعاب» به «دسترسی واقعی، پایدار و ایمن».</p>
+        <div class="tscroll">
+          <table class="mtable">
+            <thead><tr><th>فیلد پرسشنامه قبلی</th><th>قابلیت استفاده</th><th>محل استفاده</th><th>تغییر دقیق در پرسشنامه جدید</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">محل زندگی</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="p">C9؛ منطقه مرجع D3</td><td class="n2">موقعیت جغرافیایی حفظ شود؛ سؤال مستقل درباره زمان، هزینه و امکان واقعی دسترسی به خدمات اضافه شود. شهر، روستا یا حاشیه امتیاز مستقل نگیرد.</td><td class="n">انتقال برای تعیین منطقه؛ از عنوان منطقه، ضریب محرومیت استخراج نشود.</td></tr>
+              <tr><td class="f">دوره حمایت از خانواده</td><td class="u"><span class="ub u-serv">خدماتی</span></td><td class="p">سابقه خدمات و پایش</td><td class="n2">به بخش «سوابق حمایت» منتقل شود؛ مدت حمایت نشانه شدت محرومیت محسوب نشود.</td><td class="n">حفظ در سابقه پرونده، بدون تبدیل به امتیاز.</td></tr>
+              <tr><td class="f">نوع محل سکونت: آپارتمانی / غیرآپارتمانی</td><td class="u"><span class="ub u-ctx">زمینه‌ای، ناکافی</span></td><td class="p">C1، C2</td><td class="n2">دامنه گزینه‌ها به فضای غیرمسکونی، سکونت اضطراری، مرکز نگهداری، خودرو/فضای عمومی و آلونک/کپر گسترش یابد؛ ایمنی جدا سنجیده شود.</td><td class="n">پیش‌تکمیل نوع بنا؛ ایمنی یا پایداری از آن استنباط نشود.</td></tr>
+              <tr><td class="f">وضعیت سکونت: ملکی قابل سکونت / ملکی غیرقابل سکونت / ملکی نیازمند تعمیر</td><td class="u"><span class="ub u-ok">قابل استفاده با تفکیک</span></td><td class="p">C2، C3</td><td class="n2">«نوع حق سکونت» از «قابلیت سکونت و نقص فیزیکی» جدا شود؛ نوع خطر، شدت نقص و اثر آن پرسیده شود.</td><td class="n">ملکی‌بودن قابل انتقال است؛ وضعیت فیزیکی قبلی فقط سابقه یا سرنخ بررسی جاری است.</td></tr>
+              <tr><td class="f">رهن و اجاره</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C3، C8</td><td class="n2">نوع قرارداد، ثبات حق سکونت، امکان تمدید، هزینه ماهانه، معوقه و خطر تخلیه اضافه شود.</td><td class="n">پیش‌تکمیل نوع تصرف؛ مستأجربودن به‌تنهایی امتیاز نگیرد.</td></tr>
+              <tr><td class="f">سکونت رایگان / وقفی / در برابر خدمت</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C3</td><td class="n2">حق سکونت، مدت و شرط ادامه آن، امکان قطع سکونت و وابستگی به شخص یا خدمت پرسیده شود.</td><td class="n">انتقال نوع تصرف؛ ناپایداری خودکار فرض نشود.</td></tr>
+              <tr><td class="f">اجاره به شرط تملیک</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C3، C8</td><td class="n2">اقساط ضروری، وضعیت پرداخت و اثر عدم پرداخت بر تداوم سکونت ثبت شود.</td><td class="n">نوع قرارداد قابل انتقال؛ مبلغ و وضعیت جاری تکمیل شود.</td></tr>
+              <tr><td class="f">آلونک/کپر یا موارد مشابه</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C1، C2، C5، C6</td><td class="n2">نوع بنا به بخش محل سکونت منتقل شود؛ خطر واقعی، خدمات حیاتی و امکان سکونت بررسی شود.</td><td class="n">سرنخ بررسی است؛ نوع بنا به‌تنهایی ضریب کامل همه شاخص‌ها ایجاد نکند.</td></tr>
+              <tr><td class="f">لامکان</td><td class="u"><span class="ub u-hint">سرنخ مهم، نیازمند بررسی جاری</span></td><td class="p">C1، R1</td><td class="n2">محل خواب فعلی، وجود سرپناه امن و وضعیت بی‌خانمانی امروز پرسیده شود؛ امکان ثبت هشدار فوری فراهم باشد.</td><td class="n">سابقه بی‌خانمانی حفظ شود؛ فوریت جاری از داده قدیمی خودکار تأیید نشود.</td></tr>
+              <tr><td class="f">ورثه‌ای</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C3؛ مانع مؤثر E4</td><td class="n2">حق استفاده، اختلاف، امکان ادامه سکونت و خطر جابه‌جایی پرسیده شود.</td><td class="n">انتقال نوع تصرف؛ ورثه‌ای‌بودن امتیاز مستقل ندارد.</td></tr>
+              <tr><td class="f">مرکز نگهداری</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="p">C1، E2 حسب وضعیت</td><td class="n2">نوع مرکز، موقت/پایدار بودن اقامت، ایمنی و خدمت مراقبتی ثبت شود.</td><td class="n">پیش‌تکمیل؛ اقامت در مرکز به‌تنهایی محرومیت یا فقدان مراقبت نیست.</td></tr>
+              <tr><td class="f">سال پایان ساخت</td><td class="u"><span class="ub u-hint">داده کمکی، نه سنجه کافی</span></td><td class="p">C2</td><td class="n2">در فرم تخصصی مسکن یا بخش اختیاری باقی بماند؛ چک‌لیست ایمنی جایگزین اتکا به قدمت شود.</td><td class="n">حفظ سابقه؛ از قدمت بنا ضریب C2 ساخته نشود.</td></tr>
+              <tr><td class="f">دارای پایان کار ساختمانی</td><td class="u"><span class="ub u-out">خارج از سنجش عمومی، مگر اثر واقعی</span></td><td class="p">C2، C3 یا E4</td><td class="n2">فقط هنگام بررسی فنی یا مانع حقوقی/اداری مؤثر نمایش داده شود.</td><td class="n">در پرونده مسکن حفظ شود؛ نبود پایان کار مساوی ناایمنی نیست.</td></tr>
+              <tr><td class="f">متراژ زمین</td><td class="u"><span class="ub u-out">برای C4 کافی نیست</span></td><td class="p">خدمات تخصصی مسکن</td><td class="n2">از سنجش تراکم کنار گذاشته شود؛ تعداد اتاق قابل سکونت و فضای خواب ایمن اضافه شود. زیربنا در صورت نیاز جدا ثبت شود.</td><td class="n">متراژ زمین به تعداد اتاق یا زیربنا تبدیل نشود.</td></tr>
+              <tr><td class="f">میزان اجاره‌بها</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C8</td><td class="n2">مبلغ، واحد پول، دوره پرداخت، تاریخ اعتبار و هزینه‌های دیگر مسکن ثبت شود.</td><td class="n">با کنترل واحد و تاریخ پیش‌تکمیل شود؛ اجاره قدیمی، هزینه جاری تلقی نشود.</td></tr>
+              <tr><td class="f">میزان ودیعه</td><td class="u"><span class="ub u-ctx">زمینه‌ای / مالی</span></td><td class="p">C3، C8 طبق دستورالعمل</td><td class="n2">جدا از اجاره ماهانه نگهداری شود؛ بدهی ناشی از تأمین ودیعه در صورت ضرورت جدا بررسی شود.</td><td class="n">مبلغ منتقل شود؛ بدون قاعده مصوب به اجاره ماهانه تبدیل نشود.</td></tr>
+              <tr><td class="f">تاریخ شروع اجاره</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C3</td><td class="n2">همراه نوع قرارداد و وضعیت حق سکونت ثبت شود.</td><td class="n">انتقال تاریخ قرارداد؛ بررسی اعتبار جاری لازم است.</td></tr>
+              <tr><td class="f">تاریخ پایان اجاره</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C1، C3</td><td class="n2">امکان تمدید، اعلام مالک، اخطار معتبر و زمان احتمالی تخلیه اضافه شود.</td><td class="n">پایان قرارداد به‌تنهایی به «خطر فوری تخلیه» تبدیل نشود.</td></tr>
+              <tr><td class="f">انشعاب برق</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C5، R7</td><td class="n2">فعال‌بودن، پایداری، قطع، علت قطع و خطر برق بررسی شود.</td><td class="n">وجود انشعاب قابل انتقال؛ دسترسی پایدار از آن نتیجه‌گیری نشود.</td></tr>
+              <tr><td class="f">انشعاب آب</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C5</td><td class="n2">سلامت آب، استمرار، محدودیت و قطع بررسی شود.</td><td class="n">وجود انشعاب مساوی آب سالم و پایدار نیست.</td></tr>
+              <tr><td class="f">گاز سراسری</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C5</td><td class="n2">سؤال به «گرمایش و پخت‌وپز ایمن» گسترش یابد؛ سوخت جایگزین ایمن نیز پذیرفته شود.</td><td class="n">نداشتن گاز شبکه به‌تنهایی محرومیت نیست.</td></tr>
+              <tr><td class="f">انشعاب فاضلاب</td><td class="u"><span class="ub u-ok">قابل استفاده با بازتعریف</span></td><td class="p">C6</td><td class="n2">روش دفع فاضلاب و خطر بهداشتی واقعی پرسیده شود.</td><td class="n">نبود شبکه فاضلاب مساوی دفع غیربهداشتی نیست.</td></tr>
+              <tr><td class="f">انشعاب تلفن</td><td class="u"><span class="ub u-ctx">زمینه‌ای / ارتباطی</span></td><td class="p">دسترسی ارتباطی</td><td class="n2">از خدمات حیاتی C5 جدا شود؛ در بخش امکانات ارتباطی قرار گیرد.</td><td class="n">حفظ در صورت نیاز؛ امتیاز مستقل ندارد.</td></tr>
+              <tr><td class="f">سرویس بهداشتی</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C6</td><td class="n2">قابل استفاده‌بودن، اشتراکی‌بودن، نقص، ایمنی و خطر بهداشتی اضافه شود.</td><td class="n">«دارد» فقط وجود را پیش‌تکمیل می‌کند، نه کفایت را.</td></tr>
+              <tr><td class="f">حمام</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">C6</td><td class="n2">قابلیت استفاده، دسترسی واقعی، اشتراکی‌بودن و نقص مؤثر پرسیده شود.</td><td class="n">وجود حمام به‌تنهایی ضریب صفر C6 نمی‌دهد.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mnote"><b>تغییر ساختاری مهم مسکن:</b> فیلد قدیمی «وضعیت سکونت» باید حداقل به سه فیلد مستقل تبدیل شود: <b>نوع محل و بنای سکونت</b>، <b>نوع حق تصرف و پایداری سکونت</b> و <b>وضعیت فیزیکی و ایمنی مسکن</b>. در فایل فعلی، «ملکی»، «نیازمند تعمیر»، «آلونک» و «لامکان» در یک مجموعه قرار گرفته‌اند؛ در حالی که چهار مفهوم متفاوت‌اند.</div>
+      </div>
+      <div class="mgroup">
+        <h3>۱−۲. حقوقی، فرهنگی، درخواست و منابع درآمد <span class="cnt">۱۵ فیلد</span></h3>
+        <p class="gdesc">جداسازی «درخواست خدماتی خانوار» از «نیاز شناسایی‌شده در سنجش» و ساختاری‌کردن منابع مالی: هر منبع باید مبلغ، دوره، دریافت‌کننده و قابلیت اتکا داشته باشد؛ نه صرفاً نام منبع.</p>
+        <div class="tscroll">
+          <table class="mtable">
+            <thead><tr><th>فیلد پرسشنامه قبلی</th><th>قابلیت استفاده</th><th>محل استفاده</th><th>تغییر دقیق در پرسشنامه جدید</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">دین: اسلام و مذاهب، مسیحی، زرتشتی، کلیمی</td><td class="u"><span class="ub u-out">خارج از غربالگری EM-MPI</span></td><td class="p">ندارد</td><td class="n2">از بخش عمومی سنجش حذف شود؛ ثبت جداگانه فقط با ضرورت مشخص و مجوز.</td><td class="n">به شاخص یا امتیاز تبدیل نشود؛ نگهداری تابع سیاست داده حساس باشد.</td></tr>
+              <tr><td class="f">نیازمند مشاوره حقوقی و قضایی: بله/خیر</td><td class="u"><span class="ub u-serv">خدماتی و سرنخ، ناکافی</span></td><td class="p">E4، R8</td><td class="n2">نوع مانع، حق یا خدمت مسدودشده، مدت، شدت و فوریت پرسیده شود.</td><td class="n">«بله» درخواست خدمت است، نه احراز E4؛ «خیر» نبود مانع را ثابت نمی‌کند.</td></tr>
+              <tr><td class="f">نوع رسانه: لپ‌تاپ، گوشی هوشمند، تبلت</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">B5</td><td class="n2">نیاز واقعی آموزش دیجیتال، سالم‌بودن، اشتراک دستگاه، دسترسی دانش‌آموز و اتصال اینترنت اضافه شود.</td><td class="n">نوع دستگاه پیش‌تکمیل شود؛ کفایت آموزشی استنباط نشود.</td></tr>
+              <tr><td class="f">گوشی غیرهوشمند / تلفن / بدون دستگاه ارتباطی</td><td class="u"><span class="ub u-ctx">زمینه‌ای؛ سرنخ B5</span></td><td class="p">ارتباط و B5 حسب نیاز واقعی</td><td class="n2">دسترسی جایگزین و الزام آموزشی بررسی شود.</td><td class="n">نبود دستگاه هوشمند فقط در صورت محرومیت واقعی آموزشی در B5 مؤثر است.</td></tr>
+              <tr><td class="f">نوع درخواست: وام، جهیزیه، اشتغال، کمک معیشت، درمان، فرهنگی، مسکن، اکرام، محسنین</td><td class="u"><span class="ub u-serv">خدماتی</span></td><td class="p">مدیریت درخواست و ارجاع</td><td class="n2">حفظ به‌صورت چندانتخابی؛ «درخواست خانوار» از «نیاز شناسایی‌شده» جدا شود. فوریت، مراقبت و خدمات مشخص نیز قابل ثبت باشند.</td><td class="n">درخواست‌های قبلی با تاریخ و وضعیت حفظ شوند؛ درخواست درمان یا معیشت، امتیاز نیست.</td></tr>
+              <tr><td class="f">مستمری بازنشستگی</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3</td><td class="n2">مبلغ، دریافت‌کننده، دوره، استمرار، قابلیت دسترسی و تاریخ اعتبار اضافه شود.</td><td class="n">نوع منبع منتقل شود؛ بدون مبلغ و دوره برای D3 کافی نیست.</td></tr>
+              <tr><td class="f">سود پس‌انداز</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3</td><td class="n2">مبلغ واقعاً دریافتی، دوره و قابلیت اتکا ثبت شود؛ اصل پس‌انداز جدا باشد.</td><td class="n">داشتن پس‌انداز به مبلغ سود ماهانه تبدیل نشود.</td></tr>
+              <tr><td class="f">کمک سازمان‌های دولتی و غیردولتی</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3</td><td class="n2">نام/نوع منبع، مبلغ، نقدی/غیرنقدی، استمرار و دوره پرداخت ثبت شود؛ منابع نقدی طبق دستورالعمل محاسبه شوند.</td><td class="n">نوع کمک قابل انتقال؛ مقدار و استمرار تکمیل شود.</td></tr>
+              <tr><td class="f">کمک مالی بستگان</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3؛ شواهد محدود E3</td><td class="n2">مبلغ و اتکاپذیری مالی برای D3؛ حمایت اضطراری و مراقبتی برای E3 جدا پرسیده شود.</td><td class="n">دریافت کمک مالی به‌تنهایی شبکه حمایت کافی را ثابت نمی‌کند.</td></tr>
+              <tr><td class="f">کمک مالی خیرین</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3؛ حسب مورد E3</td><td class="n2">کمک موردی از مستمر تفکیک شود؛ قابلیت اتکا و نوع پشتیبانی ثبت شود.</td><td class="n">کمک موردی، درآمد ثابت تلقی نشود.</td></tr>
+              <tr><td class="f">ارثیه</td><td class="u"><span class="ub u-hint">نیازمند تفکیک معنا</span></td><td class="p">منابع مالی طبق دستورالعمل</td><td class="n2">دارایی موروثی، دریافت یک‌باره و درآمد مستمر حاصل از دارایی جدا شوند.</td><td class="n">«ارثیه» بدون جزئیات به درآمد ماهانه تبدیل نشود.</td></tr>
+              <tr><td class="f">دریافت اجاره</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3</td><td class="n2">مبلغ وصول‌شده، دوره، سهم فرد و استمرار دریافت ثبت شود.</td><td class="n">عنوان منبع پیش‌تکمیل؛ دریافت واقعی بررسی شود.</td></tr>
+              <tr><td class="f">کمک فرزندان</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D3؛ حسب مورد E3</td><td class="n2">مشخص شود فرزند عضو همین خانوار است یا خارج از آن؛ انتقال داخلی درآمد دوباره شمرده نشود.</td><td class="n">خطر دوباره‌شماری با درآمد اعضا بررسی شود.</td></tr>
+              <tr><td class="f">اشتغال سرپرست و اعضای خانوار</td><td class="u"><span class="ub u-ok">قابل استفاده با تفکیک</span></td><td class="p">D1، D2، D3</td><td class="n2">درآمد و وضعیت کار به هر عضو وصل شود؛ فرد اصلی تأمین‌کننده مشخص شود؛ استمرار کار و مبلغ منابع جدا سنجیده شوند.</td><td class="n">عنوان کلی منبع حفظ شود؛ فرد، مبلغ و دوره باید تکمیل شوند.</td></tr>
+              <tr><td class="f">نیازسنجی: متن آزاد</td><td class="u"><span class="ub u-serv">خدماتی و سرنخ</span></td><td class="p">همه ابعاد، حسب محتوا</td><td class="n2">نیازهای ساختاریافته و اولویت خانوار اضافه شود؛ متن آزاد مکمل بماند.</td><td class="n">متن حفظ شود؛ استخراج احتمالی از متن فقط پیشنهاد بررسی است، نه امتیاز رسمی.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- پنل ۲: فردی -->
+    <div class="mig-panel" data-mpanel="person">
+      <div class="mgroup">
+        <h3>۲−۱. وضعیت اجتماعی و مهارت‌ها <span class="cnt">۷ فیلد</span></h3>
+        <p class="gdesc">نسبت خانوادگی و وضعیت‌های پرونده‌ای بدون امتیاز مستقل منتقل می‌شوند؛ اثر واقعی هر وضعیت بر معاش، مراقبت و امکان کار جداگانه پرسیده می‌شود.</p>
+        <div class="tscroll">
+          <table class="mtable">
+            <thead><tr><th>فیلد قبلی</th><th>قابلیت استفاده</th><th>محل استفاده</th><th>تغییر لازم</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">نسبت با سرپرست؛ همه گزینه‌های خویشاوند و غیرخویشاوند</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="p">ترکیب خانوار و منطق نمایش</td><td class="n2">حفظ؛ «عضویت واقعی در خانوار در دوره ارزیابی» نیز روشن شود. نسبت خانوادگی به‌تنهایی عضویت اقتصادی را ثابت نمی‌کند.</td><td class="n">انتقال؛ ترکیب جاری خانوار تأیید شود.</td></tr>
+              <tr><td class="f">وضعیت همسر: دارای همسر، فوت، طلاق، ازدواج نکرده</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="p">تغییر نقش معاش و مراقبت</td><td class="n2">حفظ پرونده‌ای؛ اثر واقعی فقدان همسر بر تأمین معاش، مراقبت و حمایت جدا پرسیده شود.</td><td class="n">بدون امتیاز مستقل منتقل شود.</td></tr>
+              <tr><td class="f">تاریخ ثبت طلاق</td><td class="u"><span class="ub u-hint">مشروط</span></td><td class="p">خدمت حقوقی یا تغییر ترکیب خانوار</td><td class="n2">از سنجش عمومی به بخش مرتبط منتقل شود.</td><td class="n">سابقه حفظ شود؛ تاریخ طلاق ضریب محرومیت نمی‌دهد.</td></tr>
+              <tr><td class="f">وضعیت نظام وظیفه؛ پایان خدمت، معافیت دائم/موقت، اشتغال به تحصیل، اشتغال به خدمت، آماده به خدمت، گواهی وظیفه عمومی، سرباز فراری، در حال خدمت</td><td class="u"><span class="ub u-ctx">زمینه‌ای / مشروط</span></td><td class="p">امکان کار، غیبت تأمین‌کننده یا مانع اداری</td><td class="n2">وضعیت جاری و اثر واقعی بر کار، درآمد و خدمت پرسیده شود؛ دسته‌های غیرضروری در فرم عمومی نمایش داده نشوند.</td><td class="n">کدها با حفظ معنای قبلی منتقل شوند؛ وضعیت قدیمی جاری فرض نشود.</td></tr>
+              <tr><td class="f">تاریخ شروع خدمت</td><td class="u"><span class="ub u-hint">مشروط</span></td><td class="p">برنامه‌ریزی معاش / خدمت</td><td class="n2">فقط برای عضو مرتبط نمایش داده شود.</td><td class="n">انتقال سابقه؛ بدون امتیاز مستقیم.</td></tr>
+              <tr><td class="f">تاریخ پایان خدمت</td><td class="u"><span class="ub u-hint">مشروط</span></td><td class="p">برنامه‌ریزی معاش / خدمت</td><td class="n2">همراه وضعیت واقعی پایان خدمت بررسی شود.</td><td class="n">تاریخ پیش‌بینی‌شده با پایان واقعی یکسان فرض نشود.</td></tr>
+              <tr><td class="f">مهارت‌های فرهنگی و هنری؛ حافظ و قاری قرآن، خطاطی، طراحی، عکاسی، شعر، نویسندگی، هنرهای نمایشی، تدریس، صنایع دستی، ورزش، مداحی، قصه‌گویی، مجری‌گری</td><td class="u"><span class="ub u-hint">ظرفیت و سرنخ، ناکافی</span></td><td class="p">B7 و برنامه توانمندسازی</td><td class="n2">به «مهارت‌های فرد» گسترش یابد؛ سطح مهارت، قابلیت عرضه، تجربه، ابزار، علاقه و دسترسی به مسیر آموزش اضافه شود.</td><td class="n">مهارت قبلی حفظ شود؛ داشتن عنوان مهارت مساوی آمادگی اشتغال یا ضریب صفر B7 نیست.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="mgroup">
+        <h3>۲−۲. تمام گزینه‌های بخش «ویژگی‌های فردی» <span class="cnt">۳۴ گزینه</span></h3>
+        <p class="gdesc">این بخش بیشترین نیاز به بازطراحی را دارد؛ گزینه‌های آن ترکیبی از رویداد خانوادگی، بیماری، وضعیت اشتغال، برنامه حمایتی و نیاز مراقبتی است و نباید در یک فیلد چندانتخابی واحد باقی بماند.</p>
+        <div class="tscroll">
+          <table class="mtable slim">
+            <thead><tr><th>گزینه موجود</th><th>قابلیت استفاده / ارتباط</th><th>اقدام در نسخه جدید</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">فوت شوهر</td><td class="u"><span class="ub u-ctx">زمینه‌ای؛ E1، E2، E3 حسب اثر</span></td><td class="n2">به رویداد خانوادگی منتقل؛ نقش معاش و مراقبت ازدست‌رفته بررسی شود.</td><td class="n">سابقه حفظ؛ امتیاز مستقیم حذف.</td></tr>
+              <tr><td class="f">سرپرست سالمند</td><td class="u"><span class="ub u-ctx">زمینه‌ای؛ E1، E2</span></td><td class="n2">سالمندی از سن قابل تعیین است؛ توان معاش و نیاز مراقبت جدا سنجیده شود.</td><td class="n">سالمندی به ناتوانی خودکار تبدیل نشود.</td></tr>
+              <tr><td class="f">مطلقه</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">با وضعیت همسر یکپارچه؛ اثر عملکردی جدا بررسی شود.</td><td class="n">از دوباره‌ثبت‌کردن جلوگیری شود.</td></tr>
+              <tr><td class="f">سرپرست زندانی</td><td class="u"><span class="ub u-ctx">زمینه‌ای؛ معاش، مراقبت و حمایت</span></td><td class="n2">وضعیت غیبت، تأمین‌کننده جایگزین و مراقب جایگزین پرسیده شود.</td><td class="n">زندانی‌بودن امتیاز مستقل نیست.</td></tr>
+              <tr><td class="f">معلولیت سرپرست</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل؛ A2</span></td><td class="n2">به سلامت عضو منتقل؛ شدت محدودیت و خدمات دریافتی اضافه شود.</td><td class="n">عنوان معلولیت حفظ؛ ضریب نیازمند تکمیل است.</td></tr>
+              <tr><td class="f">بیماری سرپرست</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل؛ A1</span></td><td class="n2">به سلامت عضو منتقل؛ اثر بر عملکرد و معیشت سنجیده شود.</td><td class="n">تشخیص یا عنوان بیماری، شدت را تعیین نمی‌کند.</td></tr>
+              <tr><td class="f">متارکه زوجین</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">حضور واقعی اعضا و نقش معاش/مراقبت بررسی شود.</td><td class="n">سابقه حفظ؛ وضعیت جاری تأیید شود.</td></tr>
+              <tr><td class="f">مفقودی سرپرست</td><td class="u"><span class="ub u-hint">زمینه‌ای و سرنخ خطر</span></td><td class="n2">امنیت، تأمین معاش و مراقبت جاری بررسی شود.</td><td class="n">نیازمند بررسی انسانی؛ امتیاز خودکار ندارد.</td></tr>
+              <tr><td class="f">سرپرست فاقد صلاحیت</td><td class="u"><span class="ub u-out">برچسب کلی، نامناسب برای سنجش</span></td><td class="n2">با وضعیت یا رفتار مشخص و اثر قابل مشاهده بر امنیت و مراقبت جایگزین شود.</td><td class="n">فقط به‌عنوان عنوان تاریخی با دسترسی محدود حفظ؛ به تشخیص جدید تبدیل نشود.</td></tr>
+              <tr><td class="f">سرپرست متواری</td><td class="u"><span class="ub u-hint">زمینه‌ای / حساس</span></td><td class="n2">غیبت و اثر واقعی بر خانوار سنجیده شود؛ جزئیات غیرضروری ثبت نشود.</td><td class="n">بدون امتیاز مستقیم.</td></tr>
+              <tr><td class="f">فوت والدین</td><td class="u"><span class="ub u-ctx">زمینه‌ای؛ E2، E3، حفاظت کودک</span></td><td class="n2">مراقب فعلی، کفایت مراقبت و شبکه حمایت بررسی شود.</td><td class="n">فوت والدین مساوی فقدان مراقب نیست.</td></tr>
+              <tr><td class="f">سرپرست سرباز</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">با وضعیت نظام وظیفه یکپارچه؛ اثر بر معاش و مراقبت بررسی شود.</td><td class="n">از ثبت تکراری جلوگیری شود.</td></tr>
+              <tr><td class="f">فوت پدر</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">به رویداد خانوادگی منتقل؛ نقش‌های ازدست‌رفته بررسی شود.</td><td class="n">با فوت والدین/رویدادهای دیگر سازگار شود.</td></tr>
+              <tr><td class="f">طلاق والدین</td><td class="u"><span class="ub u-ctx">زمینه‌ای؛ حفاظت و مراقبت</span></td><td class="n2">مراقب، امنیت و استمرار تحصیل کودک بررسی شود.</td><td class="n">عنوان طلاق امتیاز مستقل ندارد.</td></tr>
+              <tr><td class="f">دختران خودسرپرست</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">نقش مسئول خانوار و ظرفیت معاش/حمایت ثبت شود؛ جنسیت امتیاز نگیرد.</td><td class="n">در سنجش کارکردی بازتعریف شود.</td></tr>
+              <tr><td class="f">پسران خودسرپرست</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">همان قاعده بالا؛ با خودسرپرست یکپارچه شود.</td><td class="n">بدون امتیاز جنسیتی.</td></tr>
+              <tr><td class="f">برنامه رفع فقر مطلق</td><td class="u"><span class="ub u-serv">خدماتی</span></td><td class="n2">به سوابق برنامه‌های حمایتی منتقل شود.</td><td class="n">سابقه برنامه حفظ؛ EM-MPI از نام برنامه ساخته نشود.</td></tr>
+              <tr><td class="f">مستمری‌بگیر نیازمند</td><td class="u"><span class="ub u-serv">خدماتی / مالی</span></td><td class="n2">دریافت مستمری با مبلغ و دوره ثبت شود؛ واژه «نیازمند» ورودی امتیاز نباشد.</td><td class="n">مبلغ از منبع معتبر تکمیل شود.</td></tr>
+              <tr><td class="f">خانوار پرنوزاد</td><td class="u"><span class="ub u-out">عنوان مبهم؛ زمینه‌ای</span></td><td class="n2">عنوان کنار گذاشته شود؛ تعداد و سن کودکان از اعضا، بار مراقبت از E2 سنجیده شود.</td><td class="n">تعریف کد قدیمی بررسی شود؛ معنای تازه به آن تحمیل نشود.</td></tr>
+              <tr><td class="f">کودکان دارای سوءتغذیه</td><td class="u"><span class="ub u-hint">سرنخ مهم؛ A6، R3</span></td><td class="n2">وضعیت جاری تغذیه و شواهد حرفه‌ای بررسی؛ ناامنی غذایی خانوار جدا پرسیده شود.</td><td class="n">سابقه حفظ؛ سوءتغذیه جاری خودکار تأیید نشود.</td></tr>
+              <tr><td class="f">مادران باردار و شیرده</td><td class="u"><span class="ub u-ctx">زمینه‌ای برای نیاز ویژه</span></td><td class="n2">وضعیت بارداری/شیردهی جدا؛ نیاز تغذیه، درمان و مراقبت بررسی شود.</td><td class="n">عنوان به محرومیت تبدیل نشود.</td></tr>
+              <tr><td class="f">همسر نوعروس تحت حمایت</td><td class="u"><span class="ub u-serv">خدماتی</span></td><td class="n2">به سوابق حمایت و درخواست منتقل شود.</td><td class="n">بدون امتیاز مستقل.</td></tr>
+              <tr><td class="f">بیکاران نیازمند</td><td class="u"><span class="ub u-hint">سرنخ؛ D1، D2</span></td><td class="n2">به وضعیت اشتغال منتقل؛ توان، امکان کار، آمادگی و جست‌وجوی کار اضافه شود.</td><td class="n">عنوان کلی برای شمارش بیکاران واجد شرایط کافی نیست.</td></tr>
+              <tr><td class="f">محصلین نیازمند</td><td class="u"><span class="ub u-hint">سرنخ خدمات آموزشی</span></td><td class="n2">به تحصیل و نیاز آموزشی منتقل شود.</td><td class="n">«نیازمند» به B1 یا B2 تبدیل نشود.</td></tr>
+              <tr><td class="f">اقشار نیازمند</td><td class="u"><span class="ub u-out">غیرعملیاتی</span></td><td class="n2">از ورودی سنجش حذف؛ نیاز مشخص ثبت شود.</td><td class="n">فقط عنوان تاریخی باقی بماند.</td></tr>
+              <tr><td class="f">نگهداری کودک و نوجوان</td><td class="u"><span class="ub u-out">مبهم؛ E2، R6 حسب وضعیت</span></td><td class="n2">مشخص شود «نیاز به مراقبت»، «ارائه مراقبت» یا «دریافت خدمت نگهداری» منظور است.</td><td class="n">تا روشن‌شدن معنای کد، تبدیل خودکار ممنوع.</td></tr>
+              <tr><td class="f">بررسی مدارک بیماری</td><td class="u"><span class="ub u-ctx">وضعیت گردش کار</span></td><td class="n2">به فرایند بررسی مدارک منتقل شود.</td><td class="n">وضعیت کار حفظ؛ به بیماری یا شدت آن تبدیل نشود.</td></tr>
+              <tr><td class="f">نگهداری سالمند ناتوان</td><td class="u"><span class="ub u-hint">سرنخ؛ A2، E2</span></td><td class="n2">نیاز مراقبت، مراقب موجود، پشتیبانی و اثر بر عملکرد پرسیده شود.</td><td class="n">دریافت خدمت از نیاز تأمین‌نشده تفکیک شود.</td></tr>
+              <tr><td class="f">برنامه رفع فقر مطلق؛ تکرار شکسته در متن</td><td class="u"><span class="ub u-serv">خدماتی / تکراری</span></td><td class="n2">با گزینه هم‌معنا ادغام شود؛ ابتدا کدهای واقعی دیتابیس بررسی شوند.</td><td class="n">سابقه‌ها با حفظ شناسه و منشأ یکپارچه شوند.</td></tr>
+              <tr><td class="f">برنامه‌های حمایت تغذیه</td><td class="u"><span class="ub u-serv">خدماتی؛ شواهد کمکی A6</span></td><td class="n2">به سوابق خدمات تغذیه منتقل شود؛ سنجش ۳۰روزه جدا اجرا شود.</td><td class="n">عضویت در برنامه مساوی ناامنی غذایی جاری نیست.</td></tr>
+              <tr><td class="f">بدسرپرست؛ متارکه، متواری، مفقودی و…</td><td class="u"><span class="ub u-out">عنوان کلی و هم‌پوشان</span></td><td class="n2">به وضعیت‌های مشخص و اثر واقعی تفکیک شود؛ برچسب کلی در فرم جدید حذف شود.</td><td class="n">عنوان قدیمی بدون تبدیل به تشخیص جدید حفظ شود.</td></tr>
+              <tr><td class="f">خودسرپرست</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="n2">با نقش مسئول خانوار یکپارچه؛ ظرفیت معاش و حمایت سنجیده شود.</td><td class="n">بدون امتیاز مستقل.</td></tr>
+              <tr><td class="f">نگهداری کودک، سالمند</td><td class="u"><span class="ub u-out">مبهم؛ E2</span></td><td class="n2">به فرد نیازمند مراقبت و نوع/وضعیت خدمت تفکیک شود.</td><td class="n">معنای کد و ارتباط با دریافت خدمت بررسی شود.</td></tr>
+              <tr><td class="f">زندانیان خارج از کشور</td><td class="u"><span class="ub u-hint">زمینه‌ای / حساس</span></td><td class="n2">فقط اثر غیبت بر معاش، مراقبت و دسترسی به حقوق بررسی شود.</td><td class="n">جزئیات در پرونده محدود؛ بدون امتیاز مستقیم.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mnote"><b>نتیجه:</b> فیلد «ویژگی‌های فردی» باید به دست‌کم این بخش‌ها شکسته شود:</div>
+        <div class="mchips">
+          <span>رویدادها و وضعیت خانوادگی</span>
+          <span>سلامت و محدودیت عملکرد</span>
+          <span>اشتغال و منابع</span>
+          <span>نیاز مراقبت و خدمات مراقبتی</span>
+          <span>سوابق برنامه‌های حمایتی</span>
+          <span>وضعیت بررسی و گردش کار</span>
+          <span>نشانه‌های خطر با دسترسی محدود</span>
+        </div>
+      </div>
+      <div class="mgroup">
+        <h3>۲−۳. اطلاعات زندان، جرم و «عدم صلاحیت» <span class="cnt">۵ فیلد</span></h3>
+        <p class="gdesc">عنوان جرم و علت زندانی‌شدن به امتیاز یا پرچم خطر تبدیل نمی‌شود؛ فقط اثر واقعی غیبت یا محدودیت بر معاش، مراقبت و امنیت خانوار بررسی می‌شود و دسترسی به این داده‌ها محدود است.</p>
+        <div class="tscroll">
+          <table class="mtable slim">
+            <thead><tr><th>فیلد قبلی</th><th>قابلیت استفاده</th><th>اقدام در پرسشنامه جدید</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">علت زندانی: عمدی/غیرعمدی</td><td class="u"><span class="ub u-out">خارج از امتیاز EM-MPI</span></td><td class="n2">از غربالگری عمومی خارج شود؛ در خدمت حقوقی مجاز، در صورت ضرورت باقی بماند.</td><td class="n">به امتیاز یا خطر خودکار تبدیل نشود.</td></tr>
+              <tr><td class="f">تاریخ ورود به زندان</td><td class="u"><span class="ub u-ctx">زمینه‌ای / مشروط</span></td><td class="n2">فقط برای بررسی مدت غیبت تأمین‌کننده یا مراقب و برنامه خدمت استفاده شود.</td><td class="n">سابقه حفظ؛ وضعیت جاری تأیید شود.</td></tr>
+              <tr><td class="f">تاریخ پایان محکومیت</td><td class="u"><span class="ub u-ctx">زمینه‌ای / مشروط</span></td><td class="n2">در پرونده تخصصی؛ پایان پیش‌بینی‌شده از آزادی واقعی تفکیک شود.</td><td class="n">از تاریخ، حضور فعلی فرد استنباط نشود.</td></tr>
+              <tr><td class="f">وضعیت جرم؛ مالی/مهریه، خانوادگی، مواد مخدر، اعتیاد، قتل، سرقت، منکرات/شرارت/اخلال، امنیتی/نظامی/انتظامی، عبور غیرمجاز، جعل، قاچاق، تخریب/تصرف، چک بلامحل، قتل غیرعمد/تخلفات رانندگی</td><td class="u"><span class="ub u-out">خارج از سنجش عمومی</span></td><td class="n2">تمام دسته‌ها از ورودی امتیاز کنار گذاشته شوند. اثر جاری بر امنیت یا عملکرد، جداگانه و با صلاحیت حرفه‌ای بررسی شود.</td><td class="n">عنوان جرم به A7 یا پرچم خطر تبدیل نشود؛ دسترسی محدود شود.</td></tr>
+              <tr><td class="f">دلیل عدم صلاحیت: مواد مخدر، اعتیاد، سرقت، منکرات، شرارت و اخلال</td><td class="u"><span class="ub u-out">عنوان حساس و ناکافی</span></td><td class="n2">با «وضعیت جاری و اثر مشخص بر عملکرد، مراقبت یا امنیت» جایگزین شود.</td><td class="n">حتی عنوان اعتیاد قدیمی برای تعیین ضریب جاری A7 کافی نیست.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="mgroup">
+        <h3>۲−۴. اشتغال <span class="cnt">۱۱ فیلد</span></h3>
+        <p class="gdesc">یک گزینه واحد «وضعیت اشتغال» به چند متغیر مستقل (فعالیت درآمدزا، توان، امکان، آمادگی و جست‌وجوی کار) تجزیه می‌شود تا بیکاری واجد شرایط D1/D2 درست احراز شود.</p>
+        <div class="tscroll">
+          <table class="mtable">
+            <thead><tr><th>فیلد قبلی</th><th>قابلیت استفاده</th><th>محل استفاده</th><th>تغییر دقیق</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">وضعیت اشتغال؛ شاغل، بیکار قبلاً شاغل/غیرشاغل، در حال تحصیل، خانه‌دار، درآمد بدون کار، مستمری‌بگیر، شاغل خارج از سن کار، خارج از سن کار، در زندان، غیرشاغل</td><td class="u"><span class="ub u-ok">قابل استفاده با تفکیک</span></td><td class="p">D1، D2، D3</td><td class="n2">به چند متغیر مستقل تبدیل شود: فعالیت درآمدزا، توان کار، امکان کار، آمادگی، جست‌وجوی کار، تحصیل و منابع غیرکاری.</td><td class="n">گزینه قبلی پیش‌تکمیل شود؛ «غیرشاغل» یا «خانه‌دار» بیکار واجد شرایط تلقی نشود.</td></tr>
+              <tr><td class="f">سازمان: فرد خاص / پست خاص / تابع ارجاع</td><td class="u"><span class="ub u-out">معنای نامشخص؛ احتمالاً تنظیمات داخلی</span></td><td class="p">ندارد تا روشن‌شدن معنا</td><td class="n2">از فرم پاسخ‌گویی خانوار خارج شود؛ کاربرد و تعریف فنی آن بررسی شود.</td><td class="n">بدون شناخت معنای کد، نگاشت به EM-MPI انجام نشود.</td></tr>
+              <tr><td class="f">وضعیت شغلی؛ کارفرما، مستقل خانگی/سایر، مزدبگیر خصوصی/تعاون/عمومی، کارکن فامیلی بدون مزد، فصلی/روزمزد</td><td class="u"><span class="ub u-ctx">زمینه‌ای و قابل تکمیل</span></td><td class="p">D1، D3</td><td class="n2">نوع رابطه کاری حفظ؛ استمرار کار، قطع فعالیت و دریافت واقعی درآمد اضافه شود.</td><td class="n">روزمزد یا فصلی به ضریب ۰٫۵ یا ۱ خودکار تبدیل نشود.</td></tr>
+              <tr><td class="f">کودک کار؛ در گزینه‌های وضعیت شغلی</td><td class="u"><span class="ub u-hint">سرنخ حفاظت</span></td><td class="p">B1، B2، R4</td><td class="n2">از نوع رابطه شغلی جدا شود؛ اثر کار بر امنیت، حضور در مدرسه و یادگیری بررسی شود.</td><td class="n">سابقه کار کودک حفظ؛ وضعیت جاری و خطر بررسی شود.</td></tr>
+              <tr><td class="f">سالمند شاغل؛ در گزینه‌های وضعیت شغلی</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="p">شناخت وضعیت کار</td><td class="n2">سن و کار مستقل ثبت شوند؛ شرایط و توان کار بررسی شود.</td><td class="n">سالمندبودن یا کارکردن او امتیاز مستقل ندارد.</td></tr>
+              <tr><td class="f">علت بیکاری: نداشتن سرمایه</td><td class="u"><span class="ub u-serv">علت / نیاز خدماتی</span></td><td class="p">برنامه اشتغال؛ B7 در حدود تعریف</td><td class="n2">نیاز سرمایه از بیکاری بالفعل تفکیک شود.</td><td class="n">فقدان سرمایه ضریب مستقل D2 نیست.</td></tr>
+              <tr><td class="f">پیدا نکردن کار مناسب</td><td class="u"><span class="ub u-hint">سرنخ</span></td><td class="p">D1، D2</td><td class="n2">جست‌وجوی واقعی، آمادگی و امکان کار بررسی شود.</td><td class="n">به‌تنهایی احراز همه شرایط D2 نیست.</td></tr>
+              <tr><td class="f">نداشتن حرفه و مهارت</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">B7</td><td class="n2">سطح مهارت، علاقه، توان مشارکت و دسترسی به مسیر آموزش اضافه شود.</td><td class="n">بی‌مهارتی به‌تنهایی ضریب ۱ B7 نمی‌دهد.</td></tr>
+              <tr><td class="f">عدم توانایی کار</td><td class="u"><span class="ub u-hint">سرنخ؛ نیازمند تفکیک</span></td><td class="p">A2 و امکان اعمال D1/D2</td><td class="n2">علت، دوام و اثر محدودیت پرسیده شود؛ توان پزشکی از مانع مراقبتی یا نبود فرصت جدا شود.</td><td class="n">فرد فاقد توان کار، خودکار بیکار واجد شرایط محسوب نشود.</td></tr>
+              <tr><td class="f">علاقه یا تقاضای خدمات اشتغال</td><td class="u"><span class="ub u-ok">قابل استفاده با تفکیک</span></td><td class="p">B7 و خدمت اشتغال</td><td class="n2">«علاقه»، «درخواست خدمت»، «آمادگی» و «امکان مشارکت» جدا شوند.</td><td class="n">پاسخ بله برای احراز آمادگی کافی نیست.</td></tr>
+              <tr><td class="f">آیا فرد توانایی کار دارد؟</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">D1، D2، B7</td><td class="n2">توان عملکردی و امکان واقعی کار، موانع پزشکی/مراقبتی و آمادگی جدا ثبت شوند.</td><td class="n">پاسخ قدیمی سرنخ است؛ نیازمند بررسی جاری.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="mgroup">
+        <h3>۲−۵. بیمه، سلامت و تحصیل <span class="cnt">۱۲ فیلد</span></h3>
+        <p class="gdesc">«داشتن» به «کفایت و دسترسی مؤثر» تبدیل می‌شود: بیمه باید معتبر و قابل استفاده باشد، تشخیص پزشکی باید به اثر عملکردی و نیاز تأمین‌نشده ترجمه شود و «در حال تحصیل» به حضور فعال و موانع شکسته شود.</p>
+        <div class="tscroll">
+          <table class="mtable">
+            <thead><tr><th>فیلد قبلی</th><th>قابلیت استفاده</th><th>محل استفاده</th><th>تغییر دقیق</th><th>تکلیف داده قبلی</th></tr></thead>
+            <tbody>
+              <tr><td class="f">بیمه پایه درمانی دارد؟</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">A5</td><td class="n2">اعتبار پوشش، قابلیت استفاده، پوشش خدمت ضروری، فرانشیز و موانع دسترسی اضافه شود.</td><td class="n">داشتن بیمه مساوی ضریب صفر A5 نیست.</td></tr>
+              <tr><td class="f">سابقه بیمه اجتماعی دارد؟</td><td class="u"><span class="ub u-ctx">اعتبارسنجی / خدماتی</span></td><td class="p">بررسی اشتغال و حقوق بیمه‌ای</td><td class="n2">از بیمه درمان جدا بماند؛ به‌عنوان شواهد کمکی استفاده شود.</td><td class="n">سابقه بیمه، اشتغال جاری را ثابت نمی‌کند.</td></tr>
+              <tr><td class="f">وضعیت بیمه اجتماعی: فعال/غیرفعال</td><td class="u"><span class="ub u-ctx">شواهد کمکی</span></td><td class="p">D1 و خدمات</td><td class="n2">تاریخ استعلام و نوع بیمه مشخص شود؛ با دریافت واقعی درآمد تطبیق یابد.</td><td class="n">فعال‌بودن به‌تنهایی ثبات درآمد را ثابت نمی‌کند.</td></tr>
+              <tr><td class="f">مدت سابقه بیمه؛ زیر یک سال تا بیش از بیست سال</td><td class="u"><span class="ub u-serv">خدماتی / زمینه‌ای</span></td><td class="p">حقوق بیمه‌ای و برنامه‌ریزی</td><td class="n2">در پرونده خدمات باقی بماند؛ امتیاز مستقل نگیرد.</td><td class="n">طبقه سابقه حفظ؛ به مدت دقیق تبدیل نشود.</td></tr>
+              <tr><td class="f">نوع بیمه اجتماعی؛ تأمین اجتماعی، روستاییان و عشایر، کشوری/نیروهای مسلح، سایر</td><td class="u"><span class="ub u-ctx">زمینه‌ای / اعتبارسنجی</span></td><td class="p">خدمات و استعلام</td><td class="n2">حفظ؛ نوع صندوق با پوشش مؤثر درمان خلط نشود.</td><td class="n">قابل انتقال، بدون ضریب مستقل.</td></tr>
+              <tr><td class="f">وضعیت جسمانی: سالم/ناسالم</td><td class="u"><span class="ub u-out">برای سنجش کافی نیست</span></td><td class="p">A1، A2</td><td class="n2">با بیماری مؤثر، محدودیت عملکرد، نیاز درمان و اثر بر زندگی جایگزین شود.</td><td class="n">«ناسالم» ضریب ۱ نیست؛ «سالم» قبلی نبود مشکل جاری را ثابت نمی‌کند.</td></tr>
+              <tr><td class="f">بیماری و معلولیت؛ تالاسمی، دیالیزی، ام‌اس، پیوند کلیه، صعب‌العلاج، هموفیلی، سایر بیماری‌ها</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">A1، A3، A4</td><td class="n2">تشخیص از اثر عملکردی، نیاز درمان تأمین‌نشده و فشار هزینه جدا شود.</td><td class="n">عنوان بیماری حفظ؛ امتیاز از نام بیماری تولید نشود.</td></tr>
+              <tr><td class="f">معلولیت جسمی</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">A2</td><td class="n2">نوع محدودیت عملکرد، نیاز کمک و کفایت خدمات ثبت شود.</td><td class="n">شدت و تأمین خدمت دوباره بررسی شود.</td></tr>
+              <tr><td class="f">معلولیت روانی</td><td class="u"><span class="ub u-out">مبهم / حساس</span></td><td class="p">A2 یا A7 حسب معنای واقعی</td><td class="n2">ناتوانی ذهنی/شناختی، اختلال روانی و محدودیت عملکرد تفکیک شوند.</td><td class="n">نگاشت خودکار به A7 یا تشخیص مشخص ممنوع.</td></tr>
+              <tr><td class="f">وضعیت سواد: باسواد/بی‌سواد</td><td class="u"><span class="ub u-ctx">زمینه‌ای، ناکافی</span></td><td class="p">B3</td><td class="n2">توان انجام امور پایه و وجود کمک قابل اتکا برای فرد مسئول پرسیده شود.</td><td class="n">«بی‌سواد» مساوی ضریب ۱ B3 نیست.</td></tr>
+              <tr><td class="f">میزان سواد؛ تمام مقاطع مدرسه، دانشگاه، حوزوی، سوادآموزی، خواندن و نوشتن</td><td class="u"><span class="ub u-ctx">زمینه‌ای</span></td><td class="p">B3، شناخت ظرفیت</td><td class="n2">مدرک/مقطع حفظ؛ سواد کارکردی مستقل سنجیده شود.</td><td class="n">مدرک پایین یا بالا ضریب B3 را قطعی نمی‌کند.</td></tr>
+              <tr><td class="f">در حال تحصیل</td><td class="u"><span class="ub u-ok">قابل استفاده با تکمیل</span></td><td class="p">B1، B2، B4، B5، B6</td><td class="n2">ثبت‌نام، حضور فعال، وقفه، ترک تحصیل، غیبت، موانع و نیاز ویژه اضافه شود.</td><td class="n">«خیر» بدون سن و علت، ترک تحصیل نیست؛ «بله» حضور فعال را ثابت نمی‌کند.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- پنل ۳: پوشش ۳۰ شاخص -->
+    <div class="mig-panel" data-mpanel="cover">
+      <div class="mgroup">
+        <h3>۳. پرسش‌های لازم برای پوشش ۳۰ شاخص <span class="cnt">۳۰ بسته پرسش</span></h3>
+        <p class="gdesc">ماتریس قبل نشان داد چه چیزی باید تغییر کند؛ این ماتریس مشخص می‌کند پس از تغییرات، چه داده‌هایی هنوز باید اضافه شوند. عبارت‌ها «بسته پرسش» هستند و در رابط کاربری به سؤال‌های کوتاه با نمایش شرطی تبدیل شده‌اند.</p>
+        <div class="tscroll">
+          <table class="mtable">
+            <thead><tr><th>شاخص</th><th>پشتوانه موجود در اکسل قبلی</th><th>پرسش‌ها و داده‌های لازم در نسخه جدید</th></tr></thead>
+            <tbody>
+              <tr><td class="idx">A1 — بیماری مؤثر</td><td class="n">نام بیماری و بیماری سرپرست</td><td class="n2">کدام عضو؟ بیماری کنترل شده است؟ چه اثری بر فعالیت روزمره، کار، تحصیل یا هزینه مستمر دارد؟ تعداد اعضای دارای بیماری مؤثر و شدت اختلال چقدر است؟</td></tr>
+              <tr><td class="idx">A2 — محدودیت عملکرد و توان‌بخشی</td><td class="n">معلولیت و توانایی کار</td><td class="n2">محدودیت پایدار در حرکت، مراقبت شخصی، ارتباط یا یادگیری چیست؟ چه کمک، وسیله، مراقبت یا توان‌بخشی لازم دارد؟ چه مقدار تأمین شده است؟</td></tr>
+              <tr><td class="idx">A3 — نیاز درمان ضروری تأمین‌نشده</td><td class="n">درخواست درمان؛ بررسی مدارک بیماری</td><td class="n2">درمان ضروری تأییدشده چیست؟ انجام شده، ناقص یا انجام‌نشده؟ علت و مدت تأخیر چیست؟ آیا خطر تشدید یا نیاز فوری وجود دارد؟</td></tr>
+              <tr><td class="idx">A4 — فشار مالی درمان</td><td class="n">تقریباً فاقد داده عملیاتی</td><td class="n2">هزینه درمان، دارو، مراقبت و رفت‌وآمد در سه ماه اخیر؛ منابع متناظر؛ بدهی، فروش دارایی و کاهش غذا، مسکن یا آموزش ناشی از درمان.</td></tr>
+              <tr><td class="idx">A5 — پوشش و دسترسی مؤثر</td><td class="n">داشتن بیمه</td><td class="n2">اعضای نیازمند پوشش معتبر دارند؟ خدمت ضروری تحت پوشش است؟ هزینه، فاصله، نوبت یا مانع دیگر عملاً استفاده را مختل کرده است؟</td></tr>
+              <tr><td class="idx">A6 — ناامنی غذایی</td><td class="n">سوءتغذیه و سابقه حمایت تغذیه</td><td class="n2">در ۳۰ روز گذشته، نگرانی از اتمام غذا، کاهش تنوع/کیفیت، کاهش مقدار، حذف وعده و گرسنگی به علت کمبود منابع رخ داده؟ تعداد وقوع هر مورد؟ اکنون غذای فوری وجود دارد؟</td></tr>
+              <tr><td class="idx">A7 — اختلال روانی/مصرف مواد مؤثر</td><td class="n">عناوین اعتیاد و معلولیت روانی</td><td class="n2">وضعیت جاری و شواهد مجاز؛ اثر بر امنیت، مراقبت، کار، تحصیل و اداره خانوار؛ شدت اختلال عملکرد؛ نشانه خطر آسیب به خود، دیگران یا خشونت، با دسترسی محرمانه.</td></tr>
+              <tr><td class="idx">B1 — بازماندگی/ترک تحصیل</td><td class="n">در حال تحصیل</td><td class="n2">برای هر فرد واجد سن آموزش اجباری: ثبت‌نام، حضور فعال، مدت وقفه، خروج از آموزش، علت و مستند قانونی در موارد استثنا.</td></tr>
+              <tr><td class="idx">B2 — خطر ترک تحصیل</td><td class="n">کودک کار؛ محصل نیازمند</td><td class="n2">غیبت غیرموجه، افت شدید، هزینه ضروری، کار کودک، مراقبت اجباری و مشکلات مؤثر؛ استمرار و امکان رفع هر عامل.</td></tr>
+              <tr><td class="idx">B3 — سواد کارکردی</td><td class="n">سواد و مدرک</td><td class="n2">فرد مسئول می‌تواند پیام، فرم و دستور درمان را بخواند و امور پایه را پیگیری کند؟ کمک قابل اتکا دارد؟ محدودیت سواد چه خدمتی را مختل کرده است؟</td></tr>
+              <tr><td class="idx">B4 — دسترسی عملی آموزش</td><td class="n">فاقد سنجش کافی</td><td class="n2">فاصله، زمان و هزینه رفت‌وآمد؛ امکان حضور مستمر؛ موانع مدارک، معلولیت یا ظرفیت مدرسه؛ موقت/پایدار بودن مانع.</td></tr>
+              <tr><td class="idx">B5 — ابزار آموزش دیجیتال</td><td class="n">نوع دستگاه</td><td class="n2">آموزش واقعاً به ابزار/اتصال نیاز دارد؟ دستگاه سالم و در دسترس دانش‌آموز است؟ اشتراک یا اینترنت ناپایدار چه اثری بر آموزش دارد؟</td></tr>
+              <tr><td class="idx">B6 — نیاز آموزشی ویژه</td><td class="n">بیماری/معلولیت، غیرمستقیم</td><td class="n2">نیاز ویژه چیست و چگونه تأیید شده؟ خدمت مناسب دریافت می‌شود؟ ناکافی/با تأخیر/فاقد خدمت است؟ اثر بر آموزش متناسب چیست؟</td></tr>
+              <tr><td class="idx">B7 — مسیر مهارت‌آموزی</td><td class="n">مهارت، علاقه اشتغال، علت بیکاری</td><td class="n2">واجد شرایط بودن، علاقه و توان مشارکت؛ مهارت قابل عرضه؛ مسیر فعال یا دوره نیمه‌کاره؛ ابزار اولیه و دسترسی واقعی به آموزش یا مسیر اشتغال.</td></tr>
+              <tr><td class="idx">C1 — بی‌خانمانی/خطر تخلیه</td><td class="n">لامکان، نوع سکونت، اجاره</td><td class="n2">محل خواب فعلی، سرپناه امن، سکونت اضطراری، خطر میان‌مدت، اخطار معتبر و خطر قریب‌الوقوع تخلیه.</td></tr>
+              <tr><td class="idx">C2 — ایمنی و کفایت فیزیکی</td><td class="n">قابل سکونت/تعمیر/غیرقابل سکونت، قدمت</td><td class="n2">چک‌لیست سقف و دیوار، برق، رطوبت، حفاظت سرما/گرما و خطر سلامت؛ نوع نقص و شدت خطر.</td></tr>
+              <tr><td class="idx">C3 — امنیت و پایداری سکونت</td><td class="n">نوع تصرف و تاریخ اجاره</td><td class="n2">روشن‌بودن حق سکونت، قرارداد، وابستگی، اختلاف، امکان تمدید و احتمال جابه‌جایی اجباری.</td></tr>
+              <tr><td class="idx">C4 — تراکم سکونت</td><td class="n">فاقد تعداد اتاق</td><td class="n2">تعداد اعضای ساکن و اتاق‌های قابل سکونت؛ وجود فضای خواب ایمن برای همه و نیاز مراقبتی مؤثر. متراژ زمین جایگزین نیست.</td></tr>
+              <tr><td class="idx">C5 — خدمات اصلی پایدار و ایمن</td><td class="n">وجود انشعابات</td><td class="n2">دسترسی واقعی، سلامت آب، استمرار برق و گرمایش/پخت‌وپز ایمن؛ قطع و علت آن؛ اثر حیاتی در شرایط جاری.</td></tr>
+              <tr><td class="idx">C6 — بهداشت محیط</td><td class="n">سرویس، حمام، فاضلاب</td><td class="n2">قابلیت استفاده، اشتراک، کفایت، نقص و خطر بهداشتی؛ روش دفع فاضلاب و آلودگی مؤثر.</td></tr>
+              <tr><td class="idx">C7 — وسایل ضروری</td><td class="n">تقریباً فاقد داده</td><td class="n2">وجود و قابلیت استفاده وسایل ضروری متناسب با خانوار؛ نیاز تأمین‌نشده و اثر بر سلامت، غذا، خواب و مراقبت.</td></tr>
+              <tr><td class="idx">C8 — فشار هزینه مسکن</td><td class="n">اجاره و ودیعه؛ منابع بدون مبلغ</td><td class="n2">اجاره، اقساط ضروری، شارژ و قبوض اصلی؛ منابع ماهانه طبق تعریف مصوب و هزینه ضروری درمان؛ مقدار، مدت و اثر معوقه بر سکونت.</td></tr>
+              <tr><td class="idx">C9 — دسترسی خدمات پایه</td><td class="n">محل زندگی، غیرمستقیم</td><td class="n2">زمان، هزینه، انتظام حمل‌ونقل و امکان واقعی دسترسی به خدمات ضروری؛ مانع پایدار. مرزبندی با A5 و B4 رعایت شود.</td></tr>
+              <tr><td class="idx">D1 — فعالیت فرد اصلی تأمین‌کننده</td><td class="n">وضعیت اشتغال و نوع شغل</td><td class="n2">فرد اصلی تأمین‌کننده کیست؟ توان و امکان کار دارد؟ در دوره ارزیابی واحد، کار و دریافت درآمد چقدر مستمر بوده؟ قطع‌ووصل چه اثر واقعی داشته است؟</td></tr>
+              <tr><td class="idx">D2 — بیکاری سایر اعضای واجد شرایط</td><td class="n">وضعیت اشتغال، توان و علاقه</td><td class="n2">برای افراد غیر از D1: شرایط مناسب کار، توان، آمادگی، جست‌وجوی فرصت و بیکاری بالفعل؛ موانع تحصیل، پزشکی و مراقبت جدا ثبت شود.</td></tr>
+              <tr><td class="idx">D3 — منابع نسبت به خط فقر</td><td class="n">نوع منابع درآمد</td><td class="n2">مبلغ و دوره هر منبع، دریافت‌کننده، دسترسی و قابلیت اتکا؛ ترکیب خانوار؛ خط فقر متناظر، نسخه، منطقه و تاریخ اعتبار.</td></tr>
+              <tr><td class="idx">E1 — چشم‌انداز معاش</td><td class="n">وضعیت اجتماعی و اشتغال، غیرمستقیم</td><td class="n2">در افق ۱۲ ماه چه مسیر عملی برای حفظ/بهبود معاش وجود دارد؟ فرصت واقعی و موانع پایدار چیست؟ انتظار خانوار با چه شواهدی سازگار است؟</td></tr>
+              <tr><td class="idx">E2 — بار مراقبت بدون پشتیبانی</td><td class="n">گزینه‌های نگهداری و وضعیت اعضا</td><td class="n2">چه کسی نیازمند مراقبت است؟ مراقب کیست؟ شدت و استمرار مراقبت، پشتیبانی موجود و اثر بر کار، تحصیل یا پیگیری خدمات چیست؟</td></tr>
+              <tr><td class="idx">E3 — شبکه حمایت قابل اتکا</td><td class="n">کمک بستگان/فرزندان/خیرین، محدود</td><td class="n2">در بحران چه فرد یا نهادی واقعاً کمک می‌کند؟ نوع کمک اضطراری، مراقبتی، درمانی، روانی و اتصال به خدمت؛ استمرار و قابلیت اتکا.</td></tr>
+              <tr><td class="idx">E4 — مانع حقوقی/اداری مؤثر</td><td class="n">درخواست مشاوره حقوقی</td><td class="n2">مانع دقیق چیست؟ کدام حق یا خدمت را مسدود کرده؟ مدت، شدت، امکان حل و اقدام لازم چیست؟ داشتن مدارک هویتی این سؤال را غیرضروری نمی‌کند.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- پنل ۴: فیلدهای کنترلی -->
+    <div class="mig-panel" data-mpanel="ctrl">
+      <div class="mgroup">
+        <h3>۴. فیلدهای کنترلی جدید پشت پرسشنامه <span class="cnt">۷ گروه</span></h3>
+        <p class="gdesc">این فیلدها الزاماً سؤال از خانوار نیستند؛ بخش مهمی از آن‌ها را سامانه یا کاربر سازمانی ثبت می‌کند و لایه شواهد، کیفیت داده، فوریت و بازنگری را مستقل از امتیاز می‌سازد.</p>
+        <div class="tscroll">
+          <table class="mtable slim">
+            <thead><tr><th>گروه</th><th>فیلدهای لازم</th></tr></thead>
+            <tbody>
+              <tr><td class="f">هویت ارزیابی</td><td class="n2">شناسه ارزیابی، خانوار، تاریخ وضعیت مورد سنجش، شروع/پایان دوره مرجع، نسخه پرسشنامه و نسخه قواعد</td></tr>
+              <tr><td class="f">منشأ داده</td><td class="n2">منبع، تاریخ دریافت/مشاهده، ثبت‌کننده و نقش، شناسه مدرک یا استعلام مجاز</td></tr>
+              <tr><td class="f">کیفیت داده</td><td class="n2">کامل/ناقص/متناقض/نیازمند بررسی، علت نقص، وضعیت اعتبارسنجی</td></tr>
+              <tr><td class="f">نتیجه شاخص</td><td class="n2">کد شاخص، ضریب مجاز یا مقدار تهی، امتیاز محاسبه‌شده، مبنای تعیین ضریب و وضعیت بررسی</td></tr>
+              <tr><td class="f">اصلاح و بازنگری</td><td class="n2">مقدار قبلی و جدید، دلیل، مستند، اصلاح‌کننده، زمان و تأیید لازم</td></tr>
+              <tr><td class="f">فوریت</td><td class="n2">نشانه خطر، کد R، زمان گزارش، مسئول بررسی، وضعیت تأیید انسانی، اقدام و وضعیت خاتمه</td></tr>
+              <tr><td class="f">ارجاع</td><td class="n2">مسیر، دلیل، مسئول جاری، مقصد، مهلت، پذیرش مسئولیت، اقدام و نتیجه</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mnote teal"><b>قاعده طلایی:</b> ضریب شدت نباید فیلدی آزاد برای انتخاب سلیقه‌ای باشد. پاسخ‌ها و شواهد ثبت می‌شوند و ضریب طبق قواعد اختصاصی شاخص محاسبه یا در فرایند مصوب تعیین می‌شود. اصلاح مستند داده، محاسبه مجدد را فعال می‌کند؛ نه تغییر مستقیم وزن یا امتیاز.</div>
+      </div>
+    </div>
+
+    <!-- پنل ۵: تکلیف داده قبلی -->
+    <div class="mig-panel" data-mpanel="legacy">
+      <div class="mgroup">
+        <h3>۵. تکلیف داده قبلی در این بازطراحی چیست؟ <span class="cnt">۶ قاعده + ۳ مثال</span></h3>
+        <p class="gdesc">قاعده پیشنهادی برای مهاجرت هر فیلد: داده قدیمی حذف یا بازنویسی نمی‌شود؛ با منشأ و تاریخ حفظ، بخش قابل استفاده پیش‌تکمیل و فقط شکاف‌های واقعی از خانوار پرسیده می‌شود.</p>
+        <div class="tscroll">
+          <table class="mtable slim">
+            <thead><tr><th>وضعیت داده قبلی</th><th>اقدام صحیح</th><th>نمونه</th></tr></thead>
+            <tbody>
+              <tr><td class="f">هم‌معنا و دارای تاریخ معتبر</td><td class="n2">انتقال یا پیش‌تکمیل با حفظ منشأ؛ کنترل شرایط جاری</td><td class="n">نوع تصرف، مبلغ اجاره معتبر</td></tr>
+              <tr><td class="f">بخشی از مفهوم جدید را پوشش می‌دهد</td><td class="n2">انتقال همان بخش و طرح سؤال‌های تکمیلی</td><td class="n">بیمه دارد ← تکمیل اعتبار و دسترسی مؤثر</td></tr>
+              <tr><td class="f">عنوان کلی یا معنای مبهم دارد</td><td class="n2">حفظ سابقه؛ توقف نگاشت تا روشن‌شدن معنا</td><td class="n">ناسالم، معلولیت روانی، نگهداری کودک</td></tr>
+              <tr><td class="f">صرفاً سابقه خدمت است</td><td class="n2">انتقال به سوابق خدمات، نه پاسخ شاخص</td><td class="n">برنامه حمایت تغذیه، اکرام</td></tr>
+              <tr><td class="f">حساس و غیرضروری برای غربالگری است</td><td class="n2">عدم نمایش در فرم عمومی؛ نگهداری/حذف طبق سیاست مصوب</td><td class="n">عنوان جرم، دین</td></tr>
+              <tr><td class="f">اطلاعات جدید در داده قبلی وجود ندارد</td><td class="n2">ثبت «نیازمند تکمیل» و جمع‌آوری هدفمند</td><td class="n">تعداد اتاق، دفعات حذف وعده، شبکه حمایت</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mgrid3">
+          <div class="mcard"><h4>مثال ۱ — بیمه</h4><span class="old">قدیم: بیمه پایه درمانی = بله</span><ul><li>وجود پوشش = پیش‌تکمیل «بله»، با تاریخ و منبع</li><li>اعتبار پوشش = نیازمند بررسی</li><li>کفایت پوشش و دسترسی = نیازمند تکمیل</li><li>ضریب A5 = تا تکمیل شواهد، تعیین‌نشده</li></ul></div>
+          <div class="mcard"><h4>مثال ۲ — مسکن</h4><span class="old">قدیم: ملکی نیازمند تعمیر</span><ul><li>نوع حق تصرف = ملکی</li><li>سابقه نقص فیزیکی = نیازمند تعمیر در تاریخ قبلی</li><li>خطر و شدت نقص جاری = نیازمند بررسی</li><li>ضریب C2 = از عنوان قدیمی به‌تنهایی قابل تعیین نیست</li></ul></div>
+          <div class="mcard"><h4>مثال ۳ — بیکاری</h4><span class="old">قدیم: غیرشاغل</span><ul><li>فعالیت درآمدزا در زمان ثبت قدیم = نداشته/نامشخص طبق تعریف کد</li><li>توان، امکان کار، آمادگی و جست‌وجوی کار = نیازمند تکمیل</li><li>واجد شرایط بودن برای D1 یا D2 = هنوز احراز نشده</li><li>ضریب = تعیین‌نشده</li></ul></div>
+        </div>
+        <div class="mnote"><b>بنابراین:</b> تبدیل ساختار داده ممکن است؛ تبدیل معتبر همه داده‌های قبلی به امتیاز EM-MPI ممکن نیست. برآورد یا حدس مدل هوش مصنوعی نیز جای داده لازم برای امتیاز رسمی را نمی‌گیرد.</div>
+      </div>
+    </div>
+
+    <!-- پنل ۶: نیازمند تصویب -->
+    <div class="mig-panel" data-mpanel="approve">
+      <div class="mgroup">
+        <h3>۶. مواردی که پیش از نهایی‌کردن پرسشنامه باید تصویب شوند <span class="cnt">۱۱ موضوع</span></h3>
+        <p class="gdesc">چارچوب طراحی راهگشاست؛ اما چند نقطه نیازمند دستورالعمل تکمیلی است تا پرسشنامه و نرم‌افزار یکسان اجرا شوند. همین فهرست در سامانه با برچسب «نیازمند تصویب» روی نتیجه‌های مرتبط نمایش داده می‌شود.</p>
+        <div class="tscroll">
+          <table class="mtable slim">
+            <thead><tr><th>موضوع</th><th>تصمیم لازم</th></tr></thead>
+            <tbody>
+              <tr><td class="f">A6: گاه‌به‌گاه و مکرر</td><td class="n2">تعداد وقوع باید ثبت شود؛ مرز تبدیل تعداد به ضریب، مصوب شود.</td></tr>
+              <tr><td class="f">D1: دوره ارزیابی و نوسان جدی</td><td class="n2">دوره واحد و شواهد کافی برای ناپایداری تعیین شود.</td></tr>
+              <tr><td class="f">D1: نبود فرد اصلی دارای توان و امکان کار</td><td class="n2">وضعیت کاربرد شاخص و نحوه محاسبه رسماً تعیین شود؛ صفر یا یک خودسرانه تخصیص نیابد.</td></tr>
+              <tr><td class="f">شاخص‌های عضومحور</td><td class="n2">قاعده تجمیع چند عضو در مواردی که جدول صریح نیست تعیین شود؛ همه شاخص‌ها با جمع یا بیشینه دلخواه تجمیع نشوند.</td></tr>
+              <tr><td class="f">C4: صفر اتاق قابل سکونت</td><td class="n2">تقسیم بر صفر ممنوع؛ وضعیت فضای خواب و فقدان اتاق با قاعده مصوب رسیدگی شود.</td></tr>
+              <tr><td class="f">C8: تعریف منابع و کسر درمان</td><td class="n2">فرمول دقیق منابع قابل‌دسترس و حالات صفر/منفی‌شدن پس از کسر درمان روشن شود.</td></tr>
+              <tr><td class="f">C8 و D3</td><td class="n2">یک مبلغ «درآمد خالص» مشترک بدون توجه به تفاوت تعریف این دو شاخص استفاده نشود.</td></tr>
+              <tr><td class="f">D3: برش‌های پیشنهادی</td><td class="n2">اعتبارسنجی و تصویب؛ تا آن زمان نتیجه آزمایشی از نتیجه رسمی جدا باشد.</td></tr>
+              <tr><td class="f">B1: وضعیت نامشخص</td><td class="n2">«وقفه مشخص نیازمند پیگیری» از «فقدان اطلاعات کافی» جدا شود؛ فقدان داده، خودکار ضریب ۰٫۵ نگیرد.</td></tr>
+              <tr><td class="f">اعتبار منابع</td><td class="n2">اولویت دریافت خدمات و استعلام‌ها از اعتبار شواهد درباره وضعیت جاری تفکیک شود؛ تناقض‌ها بررسی انسانی شوند.</td></tr>
+              <tr><td class="f">پرچم قرمز</td><td class="n2">ثبت نشانه و هشدار اولیه بی‌درنگ؛ تأیید تخصصی، تداوم و خاتمه در گردش کار انسانی مستقل انجام شود.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mnote rose" style="margin-top:22px"><b>جمع‌بندی اجرایی —</b> برای پوشش EM-MPI، پرسشنامه جدید باید پنج تغییر اصلی داشته باشد:</div>
+        <div class="msummary">
+          <div class="it">تفکیک فیلدهای چندمعنایی، به‌ویژه وضعیت سکونت، ویژگی‌های فردی، اشتغال، بیماری و معلولیت.</div>
+          <div class="it">افزودن اثر، شدت، استمرار و نیاز تأمین‌نشده به وضعیت‌های ثبت‌شده قبلی.</div>
+          <div class="it">ایجاد سنجش‌های جدید برای ناامنی غذایی ۳۰روزه، فشار مالی درمان، تراکم، وسایل ضروری، دسترسی واقعی، چشم‌انداز معاش و شبکه حمایت.</div>
+          <div class="it">ساختاری‌کردن منابع مالی بر اساس عضو، مبلغ، دوره و قابلیت اتکا؛ به‌جای انتخاب صرفاً نام منبع.</div>
+          <div class="it">افزودن لایه شواهد، کیفیت داده، فوریت و بازنگری مستقل از امتیاز.</div>
+        </div>
+        <div class="mnote teal"><b>توصیه نهایی:</b> داده‌های قدیمی را حذف یا بازنویسی نکنید. آن‌ها را با منشأ و تاریخ حفظ کنید، بخش قابل استفاده را در ارزیابی جدید پیش‌تکمیل کنید و فقط شکاف‌های واقعی را از خانوار بپرسید. نتیجه باید یک ارزیابی جدید و نسخه‌دار EM-MPI باشد، نه تغییر نام همان داده‌های قدیمی به شاخص‌های جدید.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= پرسش‌های متداول ================= -->
+<section id="faq">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="tag">پرسش‌های متداول</span>
+      <h2>سؤال‌های پرتکرار خانوارها و کاربران</h2>
+    </div>
+    <div class="faq">
+      <div class="q reveal"><button type="button">آیا امتیاز پایین به معنای رد درخواست است؟<span class="plus">+</span></button><div class="a"><p>خیر. EM-MPI ابزار سطح‌بندی اولیه و اولویت‌بندی رسیدگی است. هیچ امتیاز یا خروجی الگوریتمی به‌تنهایی مبنای پذیرش، رد، حذف یا تعیین میزان حمایت نیست؛ تصمیم نهایی با مددکار و مرجع انسانی است، مستند، قابل توضیح و قابل اعتراض.</p></div></div>
+      <div class="q reveal"><button type="button">اگر به همه سؤال‌ها جواب نداده باشم چه می‌شود؟<span class="plus">+</span></button><div class="a"><p>پاسخ دادن اجباری نیست. اطلاعات ناکافی به‌جای امتیاز صفر یا یک، وضعیت «نیازمند تکمیل اطلاعات» می‌گیرد و نتیجه «غیرنهایی» نمایش داده می‌شود. می‌توانید پیش‌نویس را ذخیره کنید و بعداً ادامه دهید.</p></div></div>
+      <div class="q reveal"><button type="button">چرا بعضی فیلدها قابل ویرایش نیستند؟<span class="plus">+</span></button><div class="a"><p>فیلدهایی که از وب‌سرویس سازمان‌های متولی (ثبت احوال، پست، بیمه، املاک، علوم، آموزش‌وپرورش) دریافت شده‌اند «ملاک ثبتی» هستند و در فرم قفل می‌شوند؛ این قفل خودکار است و نیازی به اعمال دستی نیست — مثلاً پوشش بیمه اعضا (A5) و وضعیت ثبت‌نام تحصیلی (B1) پس از استعلام، همان‌جا در پرسشنامه قفل و ملاک می‌شوند. اگر اشکالی در آن داده‌ها می‌بینید، اصلاح باید از طریق درخواست به همان مرجع ثبتی انجام شود.</p></div></div>
+      <div class="q reveal"><button type="button">چرا وقتی به یک سوال می‌گویم «بله»، بلافاصله سوال یا فرم دیگری باز می‌شود؟<span class="plus">+</span></button><div class="a"><p>این «فالوآپ خودکار» است و برای مستندسازی دقیق طراحی شده: وقتی پاسخ شما نشان‌دهنده یک وضعیت است (مثلاً بیماری مزمن، مانع حقوقی، فضای خواب ناایمن)، سامانه بلافاصله می‌پرسد این وضعیت به کدام اعضا مربوط است، جزئیات آن چیست (نوع بیماری و…) و در صورت نیاز، مدرک مثبت آن را ثبت می‌کند (فایل تصویر یا PDF تا ۴۰۰ کیلوبایت، یا شماره/مرجع مدرک). این کار تفسیر ارزیاب‌های مختلف را یکسان و پرونده قابل راستی‌آزمایی می‌کند. اگر پاسخ را عوض کنید (مثلاً به «ندارد»)، فالوآپ بسته می‌شود و پاسخ‌های ثبت‌شده‌اش حفظ نمی‌شود.</p></div></div>
+      <div class="q reveal"><button type="button">چرا بعضی سوال‌ها دیگر در پرسشنامه نیستند؟<span class="plus">+</span></button><div class="a"><p>سوال‌هایی که دوبار پرسیده می‌شدند حذف یا ادغام شدند: «نوع محل سکونت» و «نوع حق سکونت» قبلاً هم در اطلاعات پایه و هم در گام مسکن پرسیده می‌شد — اکنون فقط در گام مسکن (C1/C3) است و داده ثبتی موجود به‌صورت فقط‌خواندنی کنار همان شاخص نمایش داده می‌شود؛ «تعداد اتاق» و «زیربنا» هم فقط در شاخص C4 پرسیده می‌شوند. اطلاعات ثبت‌نام (موبایل سرپرست و…) هم که قبلاً داده‌اید، در پرسشنامه نشان داده می‌شود و از شما تکرار نمی‌شود.</p></div></div>
+      <div class="q reveal"><button type="button">پرچم قرمز چیست و چه تفاوتی با امتیاز دارد؟<span class="plus">+</span></button><div class="a"><p>پرچم قرمز نشانه وضعیت فوری یا خطرناک (مانند بی‌خانمانی، خطر جانی، فقدان مراقب) است. امتیاز اضافه نمی‌کند اما مستقل از امتیاز، مسیر ارجاع فوری و رسیدگی اضطراری را فعال می‌کند. ثبت آن در گام ۲ یا از دکمه «فوریت» در همه گام‌ها ممکن است.</p></div></div>
+      <div class="q reveal"><button type="button">اطلاعات من کجا ذخیره می‌شود؟<span class="plus">+</span></button><div class="a"><p>در نسخه نمایشی، همه داده‌ها فقط در مرورگر خود شما (ذخیره‌سازی محلی) نگهداری می‌شود و به هیچ سروری ارسال نمی‌گردد. در استقرار عملی، دسترسی داده تابع ضرورت، مجوز قانونی و سطوح محرمانگی سازمانی خواهد بود.</p></div></div>
+      <div class="q reveal"><button type="button">از پرسشنامه قبلی چه داده‌ای استفاده می‌شود؟<span class="plus">+</span></button><div class="a"><p>اطلاعات پایه قابل انتقال است و نگاشت هر فیلد قدیمی به شاخص جدید مشخص شده (برچسب میراث روی هر شاخص در فرم + جدول کامل در «نقشه مهاجرت» سامانه و بخش «ملاحظات مهاجرت» همین راهنما). اما بخش عمده شدت محرومیت باید با معیارهای عملیاتی جدید دوباره جمع‌آوری شود؛ از داده تاریخی ناقص ضریب جدید ساخته نمی‌شود.</p></div></div>
+
+      <div class="q reveal"><button type="button">نوع درخواست کجا ثبت می‌شود و چرا در امتیاز اثر ندارد؟<span class="plus">+</span></button><div class="a"><p>نوع درخواست («اعلام نیازمندی و دریافت خدمات دارم» یا «متقاضی ارائه خدمت به مددجویان و نیازمندان هستم») در همان فرم ثبت‌نام انتخاب می‌شود و به‌عنوان مقدار اولیه پرونده درج می‌گردد؛ در گام ۱۰ پرسشنامه هم می‌توانید آن را تکمیل و اصلاح کنید (سایر انواع درخواست مانند کمک درمان، مسکن، حمایت تحصیلی و...). درخواست خروجی خدمت و مسیر ارجاع است و امتیاز مستقل ندارد تا «نیاز شناسایی‌شده در سنجش» با «درخواست خدماتی» مخلوط نشود. درخواست‌های قبلی پرونده با تاریخ و وضعیت حفظ می‌شوند.</p></div></div>
+      <div class="q reveal"><button type="button">«شناسنامه سنجش» روی هر شاخص چیست و چه کمکی می‌کند؟<span class="plus">+</span></button><div class="a"><p>کنار کارت هر شاخص در فرم (و در جدول ۳۰ شاخص داشبورد حرفه‌ای) دکمه «شناسنامه سنجش» هست که مودالی با نُه جزء باز می‌کند: مفهوم شاخص و دامنه آن، واحد سنجش و تجمیع، دوره زمانی، پرسش‌های واقعه‌محور، داده‌های کمی، شواهد زمینه‌ای، قواعد تعیین سطح با «و»/«یا» و تقدم، وضعیت شواهد و استثناها. برای هر ضریب یک «مصداق/شاهد مثال» عینی آمده تا ارزیاب‌های مختلف به تفسیر یکسان برسند. سهم وب‌سرویس‌های متولی در پر کردن همان شاخص هم با وضعیت زنده استعلام پرونده نمایش داده می‌شود.</p></div></div>
+      <div class="q reveal"><button type="button">ورود به سامانه چگونه است؟ اگر رمزم را فراموش کنم چه کنم؟<span class="plus">+</span></button><div class="a"><p>با باز شدن سامانه، صفحه ورود نمایش داده می‌شود: کد ملی + رمز عبور. حساب ندارید؟ دکمه «ثبت‌نام» فرم مودالی را باز می‌کند و پس از ثبت، حساب و نشست شما ساخته می‌شود. در ورودهای بعدی، اگر پرونده‌ای با همان کد ملی داشته باشید، همان‌جا ادامه می‌یابد. در نسخه نمایشی، «فراموشی رمز» هنوز مسیر پیامکی ندارد — برای بازیابی، می‌توانید با همان کد ملی دوباره ثبت‌نام کنید (حساب قبلی به‌روزرسانی می‌شود) یا از «ورود نمایشی» استفاده کنید؛ در استقرار عملیاتی، بازیابی رمز با کد تأیید پیامکی موبایل انجام می‌شود. دکمه «خروج» در هدر سامانه نشست را می‌بندد.</p></div></div>
+      <div class="q reveal"><button type="button">ثبت‌نام چگونه انجام می‌شود و رمز عبور چه قواعدی دارد؟<span class="plus">+</span></button><div class="a"><p>دکمه «ثبت‌نام» فرم مودالی (الگوی سامانه امداد) باز می‌کند: کد ملی (۱۰ رقم با تطبیق الگوریتم ثبت احوال — اجباری و کلید همه استعلام‌ها)، شماره موبایل (۰۹ + ۹ رقم)، تاریخ تولد شمسی، کد پستی، رمز عبور و تکرار آن، نوع درخواست و پذیرش توافقنامه بانکی. رمز عبور باید دقیقاً ۶ کاراکتر و ترکیبی از اعداد و حروف انگلیسی باشد و استفاده از کاراکترهای &lt;&gt;"/;,*|=% در آن مجاز نیست؛ رمز فقط به‌صورت هش ذخیره می‌شود. اگر «متقاضی ارائه خدمت» را انتخاب کنید، پرونده پرسشنامه برای شما ساخته نمی‌شود و به داشبورد حرفه‌ای هدایت می‌شوید.</p></div></div>
+      <div class="q reveal"><button type="button">واکشی اطلاعات هویتی چطور انجام می‌شود و آیا داده‌هایم قفل می‌ماند؟<span class="plus">+</span></button><div class="a"><p>بعد از ثبت‌نام، هویت و اعضای خانوار از ثبت احوال و نشانی و موقعیت جغرافیایی از پست واکشی می‌شود و به‌عنوان «ملاک» قفل می‌گردد؛ اصلاح فقط از مسیر درخواست به همان مرجع ثبتی ممکن است. استعلام شاپرک/بانکی فقط در حدود توافقنامه‌ای است که در ثبت‌نام پذیرفته‌اید (گردش تجمیعی، بدون جزئیات خرید) و در هر زمان قابل لغو است. سایر سازمان‌ها (بیمه، املاک، آموزش‌وپرورش، علوم) نیز با کد ملی استعلام و به‌صورت پیش‌تکمیل با حفظ منبع و تاریخ اعمال می‌شوند — پیش‌تکمیل تأیید خودکار شرایط جاری نیست. در نسخه نمایشی، پاسخ واکشی شبیه‌سازی‌شده و قطعی از کدهای واردشده است.</p></div></div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="warn">این صفحه بخشی از نسخه نمایشی سامانه است؛ هیچ داده واقعی خانوار در آن ثبت یا ارسال نشود. قواعد نسخه EM-MPI-RF 1.0.0-demo است و موارد آستانه‌ای برچسب «نیازمند تصویب» دارند.</div>
+  <div>پرسش‌نامه — سامانه غربالگری محرومیت چندبعدی EM-MPI خانوار • ۳۰ شاخص • ۵ بُعد • سقف ۱۰۰۰ امتیاز</div>
+</footer>
+
+<button id="toTop" aria-label="بازگشت به بالای صفحه" title="بازگشت به بالا">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  /* --- نوار پیشرفت مطالعه --- */
+  var bar=document.getElementById("readProgress");
+  var toTop=document.getElementById("toTop");
+  function onScroll(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?(h.scrollTop/max*100):0)+"%";
+    if(h.scrollTop>600) toTop.classList.add("show"); else toTop.classList.remove("show");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+  toTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"})});
+
+  /* --- نمایان‌شدن هنگام اسکرول --- */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} });
+  },{threshold:.14});
+  document.querySelectorAll(".reveal").forEach(function(el){io.observe(el)});
+
+  /* --- شمارنده‌های قهرمان --- */
+  function faNum(n){return String(n).replace(/\d/g,function(d){return "۰۱۲۳۴۵۶۷۸۹"[d]})}
+  var cio=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el=e.target,target=parseInt(el.getAttribute("data-count"),10),start=null,dur=1400;
+      function tick(ts){
+        if(!start)start=ts;
+        var p=Math.min((ts-start)/dur,1);
+        p=1-Math.pow(1-p,3);
+        el.textContent=faNum(Math.round(target*p));
+        if(p<1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick); cio.unobserve(el);
+    });
+  },{threshold:.6});
+  document.querySelectorAll("[data-count]").forEach(function(el){cio.observe(el)});
+
+  /* --- نوارهای وزن ابعاد --- */
+  var wio=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      e.target.style.width=e.target.getAttribute("data-w")+"%";
+      wio.unobserve(e.target);
+    });
+  },{threshold:.5});
+  document.querySelectorAll(".dim .bar b").forEach(function(el){wio.observe(el)});
+
+  /* --- آکاردئون پرسش‌ها --- */
+  document.querySelectorAll(".q button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var q=btn.parentElement,a=q.querySelector(".a"),open=q.classList.contains("open");
+      document.querySelectorAll(".q.open").forEach(function(o){o.classList.remove("open");o.querySelector(".a").style.maxHeight="0"});
+      if(!open){q.classList.add("open");a.style.maxHeight=a.scrollHeight+"px";}
+    });
+  });
+
+  /* --- تب‌های ملاحظات مهاجرت --- */
+  var mtabs=document.querySelectorAll(".mtab");
+  mtabs.forEach(function(t){
+    t.addEventListener("click",function(){
+      mtabs.forEach(function(x){x.classList.remove("on")});
+      t.classList.add("on");
+      var key=t.getAttribute("data-mtab");
+      document.querySelectorAll(".mig-panel").forEach(function(p){
+        p.classList.toggle("on",p.getAttribute("data-mpanel")===key);
+      });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
