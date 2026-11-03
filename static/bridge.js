@@ -1,123 +1,104 @@
 // ═══════════════════════════════════════════════════════════
 // پل ارتباطی بین برنامه استاتیک پرسشنامه و Flask
-// این فایل قبل از بارگذاری برنامه اصلی اجرا می‌شود
+// دو حالت: ۱) بدون hid (ثبت‌نام جدید) ۲) با hid (بازبینی همیار)
 // ═══════════════════════════════════════════════════════════
 (function() {
   'use strict';
 
-  // دریافت hid از URL یا متغیر تزریق‌شده
-  const params = new URLSearchParams(window.location.search);
-  const hid = window.BRIDGE_HID || params.get('hid') || '';
-  const role = window.BRIDGE_ROLE || params.get('role') || 'beneficiary';
-
-  if (!hid) {
-    console.log('[Bridge] No hid in URL, running standalone');
-    return;
-  }
-
   const STORE_KEY = 'porseshnameh-db';
-  console.log('[Bridge] Initializing for hid:', hid, 'role:', role);
+  const hid = window.BRIDGE_HID || '';
+  const role = window.BRIDGE_ROLE || 'beneficiary';
 
-  // ─── ۱) قبل از بارگذاری برنامه: بارگذاری داده از Flask ───
+  console.log('[Bridge] Init — hid:', hid || '(new)', 'role:', role);
+
+  // ─── حالت ۱: بدون hid → نیازمند جدید، در زمان تکمیل household بساز ───
+  // ─── حالت ۲: با hid → همیار در حال بازبینی، داده را از Flask بارگذاری کن ───
+
   async function loadFromFlask() {
+    if (!hid) {
+      console.log('[Bridge] No hid — fresh registration mode');
+      // پاک‌کردن داده قدیمی localStorage برای شروع تازه
+      localStorage.removeItem(STORE_KEY);
+      return;
+    }
     try {
       const resp = await fetch(`/api/assessment/${hid}`);
-      if (!resp.ok) {
-        console.log('[Bridge] No existing data on server');
-        return false;
-      }
+      if (!resp.ok) { console.log('[Bridge] No data on server'); return; }
       const data = await resp.json();
-      if (!data || !data.assessments) {
-        console.log('[Bridge] Invalid data format');
-        return false;
-      }
-
-      // ساخت ساختار Zustand persist
+      if (!data?.assessments) return;
       const storeData = {
-        state: {
-          assessments: data.assessments,
-          activeId: hid,
-        },
+        state: { assessments: data.assessments, activeId: hid },
         version: 0,
       };
-
-      // ذخیره در localStorage قبل از بارگذاری برنامه
       localStorage.setItem(STORE_KEY, JSON.stringify(storeData));
-      console.log('[Bridge] Data loaded from Flask and injected into localStorage');
-      return true;
-    } catch (e) {
-      console.error('[Bridge] Error loading from Flask:', e);
-      return false;
-    }
+      console.log('[Bridge] Data loaded from Flask');
+    } catch(e) { console.error('[Bridge] Load error:', e); }
   }
 
-  // ─── ۲) ذخیره داده در Flask ───
   let saveTimer = null;
   async function saveToFlask() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      const assessments = parsed?.state?.assessments || {};
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { return; }
+    const assessments = parsed?.state?.assessments || {};
+    // یافتن assessment فعال یا آخرین
+    const activeId = parsed?.state?.activeId || Object.keys(assessments)[0];
+    const assessment = assessments[activeId];
+    if (!assessment) return;
 
-      // بررسی وضعیت assessment
-      const assessment = assessments[hid];
-      if (!assessment) return;
+    const status = assessment.status || 'draft';
+    console.log('[Bridge] Status:', status, 'activeId:', activeId);
 
-      const status = assessment.status || 'draft';
-      console.log('[Bridge] Assessment status:', status);
-
-      const resp = await fetch(`/api/assessment/${hid}`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
+    if (status === 'submitted' || status === 'closed') {
+      // تکمیل شده → ذخیره نهایی در Flask
+      const url = hid ? `/api/assessment/${hid}/complete` : '/api/assessment/create';
+      try {
+        const body = JSON.stringify({
           assessments: assessments,
-          status: status,
+          activeId: activeId,
           hid: hid,
-        }),
-      });
-
-      if (resp.ok) {
-        console.log('[Bridge] Data saved to Flask');
-      }
-
-      // اگر وضعیت submitted یا closed است، هدایت به Flask
-      if (status === 'submitted' || status === 'closed') {
-        console.log('[Bridge] Assessment completed, redirecting...');
-        // ذخیره نهایی
-        await fetch(`/api/assessment/${hid}/complete`, {
+          role: role,
+        });
+        const resp = await fetch(url, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            assessments: assessments,
-            hid: hid,
-            role: role,
-          }),
+          body: body,
         });
-        // هدایت به صفحه وضعیت
-        setTimeout(() => {
-          window.location.href = role === 'assistant'
-            ? `/assistant/review/${hid}`
-            : `/beneficiary/status/${hid}`;
-        }, 1500);
-      }
-    } catch (e) {
-      console.error('[Bridge] Error saving to Flask:', e);
+        const result = await resp.json();
+        console.log('[Bridge] Saved to Flask:', result);
+        if (result.hid) {
+          // هدایت به صفحه وضعیت یا بازبینی همیار
+          setTimeout(() => {
+            if (role === 'assistant') {
+              window.location.href = `/assistant/review/${result.hid}?done=1`;
+            } else {
+              window.location.href = `/beneficiary/status/${result.hid}`;
+            }
+          }, 1500);
+        }
+      } catch(e) { console.error('[Bridge] Save error:', e); }
+    } else if (hid) {
+      // ذخیره دوره‌ای (فقط در حالت بازبینی همیار)
+      try {
+        await fetch(`/api/assessment/${hid}`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({assessments: assessments, hid: hid}),
+        });
+        console.log('[Bridge] Auto-saved');
+      } catch(e) { console.error('[Bridge] Auto-save error:', e); }
     }
   }
 
-  // ─── ۳) نظارت بر تغییرات localStorage ───
   function startMonitoring() {
-    // نظارت با storage event
     window.addEventListener('storage', (e) => {
       if (e.key === STORE_KEY) {
-        console.log('[Bridge] localStorage changed');
         if (saveTimer) clearTimeout(saveTimer);
         saveTimer = setTimeout(saveToFlask, 1000);
       }
     });
-
-    // نظارت با polling (چون storage event در همان tab فعال نمی‌شود)
+    // Polling برای تشخیص تغییرات در همان tab
     let lastHash = '';
     setInterval(() => {
       const raw = localStorage.getItem(STORE_KEY);
@@ -131,15 +112,31 @@
     }, 2000);
   }
 
-  // ─── ۴) اجرا ───
+  // نمایش نشان نقش (امتیاز شهروندی برای همیار)
+  function showRoleBadge() {
+    if (role === 'assistant') {
+      const badge = document.createElement('div');
+      badge.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999;background:#1d3d63;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-family:Vazirmatn,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;gap:6px;';
+      badge.innerHTML = '🛡️ <span>حالت بازبینی همیار — امتیاز شهروندی فعال</span>';
+      document.body.appendChild(badge);
+    } else if (hid) {
+      const badge = document.createElement('div');
+      badge.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999;background:#12938d;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-family:Vazirmatn,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+      badge.innerHTML = '📝 حالت خوداظهاری نیازمند';
+      document.body.appendChild(badge);
+    }
+  }
+
   loadFromFlask().then(() => {
     startMonitoring();
-    console.log('[Bridge] Monitoring started');
+    // نمایش نشان پس از بارگذاری DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', showRoleBadge);
+    } else {
+      showRoleBadge();
+    }
+    console.log('[Bridge] Ready');
   });
 
-  // ─── ۵) قبل از خروج، ذخیره نهایی ───
-  window.addEventListener('beforeunload', () => {
-    saveToFlask();
-  });
-
+  window.addEventListener('beforeunload', () => { saveToFlask(); });
 })();

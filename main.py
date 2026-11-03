@@ -989,31 +989,163 @@ def self_declaration(hid):
 # ═══════════════════════════════════════════════════════════
 # پرسشنامه استاتیک (port از porseshnameh-static-v0.9.6)
 # ═══════════════════════════════════════════════════════════
-@app.route("/questionnaire/<hid>")
+@app.route("/questionnaire/")
+@app.route("/questionnaire")
 @login_required
-def questionnaire_app(hid):
-    """سرو کردن برنامه استاتیک پرسشنامه با bridge script."""
+def questionnaire_new():
+    """صفحه پرسشنامه برای ثبت‌نام جدید (بدون hid) — نیازمند جدید."""
     u = current_user()
-    db = load_db()
-    h = db["households"].get(hid)
-    if not h:
-        return redirect(url_for("index"))
-    role = request.args.get("role", u.get("role", "beneficiary"))
-    # خواندن index.html استاتیک و تزریق bridge script
+    role = u.get("role", "beneficiary")
     idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
     try:
         with open(idx_path, "r", encoding="utf-8") as f:
             html = f.read()
     except Exception:
         return "فایل پرسشنامه یافت نشد", 500
-    # استفاده از <base> tag برای حل همه مسیرهای نسبی
-    # این باعث می‌شود ./_next/... به /static/porsesh/_next/... تبدیل شود
     base_tag = '<base href="/static/porsesh/">'
     html = html.replace('<head>', '<head>' + base_tag, 1)
-    # تزریق bridge script قبل از </body>
+    # بدون hid → حالت ثبت‌نام جدید
+    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
+    html = html.replace('</body>', bridge + '</body>')
+    return html
+
+
+@app.route("/questionnaire/<hid>")
+@login_required
+def questionnaire_app(hid):
+    """سرو کردن برنامه استاتیک پرسشنامه با bridge script — حالت بازبینی همیار."""
+    u = current_user()
+    db = load_db()
+    h = db["households"].get(hid)
+    if not h:
+        return redirect(url_for("questionnaire_new"))
+    role = request.args.get("role", u.get("role", "beneficiary"))
+    idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
+    try:
+        with open(idx_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except Exception:
+        return "فایل پرسشنامه یافت نشد", 500
+    base_tag = '<base href="/static/porsesh/">'
+    html = html.replace('<head>', '<head>' + base_tag, 1)
     bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="{hid}";window.BRIDGE_ROLE="{role}";</script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
+
+
+@app.route("/api/assessment/create", methods=["POST"])
+@login_required
+def api_create_assessment():
+    """ایجاد household جدید از داده پرسشنامه — حالت ثبت‌نام نیازمند."""
+    u = current_user()
+    data = request.get_json()
+    if not data or "assessments" not in data:
+        return jsonify({"error": "invalid data"}), 400
+    assessments = data["assessments"]
+    active_id = data.get("activeId") or next(iter(assessments), "")
+    assessment = assessments.get(active_id, {})
+    if not assessment:
+        return jsonify({"error": "no assessment"}), 400
+
+    # استخراج کد ملی از assessment
+    household_data = assessment.get("household", {})
+    national_id = household_data.get("headNationalId", "")
+    if not national_id:
+        # اگر کد ملی در household نیست، از answers بگرد
+        national_id = assessment.get("answers", {}).get("headNationalId", "")
+
+    # ساخت hid
+    if national_id and len(national_id) >= 6:
+        hid = f"H-{national_id[-6:]}"
+    else:
+        import uuid
+        hid = f"H-{uuid.uuid4().hex[:6].upper()}"
+
+    db = load_db()
+    # اگر hid قبلاً وجود دارد، به‌روزرسانی
+    if hid in db["households"]:
+        h = db["households"][hid]
+    else:
+        h = {
+            "identity": {"hid": hid, "national_id": national_id},
+            "em_input": {"level": "", "redflags": [], "em_dims": [], "redflag_labels": [],
+                         "services_received": [], "em_date": "", "note": ""},
+            "state": {"redflags": [], "em_dims": [], "active_axes": [], "answers": {},
+                      "created_at": datetime.now().isoformat(timespec="seconds"),
+                      "created_by": u.get("role", "beneficiary")},
+            "layer2_done": False, "layer3_done": False,
+            "decisions": [], "referrals": [], "history": [],
+            "preferences": {}, "capacities": [], "causes": [],
+            "status": "pending", "claimed_by": None,
+            "national_id": national_id,
+        }
+
+    # ذخیره assessment
+    assessment["status"] = "submitted"
+    assessment["updatedAt"] = datetime.now().isoformat(timespec="seconds")
+    h["assessment"] = assessment
+
+    # استخراج نام و استان
+    civil_data = (assessment.get("webServices", {}).get("civil_registry", {}).get("data", {}))
+    head_name = civil_data.get("نام و نام خانوادگی سرپرست", "")
+    post_data = assessment.get("webServices", {}).get("post", {}).get("data", {})
+    province = post_data.get("استان", "")
+    city = post_data.get("شهرستان / منطقه", "")
+
+    h["identity"].update({
+        "name": head_name, "province": province, "province_name": province,
+        "city": city, "location": f"{province}، {city}" if province else "",
+        "members": str(len(assessment.get("members", []))),
+        "contact": household_data.get("headMobile", ""),
+    })
+
+    # محاسبه EM-MPI
+    answers = assessment.get("answers", {})
+    members = assessment.get("members", [])
+    hh = assessment.get("household", {})
+    income_sources = assessment.get("incomeSources", [])
+    poverty_line = hh.get("povertyLine", {})
+    try:
+        result = compute_emmpi(answers, members, hh, income_sources, poverty_line)
+        assessment["mpiResult"] = result
+        if result.get("total") is not None:
+            h["emmpi"] = {
+                "indicators": answers, "result": {
+                    "score": result["total"], "level": result.get("level", {}),
+                    "red_flags": result.get("flags", []),
+                    "needs_cdi": result["total"] >= 300 or any(f["code"] in ("R1","R2","R5") for f in result.get("flags", [])),
+                },
+                "computed_at": datetime.now().isoformat(timespec="seconds"),
+                "computed_by": u.get("role", "beneficiary"),
+            }
+            h["em_input"]["emmpi_score"] = result["total"]
+            h["em_input"]["emmpi_level"] = result.get("level", {}).get("label", "")
+            h["em_input"]["em_date"] = datetime.now().strftime("%Y-%m-%d")
+            rf_map = {"R1":"housing","R2":"health","R3":"food","R4":"education",
+                      "R5":"safety","R6":"caregiving","R7":"utilities","R8":"legal","R9":"shock"}
+            rfs = []
+            for f in result.get("flags", []):
+                cf = rf_map.get(f["code"])
+                if cf and cf not in rfs: rfs.append(cf)
+            h["em_input"]["redflags"] = rfs
+            h["state"]["redflags"] = rfs
+    except Exception as e:
+        print(f"[api_create] EM-MPI error: {e}")
+
+    role = data.get("role", "beneficiary")
+    if role == "assistant":
+        h["status"] = "emmpi_done" if h.get("emmpi") else "claimed"
+    else:
+        h["status"] = "pending"
+
+    h["history"].append({
+        "at": datetime.now().isoformat(timespec="seconds"),
+        "by": u.get("role", role),
+        "action": f"تکمیل پرسشنامه استاتیک — امتیاز: {result.get('total', 'ناتمام') if 'result' in dir() else 'نامشخص'}"
+    })
+    db["households"][hid] = h
+    save_db(db)
+    return jsonify({"ok": True, "hid": hid})
 
 
 @app.route("/api/assessment/<hid>")
