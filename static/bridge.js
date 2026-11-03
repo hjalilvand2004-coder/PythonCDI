@@ -5,10 +5,10 @@
 (function() {
   'use strict';
 
-  // دریافت hid از URL
+  // دریافت hid از URL یا متغیر تزریق‌شده
   const params = new URLSearchParams(window.location.search);
-  const hid = params.get('hid');
-  const role = params.get('role') || 'beneficiary';
+  const hid = window.BRIDGE_HID || params.get('hid') || '';
+  const role = window.BRIDGE_ROLE || params.get('role') || 'beneficiary';
 
   if (!hid) {
     console.log('[Bridge] No hid in URL, running standalone');

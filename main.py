@@ -1000,20 +1000,18 @@ def questionnaire_app(hid):
         return redirect(url_for("index"))
     role = request.args.get("role", u.get("role", "beneficiary"))
     # خواندن index.html استاتیک و تزریق bridge script
-    # os در ابتدای فایل import شده
     idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
     try:
         with open(idx_path, "r", encoding="utf-8") as f:
             html = f.read()
     except Exception:
         return "فایل پرسشنامه یافت نشد", 500
+    # استفاده از <base> tag برای حل همه مسیرهای نسبی
+    # این باعث می‌شود ./_next/... به /static/porsesh/_next/... تبدیل شود
+    base_tag = '<base href="/static/porsesh/">'
+    html = html.replace('<head>', '<head>' + base_tag, 1)
     # تزریق bridge script قبل از </body>
     bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="{hid}";window.BRIDGE_ROLE="{role}";</script>'
-    # اصلاح مسیرهای نسبی
-    html = html.replace('href="./_next', 'href="/static/porsesh/_next')
-    html = html.replace('src="./_next', 'src="/static/porsesh/_next')
-    html = html.replace('href="./logo.svg"', 'href="/static/porsesh/logo.svg"')
-    html = html.replace('href="./help.html"', 'href="/static/porsesh/help.html" target="_blank"')
     html = html.replace('</body>', bridge + '</body>')
     return html
 
