@@ -86,6 +86,22 @@
     <div><label>راه ارتباطی</label><input type="text" name="contact" placeholder="تلفن یا نشانی"></div>
     <div><label>افراد در معرض خطر</label><input type="text" name="at_risk" placeholder="کودکان، سالمندان، بیماران..."></div>
   </div>
+
+  <div style="margin-top:14px;padding:12px 14px;background:var(--bg-2);border-radius:var(--r);border:1px solid var(--line-2)">
+    <label>کانال دریافت درخواست *</label>
+    <select name="request_channel" required style="max-width:100%">
+      <option value="in_person" selected>🏢 حضوری (مراجعه به دفتر)</option>
+      <option value="phone">📞 تماس تلفنی</option>
+      <option value="sms">💬 پیامک</option>
+      <option value="email">✉️ ایمیل</option>
+      <option value="gov_window">🏛️ پنجره واحد رفاه ایرانیان</option>
+      <option value="website">🌐 وب‌سایت سامانه</option>
+      <option value="mobile_app">📱 اپلیکیشن موبایل</option>
+      <option value="referral">🤝 ارجاع نهاد همکار</option>
+      <option value="social_media">📢 شبکه‌های اجتماعی</option>
+    </select>
+    <p class="card-desc" style="margin-top:6px">این درخواست از کدام مسیر دریافت شده است؟ این فیلد برای ردیابی و گزارش‌گیری استفاده می‌شود.</p>
+  </div>
 </div>
 
 <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px">

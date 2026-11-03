@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block crumb %}پروندهٔ خانوار{% endblock %}
 {% block body %}
+{% from "macros.html" import render_roadmap, render_peh_gauge, render_basket_visual %}
 
 {# ── Page head ───────────────────────────────────────── #}
 <div class="page-head">
@@ -24,16 +25,21 @@
     </div>
   </div>
   <div class="ph-actions">
-    {# دکمهٔ EM-MPI (غربالگری اولیه) #}
+    {# دکمهٔ غربالگری و فعال‌سازی (EM-MPI + CDI سریع) #}
     {% if h.emmpi %}
     <a class="btn sec sm" href="{{ url_for('emmpi_result', hid=hid) }}" style="border-color:var(--p);color:var(--p)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      EM-MPI: {{ h.emmpi.result.score }}
+      غربالگری: {{ h.emmpi.result.score }}
+    </a>
+    <a class="btn sec sm" href="{{ url_for('citizen_profile_view', hid=hid) }}" style="border-color:var(--blue);color:var(--blue)" title="پروندهٔ شهروندی و امتیاز صداقت">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      پروندهٔ شهروندی
+      {% if h.citizen_profile %}<span class="badge {% if h.citizen_profile.honesty_level %}{{ h.citizen_profile.honesty_level.color }}{% else %}P4{% endif %}" style="margin-inline-start:4px"><span class="dot"></span>{{ h.citizen_profile.honesty_score }}</span>{% endif %}
     </a>
     {% else %}
     <a class="btn sm" href="{{ url_for('emmpi_form', hid=hid) }}" style="background:linear-gradient(135deg,var(--amber),#d97706)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      شروع EM-MPI
+      شروع غربالگری و فعال‌سازی
     </a>
     {% endif %}
     <a class="btn sec sm" href="{{ url_for('assess', hid=hid) }}">
@@ -63,14 +69,17 @@
   </div>
 </div>
 
-{# ── EM-MPI card ─────────────────────────────────────── #}
+{# ═══════ نقشه راه پرونده (Roadmap) ═══════ #}
+{{ render_roadmap(h, res, u, hid) }}
+
+{# ── کارت غربالگری و فعال‌سازی (EM-MPI + CDI سریع) ────── #}
 {% if not h.emmpi %}
 <div class="alert amber" style="margin-bottom:14px">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
   <div>
-    <b>غربالگری EM-MPI هنوز انجام نشده است.</b>
-    طبق سند Emdad_sanadHemayt0004، EM-MPI پیش‌نیاز ارزیابی جامع CDI است.
-    <a class="btn sm" href="{{ url_for('emmpi_form', hid=hid) }}" style="margin-inline-start:8px;background:var(--amber)">شروع EM-MPI</a>
+    <b>مرحلهٔ ۲ — غربالگری و فعال‌سازی هنوز انجام نشده است.</b>
+    این مرحله شامل EM-MPI (۳۵ شاخص) و فعال‌سازی خودکار محورهای CDI سریع بر اساس پرچم‌های قرمز است.
+    <a class="btn sm" href="{{ url_for('emmpi_form', hid=hid) }}" style="margin-inline-start:8px;background:var(--amber)">شروع غربالگری</a>
   </div>
 </div>
 {% else %}
@@ -78,13 +87,14 @@
   <div class="head-row">
     <h2>
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      کارت EM-MPI (غربالگری اولیه)
+      غربالگری و فعال‌سازی (EM-MPI + CDI سریع)
     </h2>
     <a class="sec-tag teal" href="{{ url_for('emmpi_result', hid=hid) }}">مشاهدهٔ کامل →</a>
   </div>
+  <p class="card-desc" style="margin-bottom:10px">این مرحله شامل ارزیابی ۳۵ شاخص EM-MPI و فعال‌سازی خودکار محورهای CDI سریع بر اساس پرچم‌های قرمز است. خروجی این مرحله: امتیاز محرومیت، سطح، مسیر ارجاع و محورهای فعال CDI.</p>
   <div class="kvs">
     <div class="item">
-      <span class="k">امتیاز کل</span>
+      <span class="k">امتیاز محرومیت</span>
       <span class="v"><b style="font-size:18px;color:var(--p-d)">{{ h.emmpi.result.score }}</b><span class="small">/۱۰۰۰</span></span>
     </div>
     <div class="item">
@@ -106,24 +116,118 @@
       </span>
     </div>
     <div class="item">
-      <span class="k">تاریخ غربالگری</span>
-      <span class="v mono small">{{ h.emmpi.computed_at }}</span>
-    </div>
-    <div class="item">
-      <span class="k">نیاز به CDI</span>
+      <span class="k">محورهای فعال CDI</span>
       <span class="v">
-        {% if h.emmpi.result.needs_cdi %}
-        <span class="badge P1"><span class="dot"></span>بله — ارجاع به CDI</span>
+        {% if res and res.active_axes %}
+        <span class="badge P2"><span class="dot"></span>{{ res.active_axes|length }} محور</span>
         {% else %}
-        <span class="badge P4"><span class="dot"></span>فعلاً نیازی نیست</span>
+        <span class="badge P4"><span class="dot"></span>فعال نیست</span>
         {% endif %}
       </span>
     </div>
+    <div class="item">
+      <span class="k">تاریخ غربالگری</span>
+      <span class="v mono small">{{ h.emmpi.computed_at[:10] if h.emmpi.computed_at else '—' }}</span>
+    </div>
+  </div>
+
+  {# نمایش زنجیره: از غربالگری به فعال‌سازی #}
+  <div style="margin-top:12px;padding:10px 12px;background:var(--bg-2);border-radius:var(--r);display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px">
+    <span style="color:var(--mut);font-weight:700">زنجیره:</span>
+    <span class="badge P1"><span class="dot"></span>EM-MPI (۳۵ شاخص)</span>
+    <span style="color:var(--mut)">→</span>
+    <span class="badge P0"><span class="dot"></span>{{ h.emmpi.result.red_flags|length }} پرچم قرمز</span>
+    <span style="color:var(--mut)">→</span>
+    <span class="badge P2"><span class="dot"></span>{{ res.active_axes|length if res and res.active_axes else 0 }} محور CDI فعال</span>
+    <span style="color:var(--mut)">→</span>
+    <span class="badge {% if h.emmpi.result.needs_cdi %}P1{% else %}P4{% endif %}"><span class="dot"></span>{% if h.emmpi.result.needs_cdi %}ارجاع به CDI هدفمند{% else %}پایش{% endif %}</span>
   </div>
 </div>
 {% endif %}
 
-{# ── EM-MPI card (قدیمی — برای سازگاری) ──────────────── #}
+{# ── گزارش مغایرت‌های داده‌ای (خوداظهاری vs EM-MPI) ─────── #}
+{% if h.emmpi and h.emmpi.discrepancies %}
+<div class="card" style="border-inline-start:4px solid var(--red);margin-bottom:14px">
+  <div class="head-row">
+    <h2 style="color:var(--red)">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      گزارش مغایرت‌های داده‌ای
+    </h2>
+    <span class="tag" style="background:var(--red-bg);color:var(--red);border-color:var(--red-line)">{{ h.emmpi.discrepancies|length }} مغایرت کامل</span>
+  </div>
+  <p class="card-desc" style="color:var(--red)">این مغایرت‌ها بین پاسخ‌های خوداظهاری نیازمند و ارزیابی همیار در EM-MPI شناسایی شده‌اند. مددکار خانواده و کلینیک تخصصی باید این موارد را بررسی کنند.</p>
+
+  {# لینک به پروندهٔ شهروندی کامل #}
+  <div style="margin:10px 0;padding:10px 12px;background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:var(--r);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--blue);flex-shrink:0"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <div style="flex:1;font-size:12.5px;color:var(--blue);line-height:1.6">
+      برای مشاهدهٔ تحلیل کامل صداقت، امتیاز به تفکیک ابعاد ۵گانه و تفسیر خودکار سامانه، به پروندهٔ شهروندی مراجعه کنید.
+      {% if h.citizen_profile %}
+      <b>امتیاز صداقت فعلی: {{ h.citizen_profile.honesty_score }} از ۱۰۰</b>
+      {% endif %}
+    </div>
+    <a class="btn sm" href="{{ url_for('citizen_profile_view', hid=hid) }}" style="background:var(--blue);border-color:var(--blue)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      پروندهٔ شهروندی
+    </a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>بُعد</th><th>شاخص</th><th>گزارش نیازمند</th><th>ارزیابی همیار</th><th>جهت تغییر</th><th>اختلاف</th></tr></thead>
+      <tbody>
+        {% for d in h.emmpi.discrepancies %}
+        <tr style="background:var(--red-bg)">
+          <td style="text-align:center;font-weight:700;color:var(--red)">{{ d.dim|default('—') }}</td>
+          <td>
+            <b class="mono">{{ d.empi_code|default(d.indicator|default('—')) }}</b>
+            <div class="small" style="color:var(--mut)">{{ d.empi_title|default('') }}</div>
+          </td>
+          <td>
+            <span class="badge {% if d.sd_value|default(0) >= 1 %}P0{% elif d.sd_value|default(0) >= 0.5 %}P1{% else %}P4{% endif %}">
+              {{ d.sd_answer_label|default(d.sd_label|default('—')) }}
+            </span>
+          </td>
+          <td>
+            <span class="badge {% if d.empi_value|default(0)|float >= 1 %}P0{% elif d.empi_value|default(0)|float >= 0.5 %}P1{% else %}P4{% endif %}">
+              {{ d.empi_severity_label|default(d.emmpi_label|default('—')) }}
+            </span>
+          </td>
+          <td>
+            {% if d.direction == 'تشدید' or d.direction == 'افزایش' %}
+            <span style="color:var(--red);font-weight:700" title="همیار شدیدتر ارزیابی کرده">↑ تشدید</span>
+            {% elif d.direction == 'تسهیل' or d.direction == 'کاهش' %}
+            <span style="color:var(--blue);font-weight:700" title="همیار سبک‌تر ارزیابی کرده">↓ تسهیل</span>
+            {% else %}
+            <span style="color:var(--mut)">= ثابت</span>
+            {% endif %}
+          </td>
+          <td style="text-align:center;font-weight:700;color:var(--red)">{{ d.gap|default('—') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif h.emmpi and h.citizen_profile %}
+{# وقتی مغایرت کامل نیست ولی پروندهٔ شهروندی هست #}
+<div class="card" style="border-inline-start:4px solid var(--blue);margin-bottom:14px">
+  <div class="head-row">
+    <h2 style="color:var(--blue)">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      پروندهٔ شهروندی
+    </h2>
+    <span class="tag teal">امتیاز صداقت: {{ h.citizen_profile.honesty_score }} از ۱۰۰</span>
+  </div>
+  <p class="card-desc">بررسی کامل صداقت شهروندی، انطباق پاسخ‌های نیازمند با ارزیابی همیار در ۵ بُعد محرومیت، و تفسیر خودکار سامانه.</p>
+  <div style="margin-top:10px">
+    <a class="btn" href="{{ url_for('citizen_profile_view', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      مشاهدهٔ پروندهٔ شهروندی کامل
+    </a>
+  </div>
+</div>
+{% endif %}
 <div class="card" style="display:none">
   <div class="head-row">
     <h2>
@@ -153,6 +257,130 @@
   {% endif %}
 </div>
 
+{# ═══════════════════════════════════════════════════════════
+   ═══════ CDI 3-Layer Visibility Guide for Actors (نمایش همیشگی) ═══════
+   ═══════════════════════════════════════════════════════════ #}
+<div class="card" style="background:linear-gradient(135deg,var(--p-ll) 0%,#fff 70%);border:1px solid var(--p-l);margin-bottom:14px">
+  <div class="head-row">
+    <h2 style="color:var(--p-dd)">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      دسترسی به لایه‌های CDI برای نقش شما
+    </h2>
+    <span class="tag teal">نقش: {{ u.label or u.role }}</span>
+  </div>
+  <p class="card-desc">مسیر ارزیابی این خانوار شامل ۳ مرحله است. مرحلهٔ ۱ (غربالگری و فعال‌سازی) شامل EM-MPI و فعال‌سازی خودکار محورهای CDI سریع است — این دو در یک عملکرد انجام می‌شوند. نقش شما می‌تواند به مراحل زیر دسترسی داشته باشد:</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px">
+    {# مرحله ۱: غربالگری و فعال‌سازی (EM-MPI + CDI سریع) #}
+    <div class="card" style="padding:14px;{% if h.emmpi %}border-inline-start:4px solid var(--green){% else %}border-inline-start:4px solid var(--amber){% endif %}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:30px;height:30px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:800">۱</span>
+        <div>
+          <div style="font-weight:700;color:var(--ink);font-size:13px">غربالگری و فعال‌سازی</div>
+          <div class="tiny" style="color:var(--mut)">EM-MPI + CDI سریع</div>
+        </div>
+      </div>
+      <div class="small" style="color:var(--ink-2);line-height:1.7">
+        ارزیابی ۳۵ شاخص EM-MPI + فعال‌سازی خودکار محورهای CDI بر اساس پرچم‌های قرمز. خروجی: امتیاز، سطح، مسیر ارجاع، محورهای فعال.
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-2)">
+        <div class="tiny" style="color:var(--mut);margin-bottom:4px">دسترسی شما:</div>
+        {% if u.role in ('assistant', 'worker', 'rose', 'swclinic', 'employ', 'hqmanager') %}
+          {% if h.emmpi %}
+            <span class="badge P3"><span class="dot"></span>✓ تکمیل شد</span>
+            <a class="btn sec sm" href="{{ url_for('emmpi_result', hid=hid) }}" style="margin-inline-start:4px;padding:2px 8px;font-size:10px">مشاهده</a>
+          {% else %}
+            <a class="btn sm" href="{{ url_for('emmpi_form', hid=hid) }}" style="background:var(--amber);padding:2px 8px;font-size:10px">شروع</a>
+          {% endif %}
+        {% else %}
+          <span class="badge P4"><span class="dot"></span>بدون دسترسی</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# مرحله ۲: CDI هدفمند #}
+    <div class="card" style="padding:14px;{% if h.layer2_done %}border-inline-start:4px solid var(--green){% elif res and res.active_axes %}border-inline-start:4px solid var(--amber){% else %}opacity:.7{% endif %}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:30px;height:30px;border-radius:8px;background:var(--amber);color:#fff;display:grid;place-items:center;font-weight:800">۲</span>
+        <div>
+          <div style="font-weight:700;color:var(--ink);font-size:13px">مرحله ۲ — CDI هدفمند</div>
+          <div class="tiny" style="color:var(--mut)">تحلیل محورهای فعال</div>
+        </div>
+      </div>
+      <div class="small" style="color:var(--ink-2);line-height:1.7">
+        تکمیل شدت و توضیحات برای هر محور. محورهای حساس برای همیار «فقط هشدار» هستند.
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-2)">
+        <div class="tiny" style="color:var(--mut);margin-bottom:4px">دسترسی شما:</div>
+        {% if u.role in ('assistant', 'rose', 'swclinic', 'employ') %}
+          {% if h.layer2_done %}
+            <span class="badge P3"><span class="dot"></span>تکمیل شده</span>
+          {% else %}
+            <a class="btn sm" href="{{ url_for('assess', hid=hid) }}" style="background:var(--amber);padding:4px 10px;font-size:11px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              شروع ارزیابی
+            </a>
+          {% endif %}
+        {% elif u.role == 'worker' %}
+          <span class="badge P2"><span class="dot"></span>تأیید/اصلاح</span>
+          <div class="tiny" style="margin-top:4px">می‌تواند نتایج را اصلاح کند</div>
+        {% elif u.role == 'hqmanager' %}
+          <span class="badge P2"><span class="dot"></span>مشاهده</span>
+        {% else %}
+          <span class="badge P4"><span class="dot"></span>بدون دسترسی</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# لایه ۳ #}
+    <div class="card" style="padding:14px;{% if h.layer3_done %}border-inline-start:4px solid var(--green){% elif res and res.layer3_required %}border-inline-start:4px solid var(--red){% else %}opacity:.7{% endif %}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:30px;height:30px;border-radius:8px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800">۳</span>
+        <div>
+          <div style="font-weight:700;color:var(--ink);font-size:13px">مرحله ۳ — CDI عمیق</div>
+          <div class="tiny" style="color:var(--mut)">تحلیل ریشه‌ای تخصصی</div>
+        </div>
+      </div>
+      <div class="small" style="color:var(--ink-2);line-height:1.7">
+        فقط با قاعدهٔ ورود بند ۴ـ۱ فعال می‌شود. تحلیل عمیق توسط کلینیک رز/مددکاری انجام می‌شود.
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-2)">
+        <div class="tiny" style="color:var(--mut);margin-bottom:4px">دسترسی شما:</div>
+        {% if u.role in ('worker', 'rose', 'swclinic') %}
+          {% if h.layer3_done %}
+            <span class="badge P3"><span class="dot"></span>تکمیل شده</span>
+          {% elif res and res.layer3_required %}
+            <a class="btn warn sm" href="{{ url_for('layer3', hid=hid) }}" style="padding:4px 10px;font-size:11px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              شروع لایهٔ ۳
+            </a>
+          {% else %}
+            <span class="badge P4"><span class="dot"></span>شرایط برقرار نیست</span>
+          {% endif %}
+        {% elif u.role in ('assistant', 'employ', 'hqmanager') %}
+          <span class="badge P2"><span class="dot"></span>فقط مشاهده</span>
+          <div class="tiny" style="margin-top:4px">ثبت با کلینیک/مددکار</div>
+        {% else %}
+          <span class="badge P4"><span class="dot"></span>بدون دسترسی</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="alert blue" style="margin-top:12px;padding:10px 12px;font-size:11.5px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0;margin-top:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div>
+      <b>ماتریس بازیگران بند ۳:</b>
+      همیار (assistant) — ثبت لایه ۲، «فقط هشدار» برای محورهای حساس ·
+      مددکار خانواده (worker) — تأیید/اصلاح لایه ۲، ثبت لایه ۳، تصمیم نهایی ·
+      کلینیک رز (rose) — ثبت لایه ۲ و ۳ ·
+      کلینیک مددکاری (swclinic) — ثبت لایه ۲ و ۳، تحلیل عمیق ·
+      کارشناس اشتغال (employ) — ثبت لایه ۲ ·
+      مدیر ستاد (hqmanager) — مشاهدهٔ گزارش‌ها.
+    </div>
+  </div>
+</div>
+
 {% if not res %}
 <div class="card">
   <div class="empty">
@@ -163,7 +391,7 @@
 </div>
 {% else %}
 
-{# ── Priority summary ─────────────────────────────────── #}
+{# ── CDI Summary Card ──────────────────────────────────── #}
 <div class="card" style="border-inline-start:4px solid var(--p)">
   <div class="head-row">
     <h2>
@@ -278,7 +506,6 @@
     {% endfor %}
   </ol>
 </div>
-{% endif %}
 
 {# ── Referrals in progress ─────────────────────────────── #}
 {% if pending %}
@@ -394,6 +621,135 @@
 </div>
 {% endif %}
 
+{# ── Layer 3 Analysis History (اگر تحلیل لایه ۳ ثبت شده) ─── #}
+{% if h.layer3_history %}
+<div class="card" style="border-inline-start:4px solid var(--p)">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      تحلیل‌های لایهٔ ۳ (CDI عمیق) — {{ h.layer3_history|length }} مورد
+    </h2>
+    <a class="btn sec sm" href="{{ url_for('layer3', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      افزودن تحلیل جدید
+    </a>
+  </div>
+
+  {% for item in h.layer3_history %}
+  <div style="background:var(--bg-2);padding:14px;border-radius:var(--r);margin-bottom:10px;border-inline-start:3px solid {% if item.submitted_by == 'rose' %}var(--purple){% elif item.submitted_by == 'swclinic' %}var(--red){% elif item.submitted_by == 'worker' %}var(--blue){% else %}var(--mut){% endif %}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <span class="badge {% if item.submitted_by == 'rose' %}sensitive{% elif item.submitted_by == 'swclinic' %}P0{% elif item.submitted_by == 'worker' %}P2{% else %}P4{% endif %}">
+        <span class="dot"></span>{{ item.role_label or item.submitted_by }}
+      </span>
+      <span class="small"><b>{{ item.submitted_by_name or item.submitted_by }}</b></span>
+      <span class="small mono" style="margin-inline-start:auto">{{ item.submitted_at[:19] if item.submitted_at else '—' }}</span>
+    </div>
+
+    {% if item.summary %}
+    <div style="font-size:12.5px;color:var(--ink);line-height:1.7;margin-bottom:8px">
+      <b>خلاصه:</b> {{ item.summary }}
+    </div>
+    {% endif %}
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 14px;font-size:11.5px;color:var(--ink-2);margin-bottom:6px">
+      {% if item.priority_recommendation %}<div><b style="color:var(--mut)">اولویت:</b> {{ item.priority_recommendation }}</div>{% endif %}
+      {% if item.estimated_duration %}<div><b style="color:var(--mut)">مدت:</b> {{ item.estimated_duration }}</div>{% endif %}
+      {% if item.follow_up_plan %}<div style="grid-column:1/-1"><b style="color:var(--mut)">پیگیری:</b> {{ item.follow_up_plan }}</div>{% endif %}
+    </div>
+
+    {# نمایش فیلدهای اختصاصی کلینیک رز #}
+    {% if item.rose_analysis %}
+    <details style="margin-top:6px">
+      <summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--purple)">📊 جزئیات تحلیل مشاوره‌ای (کلینیک رز)</summary>
+      <div style="padding:10px;background:#fff;border-radius:6px;margin-top:6px;font-size:11px;line-height:1.7">
+        {% if item.rose_analysis.counseling_type %}<div><b>نوع مشاوره:</b> {{ item.rose_analysis.counseling_type }}{% if item.rose_analysis.counseling_type_other %} ({{ item.rose_analysis.counseling_type_other }}){% endif %}</div>{% endif %}
+        {% if item.rose_analysis.session_count_estimated %}<div><b>تعداد جلسات:</b> {{ item.rose_analysis.session_count_estimated }}</div>{% endif %}
+        {% if item.rose_analysis.approach %}<div><b>رویکرد:</b> {{ item.rose_analysis.approach }}</div>{% endif %}
+        {% if item.rose_analysis.client_readiness %}<div><b>آمادگی مراجع:</b> {{ item.rose_analysis.client_readiness }}</div>{% endif %}
+        {% if item.rose_analysis.family_dynamics %}<div><b>دینامیک خانوادگی:</b> {{ item.rose_analysis.family_dynamics }}</div>{% endif %}
+        {% if item.rose_analysis.communication_pattern %}<div><b>الگوی ارتباطی:</b> {{ item.rose_analysis.communication_pattern }}</div>{% endif %}
+        {% if item.rose_analysis.trauma_history %}<div><b>تاریخچهٔ تروما:</b> {{ item.rose_analysis.trauma_history }}</div>{% endif %}
+        {% if item.rose_analysis.support_network %}<div><b>شبکهٔ حمایتی:</b> {{ item.rose_analysis.support_network }}</div>{% endif %}
+        {% if item.rose_analysis.intervention_plan %}<div><b>برنامهٔ مداخله:</b> {{ item.rose_analysis.intervention_plan }}</div>{% endif %}
+        {% if item.rose_analysis.counselor_recommendation %}<div><b>توصیهٔ مشاور:</b> {{ item.rose_analysis.counselor_recommendation }}</div>{% endif %}
+        {% if item.rose_analysis.risk_indicators %}
+        <div style="margin-top:6px"><b style="color:var(--red)">شاخص‌های خطر:</b>
+          {% for r in item.rose_analysis.risk_indicators %}<span class="badge P0" style="margin:2px"><span class="dot"></span>{{ r }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </details>
+    {% endif %}
+
+    {# نمایش فیلدهای اختصاصی کلینیک مددکاری #}
+    {% if item.swclinic_analysis %}
+    <details style="margin-top:6px">
+      <summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--red)">🔬 جزئیات تحلیل تخصصی (کلینیک مددکاری)</summary>
+      <div style="padding:10px;background:#fff;border-radius:6px;margin-top:6px;font-size:11px;line-height:1.7">
+        {% if item.swclinic_analysis.root_cause_analysis %}<div><b>تحلیل ریشه‌ای:</b> {{ item.swclinic_analysis.root_cause_analysis }}</div>{% endif %}
+        {% if item.swclinic_analysis.multi_problem_assessment %}<div><b>ارزیابی چندمسئله‌ای:</b> {{ item.swclinic_analysis.multi_problem_assessment }}</div>{% endif %}
+        {% if item.swclinic_analysis.hidden_factors %}<div><b>عوامل پنهان:</b> {{ item.swclinic_analysis.hidden_factors }}</div>{% endif %}
+        {% if item.swclinic_analysis.family_structure %}<div><b>ساختار خانواده:</b> {{ item.swclinic_analysis.family_structure }}</div>{% endif %}
+        {% if item.swclinic_analysis.economic_assessment %}<div><b>ارزیابی اقتصادی:</b> {{ item.swclinic_analysis.economic_assessment }}</div>{% endif %}
+        {% if item.swclinic_analysis.health_assessment %}<div><b>ارزیابی سلامت:</b> {{ item.swclinic_analysis.health_assessment }}</div>{% endif %}
+        {% if item.swclinic_analysis.psychosocial_diagnosis %}<div><b>تشخیص روان‌شناختی-اجتماعی:</b> {{ item.swclinic_analysis.psychosocial_diagnosis }}</div>{% endif %}
+        {% if item.swclinic_analysis.intervention_priority %}<div><b>اولویت‌بندی مداخله:</b> {{ item.swclinic_analysis.intervention_priority }}</div>{% endif %}
+        {% if item.swclinic_analysis.capacity_assessment %}<div><b>ظرفیت خانوار:</b> {{ item.swclinic_analysis.capacity_assessment }}</div>{% endif %}
+        {% if item.swclinic_analysis.resilience_factors %}<div><b>عوامل تاب‌آوری:</b> {{ item.swclinic_analysis.resilience_factors }}</div>{% endif %}
+        {% if item.swclinic_analysis.expected_outcomes %}<div><b>پیامدهای مورد انتظار:</b> {{ item.swclinic_analysis.expected_outcomes }}</div>{% endif %}
+        {% if item.swclinic_analysis.monitoring_indicators %}<div><b>شاخص‌های پایش:</b> {{ item.swclinic_analysis.monitoring_indicators }}</div>{% endif %}
+        {% if item.swclinic_analysis.structural_barriers %}
+        <div style="margin-top:6px"><b>موانع ساختاری:</b>
+          {% for b in item.swclinic_analysis.structural_barriers %}<span class="tag" style="margin:2px">{{ b }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        {% if item.swclinic_analysis.recommended_interventions %}
+        <div style="margin-top:6px"><b>مداخلات پیشنهادی:</b>
+          {% for i in item.swclinic_analysis.recommended_interventions %}<span class="badge P2" style="margin:2px"><span class="dot"></span>{{ i }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </details>
+    {% endif %}
+
+    {# نمایش فیلدهای اختصاصی مددکار خانواده #}
+    {% if item.worker_decision %}
+    <details style="margin-top:6px">
+      <summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--blue)">✓ تأیید نهایی مددکار خانواده</summary>
+      <div style="padding:10px;background:#fff;border-radius:6px;margin-top:6px;font-size:11px;line-height:1.7">
+        {% if item.worker_decision.decision_type %}<div><b>نوع تصمیم:</b> {{ item.worker_decision.decision_type }}</div>{% endif %}
+        {% if item.worker_decision.final_priority %}<div><b>اولویت نهایی:</b> {{ item.worker_decision.final_priority }}</div>{% endif %}
+        {% if item.worker_decision.integrated_plan %}<div><b>برنامهٔ یکپارچه:</b> {{ item.worker_decision.integrated_plan }}</div>{% endif %}
+        {% if item.worker_decision.household_agreement %}<div><b>موافقت خانوار:</b> {{ item.worker_decision.household_agreement }}</div>{% endif %}
+        {% if item.worker_decision.implementation_timeline %}<div><b>زمان‌بندی اجرا:</b> {{ item.worker_decision.implementation_timeline }}</div>{% endif %}
+        {% if item.worker_decision.responsible_worker %}<div><b>مددکار مسئول:</b> {{ item.worker_decision.responsible_worker }}</div>{% endif %}
+        {% if item.worker_decision.budget_estimate %}<div><b>برآورد بودجه:</b> {{ item.worker_decision.budget_estimate }}</div>{% endif %}
+        {% if item.worker_decision.modifications %}<div><b>اصلاحات:</b> {{ item.worker_decision.modifications }}</div>{% endif %}
+        {% if item.worker_decision.final_note %}<div><b>یادداشت نهایی:</b> {{ item.worker_decision.final_note }}</div>{% endif %}
+        {% if item.worker_decision.approved %}<div style="margin-top:6px"><span class="badge P3"><span class="dot"></span>✓ تأیید نهایی</span></div>{% endif %}
+        {% if item.worker_decision.service_package %}
+        <div style="margin-top:6px"><b>بستهٔ خدمت:</b>
+          {% for s in item.worker_decision.service_package %}<span class="badge P2" style="margin:2px"><span class="dot"></span>{{ s }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </details>
+    {% endif %}
+
+    {% if item.notes %}
+    <div style="margin-top:6px;font-size:11.5px;color:var(--ink-2)"><b>یادداشت:</b> {{ item.notes }}</div>
+    {% endif %}
+    {% if item.requires_external_referral %}
+    <div style="margin-top:6px">
+      <span class="badge P1"><span class="dot"></span>⚠ ارجاع به نهاد خارجی لازم است</span>
+      {% if item.external_referral_details %}<div class="small" style="margin-top:4px">{{ item.external_referral_details }}</div>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 {# ── History ─────────────────────────────────────────── #}
 <div class="card">
   <div class="head-row">
@@ -422,4 +778,8 @@
   <div class="empty"><div class="e-sub">هنوز رویدادی ثبت نشده است.</div></div>
   {% endif %}
 </div>
+
+{# پایان شاخهٔ else برای بلوک if not res #}
+{% endif %}
+
 {% endblock %}

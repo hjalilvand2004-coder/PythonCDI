@@ -418,6 +418,10 @@ footer{padding:16px 28px; text-align:center; color:var(--mut-2); font-size:var(-
         {% for hh in households if hh.h.status|default('') == 'pending' %}{% set pending_count.n = pending_count.n + 1 %}{% endfor %}
         {% if pending_count.n > 0 %}<span class="badge-mini">{{ pending_count.n }}</span>{% endif %}
       </a>
+      <a href="{{ url_for('simulate_requests') }}" class="{{ 'active' if request.endpoint == 'simulate_requests' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/><polyline points="21 4 12 14.01 9 11.01"/></svg>
+        شبیه‌ساز درخواست
+      </a>
       <a href="{{ url_for('household_new') }}" class="{{ 'active' if request.endpoint == 'household_new' else '' }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
         ثبت پروندهٔ دستی
@@ -438,16 +442,58 @@ footer{padding:16px 28px; text-align:center; color:var(--mut-2); font-size:var(-
         صف‌های خدمت
       </a>
       {% endif %}
+      {% if u.role in ('assistant', 'rose', 'swclinic', 'employ') %}
+      <a href="{{ url_for('finance_dashboard') }}" class="{{ 'active' if request.endpoint == 'finance_dashboard' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        کیف پول من
+      </a>
+      {% endif %}
       {% if u.role in ('worker', 'manager', 'admin') %}
       <a href="{{ url_for('worker_dashboard') }}" class="{{ 'active' if request.endpoint == 'worker_dashboard' else '' }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         داشبورد تحلیلی
       </a>
+      <a href="{{ url_for('worker_oversight') }}" class="{{ 'active' if request.endpoint == 'worker_oversight' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        نظارت جریان
+      </a>
+      <a href="{{ url_for('citizen_profiles_report') }}" class="{{ 'active' if request.endpoint == 'citizen_profiles_report' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        پرونده‌های شهروندی
+      </a>
+      {% endif %}
+      {% if u.role in ('swclinic', 'rose') %}
+      <a href="{{ url_for('citizen_profiles_report') }}" class="{{ 'active' if request.endpoint == 'citizen_profiles_report' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        پرونده‌های شهروندی
+      </a>
       {% endif %}
       {% if u.role == 'hqmanager' %}
       <a href="{{ url_for('hq_dashboard') }}" class="{{ 'active' if request.endpoint == 'hq_dashboard' else '' }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        گزارش کل کشور
+        گزارش تحلیلی کشور
+      </a>
+      <a href="{{ url_for('citizen_profiles_report') }}" class="{{ 'active' if request.endpoint == 'citizen_profiles_report' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        پرونده‌های شهروندی
+      </a>
+      <a href="{{ url_for('hq_resources') }}" class="{{ 'active' if request.endpoint == 'hq_resources' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        منابع توانمندسازی
+      </a>
+      <a href="{{ url_for('hq_oversight') }}" class="{{ 'active' if request.endpoint == 'hq_oversight' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        نظارت و پایش
+      </a>
+      <a href="{{ url_for('hq_performance') }}" class="{{ 'active' if request.endpoint == 'hq_performance' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        ارزیابی عملکرد
+      </a>
+      {% endif %}
+      {% if u.role in ('hqmanager', 'manager', 'admin', 'worker') %}
+      <a href="{{ url_for('finance_dashboard') }}" class="{{ 'active' if request.endpoint == 'finance_dashboard' else '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        کیف پول و مالی
       </a>
       {% endif %}
 

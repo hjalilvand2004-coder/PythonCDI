@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block crumb %}نظارت و پایش جریان{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>نظارت و پایش کامل جریان</h1>
+    <p class="sub">رصد تمامی درخواست‌ها از لحظه ثبت تا خروج پایدار — جریان نیاز، پشتیبانی و پاسخ</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">بازگشت</a>
+  </div>
+</div>
+
+<div class="stat-grid" style="margin-bottom:18px">
+  <div class="stat teal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/></svg></div><div class="num">{{ total }}</div><div class="lbl">کل پرونده‌ها</div></div>
+  <div class="stat amber"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="num">{{ stage_counts.get(1,0) }}</div><div class="lbl">در انتظار غربالگری</div></div>
+  <div class="stat blue"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="num">{{ stage_counts.get(2,0) }}</div><div class="lbl">غربالگری شد</div></div>
+  <div class="stat green"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="num">{{ stage_counts.get(6,0) }}</div><div class="lbl">تکمیل شد</div></div>
+  <div class="stat red"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg></div><div class="num">{{ avg_duration }}</div><div class="lbl">میانگین مدت (روز)</div></div>
+</div>
+
+{# ── آمار بازیگران ── #}
+{% if actor_rows %}
+<div class="card" style="margin-bottom:18px">
+  <div class="head-row"><h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>فعالیت بازیگران</h2></div>
+  <div class="table-wrap">
+    <table style="font-size:11.5px">
+      <thead><tr><th>نقش</th><th>نام</th><th>تعداد اقدام</th></tr></thead>
+      <tbody>
+        {% for a in actor_rows %}
+        <tr><td><b>{{ a.label }}</b></td><td>{{ a.name }}</td><td class="num"><b>{{ a.actions }}</b></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── جدول کامل جریان پرونده‌ها ── #}
+<div class="card">
+  <div class="head-row">
+    <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>پیمانه کامل پرونده‌ها</h2>
+    <span class="tag teal">{{ total }} پرونده</span>
+  </div>
+  <div class="table-wrap">
+    <table style="font-size:10.5px">
+      <thead>
+        <tr>
+          <th>نام</th><th>استان</th><th>وضعیت</th><th>گام</th><th>مدت</th>
+          <th>امتیاز</th><th>سطح</th><th>پرچم</th><th>محورها</th>
+          <th>ل۲</th><th>ل۳</th><th>تصمیم</th><th>سبد</th><th>انجام</th>
+          <th>اعتراض</th><th>تخصیص</th><th>کانال</th><th>تاریخ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in pipeline_rows %}
+        <tr style="{% if r.status == 'not_eligible' %}background:var(--mut){% elif r.status == 'completed' %}background:var(--green-bg){% elif r.steps_done <= 1 %}background:var(--amber-bg){% endif %}">
+          <td><a href="{{ url_for('household_view', hid=r.hid) }}" style="color:var(--p-d);font-weight:700">{{ r.name }}</a></td>
+          <td>{{ r.province }}</td>
+          <td>
+            {% if r.status == 'pending' %}<span class="badge P1"><span class="dot"></span>در انتظار</span>
+            {% elif r.status == 'claimed' %}<span class="badge P2"><span class="dot"></span>در حال انجام</span>
+            {% elif r.status == 'emmpi_done' %}<span class="badge P3"><span class="dot"></span>غربالگری شد</span>
+            {% elif r.status == 'completed' %}<span class="badge P3"><span class="dot"></span>تکمیل</span>
+            {% elif r.status == 'not_eligible' %}<span class="badge P4"><span class="dot"></span>غیرنیازمند</span>
+            {% elif r.status == 'appeal_pending' %}<span class="badge P0"><span class="dot"></span>اعتراض</span>
+            {% else %}<span class="badge P4"><span class="dot"></span>{{ r.status }}</span>{% endif %}
+          </td>
+          <td class="num" style="font-weight:700">{{ r.steps_done }}/۶</td>
+          <td class="num">{{ r.duration_days }}</td>
+          <td class="num"><b>{{ r.emmpi_score }}</b></td>
+          <td>{{ r.emmpi_level }}</td>
+          <td class="num" style="color:var(--red)">{{ r.red_flags }}</td>
+          <td class="num">{{ r.active_axes }}</td>
+          <td style="text-align:center">{% if r.layer2_done %}✓{% else %}—{% endif %}</td>
+          <td style="text-align:center">{% if r.layer3_done %}✓ ({{ r.layer3_count }}){% else %}—{% endif %}</td>
+          <td class="num">{{ r.decisions_count }}</td>
+          <td class="num">{{ r.basket_total }}</td>
+          <td class="num" style="color:var(--green)">{{ r.completed_actions }}</td>
+          <td class="num">{% if r.appeals_count > 0 %}<span class="badge P0"><span class="dot"></span>{{ r.appeals_count }}</span>{% else %}—{% endif %}</td>
+          <td><span class="small">{{ r.claimed_by }} ({{ r.claimed_role }})</span></td>
+          <td><span class="small">{{ r.channel }}</span></td>
+          <td><span class="small mono">{{ r.created_at }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

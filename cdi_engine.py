@@ -196,6 +196,363 @@ CONTROL_RULES = [
     "هوش مصنوعی و سامانه صرفاً تصمیم‌یار هستند، نه تصمیم‌گیرنده",
 ]
 
+# ─────────────────────────────────────────────────────────────────
+# ۶ وضعیت خدمت (بند ۲ـ۸ — وضعیت در نقشه راه)
+# ─────────────────────────────────────────────────────────────────
+SERVICE_STATUSES = [
+    {"code": "pending", "name": "در انتظار", "color": "P2",
+     "desc": "خدمت در صف قرار دارد ولی هنوز اجرا نشده است", "icon": "⏳"},
+    {"code": "in_progress", "name": "در حال اجرا", "color": "P1",
+     "desc": "اجرای خدمت آغاز شده ولی تکمیل نشده است", "icon": "🔄"},
+    {"code": "completed", "name": "تکمیل‌شده", "color": "P3",
+     "desc": "خدمت اجرا و پیگیری آن به نتیجهٔ مطلوب رسیده است", "icon": "✓"},
+    {"code": "deferred", "name": "تعویق‌شده", "color": "P4",
+     "desc": "اجرای خدمت به دلیل مانع موقت به تعویق افتاده است", "icon": "⏸"},
+    {"code": "rejected", "name": "ردشده", "color": "P0",
+     "desc": "خدمت به دلیل عدم تناسب، تکراری بودن یا نبود ظرفیت رد شده است", "icon": "✗"},
+    {"code": "review", "name": "نیازمند بازبینی", "color": "P1",
+     "desc": "نیازمند بازبینی شرایط خانوار پیش از ادامه اجرا", "icon": "⚠"},
+]
+
+# ─────────────────────────────────────────────────────────────────
+# ۷ پیش‌شرط مداخله اقتصادی (تبصره ۳ — ممنوعیت ورود زودهنگام)
+# ─────────────────────────────────────────────────────────────────
+ECONOMIC_INTERVENTION_PREREQUISITES = [
+    {
+        "code": "PRE1",
+        "name": "رفع نسبی بحران‌های حفاظتی و نیازهای حیاتی",
+        "desc": "بحران‌های حفاظتی (خوراک، مسکن، درمان، حفاظت) باید تا حد نسبی برطرف شده باشند",
+        "check_question": "آیا بحران‌های حفاظتی و نیازهای حیاتی تا حد نسبی برطرف شده است؟",
+        "linked_axes": ["CDI-1-01", "CDI-1-02", "CDI-1-03", "CDI-1-05", "CDI-1-06"],
+    },
+    {
+        "code": "PRE2",
+        "name": "تعیین مسیر شغلی مورد پذیرش خانوار",
+        "desc": "خانوار باید مسیر شغلی مشخص و پذیرفته باشد",
+        "check_question": "آیا مسیر شغلی مورد پذیرش خانوار تعیین شده است؟",
+        "linked_axes": ["CDI-3-01", "CDI-3-02"],
+    },
+    {
+        "code": "PRE3",
+        "name": "احراز مهارت یا امکان واقعی کسب مهارت",
+        "desc": "خانوار باید مهارت لازم داشته باشد یا امکان واقعی کسب آن وجود داشته باشد",
+        "check_question": "آیا مهارت لازم احراز شده یا امکان واقعی کسب آن وجود دارد؟",
+        "linked_axes": ["CDI-3-03", "CDI-3-04"],
+    },
+    {
+        "code": "PRE4",
+        "name": "تأیید وجود بازار، کارفرما، سفارش یا تقاضای واقعی",
+        "desc": "بازار واقعی برای مهارت/خدمت موردنظر باید احراز شود",
+        "check_question": "آیا بازار، کارفرما، سفارش یا تقاضای واقعی احراز شده است؟",
+        "linked_axes": ["CDI-3-05"],
+    },
+    {
+        "code": "PRE5",
+        "name": "بررسی محدودیت سلامت، مراقبت، رفت‌وآمد و زمان خانوار",
+        "desc": "محدودیت‌های فردی و خانوادگی بررسی شده باشد",
+        "check_question": "آیا محدودیت‌های سلامت، مراقبت، رفت‌وآمد و زمان بررسی شده است؟",
+        "linked_axes": ["CDI-1-03", "CDI-1-04", "CDI-2-05"],
+    },
+    {
+        "code": "PRE6",
+        "name": "ارزیابی ریسک مداخله اقتصادی (CDI-3-09)",
+        "desc": "ریسک مداخله اقتصادی باید طبق محور CDI-3-09 ارزیابی شده باشد",
+        "check_question": "آیا ریسک مداخله اقتصادی طبق محور CDI-3-09 ارزیابی شده است؟",
+        "linked_axes": ["CDI-3-09"],
+    },
+    {
+        "code": "PRE7",
+        "name": "تأیید مددکار خانواده و مقام مجاز",
+        "desc": "خدمت اقتصادی پرهزینه باید توسط مددکار خانواده و مقام مجاز تأیید شده باشد",
+        "check_question": "آیا مددکار خانواده و مقام مجاز تأیید کرده‌اند؟",
+        "linked_axes": [],
+    },
+]
+
+# ─────────────────────────────────────────────────────────────────
+# ۲۶ خدمت شناسه‌دار (بند ۲ـ۱۴ — نگاشت خدمات شناسه‌دار به رتبه‌ها)
+# ─────────────────────────────────────────────────────────────────
+SERVICE_CATALOG = [
+    # ─── الف) خدمات حمایتی، معیشتی و فوریتی ───
+    {
+        "code": "SVC-A01", "category": "الف", "queue": "Q1",
+        "name": "پذیرش و تشکیل پرونده مددجویی",
+        "condition": "احراز شرایط اولیه و نبود پرونده معتبر",
+        "default_rank": "A یا B",
+        "ranks": ["A", "B"], "payer": "system",
+    },
+    {
+        "code": "SVC-A02", "category": "الف", "queue": "Q2",
+        "name": "برقراری مستمری مددجویی",
+        "condition": "خانوار فاقد درآمد کافی یا دارای ناتوانی پایدار؛ پس از بررسی صلاحیت",
+        "default_rank": "B (در بحران معیشتی A)",
+        "ranks": ["A", "B"], "payer": "system",
+    },
+    {
+        "code": "SVC-A03", "category": "الف", "queue": "Q2",
+        "name": "کمک‌هزینه معیشت و حمایت موردی",
+        "condition": "رفع ناامنی غذایی، هزینه ضروری یا شکاف معیشتی کوتاه‌مدت",
+        "default_rank": "A، B یا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+    {
+        "code": "SVC-A04", "category": "الف", "queue": "Q3",
+        "name": "کمک‌هزینه درمان و خدمات پزشکی",
+        "condition": "درمان حیاتی، ضروری، زمان‌حساس یا هزینه درمانی مؤثر بر ثبات خانوار",
+        "default_rank": "A تا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+    {
+        "code": "SVC-A05", "category": "الف", "queue": "Q2",
+        "name": "تأمین لوازم ضروری زندگی",
+        "condition": "فقدان لوازم ضروری که سلامت، سکونت یا امکان زندگی ایمن را مختل کرده است",
+        "default_rank": "A، B یا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+    {
+        "code": "SVC-A06", "category": "الف", "queue": "Q2",
+        "name": "کمک‌هزینه جهیزیه و ازدواج",
+        "condition": "با رعایت اولویت‌های حیاتی خانوار، زمان‌دار بودن و ضوابط مصوب",
+        "default_rank": "C یا D",
+        "ranks": ["C", "D"], "payer": "system",
+    },
+    {
+        "code": "SVC-A07", "category": "الف", "queue": "Q1",
+        "name": "خدمات فوریتی",
+        "condition": "در راه‌ماندگی، خوراک فوری، درمان فوری، ترحیم و کفن‌ودفن و سایر فوریت‌های مصوب",
+        "default_rank": "A",
+        "ranks": ["A"], "payer": "system",
+    },
+    {
+        "code": "SVC-A08", "category": "الف", "queue": "Q1",
+        "name": "حمایت از خانواده زندانیان نیازمند",
+        "condition": "رفع آثار معیشتی، مراقبتی، تحصیلی و روانی ناشی از زندانی بودن سرپرست یا عضو خانواده",
+        "default_rank": "A تا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+
+    # ─── ب) خدمات مسکن ───
+    {
+        "code": "SVC-B01", "category": "ب", "queue": "Q4",
+        "name": "کمک‌هزینه ودیعه یا اجاره مسکن",
+        "condition": "خطر تخلیه، بی‌خانمانی، اجاره معوق یا فقدان سکونت ایمن",
+        "default_rank": "A در خطر فوری؛ B یا C در سایر موارد",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+    {
+        "code": "SVC-B02", "category": "ب", "queue": "Q4",
+        "name": "تعمیر، بازسازی یا مقاوم‌سازی",
+        "condition": "ناایمنی سکونت، خطر فنی، فرسودگی مؤثر بر سلامت و امنیت",
+        "default_rank": "A تا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+    {
+        "code": "SVC-B03", "category": "ب", "queue": "Q4",
+        "name": "ساخت یا تکمیل مسکن",
+        "condition": "پس از احراز مالکیت/مجوز، امکان تکمیل، توان بهره‌برداری و عدم وجود راه‌حل فوری کم‌هزینه‌تر",
+        "default_rank": "D یا E؛ در شرایط خاص B یا C",
+        "ranks": ["B", "C", "D", "E"], "payer": "system",
+    },
+    {
+        "code": "SVC-B04", "category": "ب", "queue": "Q4",
+        "name": "انشعابات آب، برق و گاز",
+        "condition": "قطع یا فقدان خدمات حیاتی به علت بدهی، نقص فنی، نبود انشعاب یا موانع اداری",
+        "default_rank": "A تا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+
+    # ─── ج) خدمات درمان، مشاوره و حمایت اجتماعی ───
+    {
+        "code": "SVC-C01", "category": "ج", "queue": "Q3",
+        "name": "کمک‌هزینه درمان و خدمات پزشکی",
+        "condition": "درمان حیاتی، ضروری یا مؤثر بر عملکرد خانوار",
+        "default_rank": "A تا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+    {
+        "code": "SVC-C02", "category": "ج", "queue": "Q5",
+        "name": "مشاوره‌ای خانواده، روان‌شناختی و اجتماعی",
+        "condition": "تعارض خانوادگی، فشار روانی، سوگ، فرسودگی، مسائل کودک و نوجوان، تاب‌آوری و موانع اجرای برنامه",
+        "default_rank": "A در خطر حاد همراه با ارجاع حفاظت؛ B تا D در سایر موارد",
+        "ranks": ["A", "B", "C", "D"], "payer": "system", "owner": "rose",
+    },
+    {
+        "code": "SVC-C03", "category": "ج", "queue": "Q5",
+        "name": "مشاوره موضوعی",
+        "condition": "مشاوره موضوعی خانواده، تحصیلی، شغلی، سالمندی و اجتماعی، عمدتاً از مسیر کلینیک «رز»",
+        "default_rank": "B تا D",
+        "ranks": ["B", "C", "D"], "payer": "system", "owner": "rose",
+    },
+    {
+        "code": "SVC-C04", "category": "ج", "queue": "Q1",
+        "name": "حمایت خانواده زندانیان",
+        "condition": "مشاوره، حمایت اجتماعی، تثبیت معیشت و حمایت از کودک و اعضای وابسته",
+        "default_rank": "A تا C",
+        "ranks": ["A", "B", "C"], "payer": "system",
+    },
+
+    # ─── د) خدمات فرهنگی، آموزشی و اجتماعی ───
+    {
+        "code": "SVC-D01", "category": "د", "queue": "Q6",
+        "name": "کمک‌هزینه تحصیلی دانش‌آموزان و دانشجویان",
+        "condition": "خطر ترک تحصیل، هزینه تحصیل، ابزار آموزشی، رفت‌وآمد یا استمرار تحصیلی",
+        "default_rank": "B در خطر ترک تحصیل؛ C یا D در سایر موارد",
+        "ranks": ["B", "C", "D"], "payer": "system",
+    },
+    {
+        "code": "SVC-D02", "category": "د", "queue": "Q6",
+        "name": "حمایت از نخبگان و استعدادهای برتر",
+        "condition": "احراز استعداد، ظرفیت رشد، نیاز مالی یا دسترسی به فرصت",
+        "default_rank": "C یا D",
+        "ranks": ["C", "D"], "payer": "system",
+    },
+    {
+        "code": "SVC-D03", "category": "د", "queue": "Q6",
+        "name": "اعزام به اردوهای فرهنگی، زیارتی و تربیتی",
+        "condition": "متناسب با برنامه رشد، تاب‌آوری، مشارکت و ترجیح خانوار؛ بدون تقدم بر نیاز حیاتی",
+        "default_rank": "D یا E",
+        "ranks": ["D", "E"], "payer": "system",
+    },
+    {
+        "code": "SVC-D04", "category": "د", "queue": "Q7",
+        "name": "حمایت از ایتام و فرزندان محسنین",
+        "condition": "متناسب با طرح حمایت کودک، تحصیل، سلامت، مراقبت و آینده‌نگری",
+        "default_rank": "B تا D",
+        "ranks": ["B", "C", "D"], "payer": "system",
+    },
+
+    # ─── هـ) خدمات اشتغال و توانمندسازی اقتصادی ───
+    {
+        "code": "SVC-E01", "category": "هـ", "queue": "Q8",
+        "name": "آموزش‌های مهارتی و فنی‌وحرفه‌ای",
+        "condition": "پس از احراز علاقه، توان، زمان، امکان حضور و تناسب با بازار",
+        "default_rank": "C یا D",
+        "ranks": ["C", "D"], "payer": "system", "owner": "employ",
+        "requires_economic_prereq": True,
+    },
+    {
+        "code": "SVC-E02", "category": "هـ", "queue": "Q8",
+        "name": "مشاوره، راهبری و پشتیبانی کسب‌وکار",
+        "condition": "برای انتخاب مسیر، رفع مانع کسب‌وکار، بازارسازی، تثبیت یا توسعه فعالیت",
+        "default_rank": "C تا D",
+        "ranks": ["C", "D"], "payer": "system", "owner": "employ",
+        "requires_economic_prereq": True,
+    },
+    {
+        "code": "SVC-E03", "category": "هـ", "queue": "Q8",
+        "name": "معرفی برای دریافت تسهیلات اشتغال از بانک",
+        "condition": "پس از احراز مهارت، بازار، طرح اقتصادی و شرایط بانکی",
+        "default_rank": "D یا E",
+        "ranks": ["D", "E"], "payer": "system", "owner": "employ",
+        "requires_economic_prereq": True,
+    },
+    {
+        "code": "SVC-E04", "category": "هـ", "queue": "Q8",
+        "name": "تسهیلات قرض‌الحسنه اشتغال و خودکفایی",
+        "condition": "فقط پس از تأیید ریسک مداخله اقتصادی و احراز توان بازپرداخت و بهره‌برداری",
+        "default_rank": "D یا E",
+        "ranks": ["D", "E"], "payer": "system", "owner": "employ",
+        "requires_economic_prereq": True,
+    },
+    {
+        "code": "SVC-E05", "category": "هـ", "queue": "Q8",
+        "name": "تأمین یا معرفی ابزار و تجهیزات کار",
+        "condition": "فقط در صورت اثبات اینکه ابزار، گلوگاه واقعی درآمد است و مهارت و بازار وجود دارد",
+        "default_rank": "D یا E",
+        "ranks": ["D", "E"], "payer": "system", "owner": "employ",
+        "requires_economic_prereq": True,
+    },
+    {
+        "code": "SVC-E06", "category": "هـ", "queue": "Q8",
+        "name": "حمایت از طرح‌های اشتغال خانگی و کارآفرینی",
+        "condition": "با بررسی محدودیت مراقبت، محل کار، بازار، مجوز، سرمایه در گردش و ریسک خانوار",
+        "default_rank": "D یا E",
+        "ranks": ["D", "E"], "payer": "system", "owner": "employ",
+        "requires_economic_prereq": True,
+    },
+]
+
+# دسته‌بندی خدمات
+SERVICE_CATEGORIES = [
+    {"code": "الف", "name": "خدمات حمایتی، معیشتی و فوریتی", "color": "P0", "count": 8},
+    {"code": "ب", "name": "خدمات مسکن", "color": "P1", "count": 4},
+    {"code": "ج", "name": "خدمات درمان، مشاوره و حمایت اجتماعی", "color": "P1", "count": 4},
+    {"code": "د", "name": "خدمات فرهنگی، آموزشی و اجتماعی", "color": "P3", "count": 4},
+    {"code": "هـ", "name": "خدمات اشتغال و توانمندسازی اقتصادی", "color": "P3", "count": 6},
+]
+
+
+def get_service_catalog():
+    """برگرداندن کاتالوگ کامل خدمات."""
+    return SERVICE_CATALOG
+
+
+def get_service_by_code(code):
+    """برگرداندن یک خدمت بر اساس کد."""
+    return next((s for s in SERVICE_CATALOG if s["code"] == code), None)
+
+
+def get_services_by_category(category_code):
+    """برگرداندن خدمات یک دسته."""
+    return [s for s in SERVICE_CATALOG if s["category"] == category_code]
+
+
+def get_services_by_queue(queue_code):
+    """برگرداندن خدمات یک خانواده صف."""
+    return [s for s in SERVICE_CATALOG if s["queue"] == queue_code]
+
+
+def check_economic_intervention_prerequisites(household_state):
+    """
+    بررسی ۷ پیش‌شرط ورود به مداخله اقتصادی (تبصره ۳).
+
+    خروجی: dict شامل:
+      - all_met: bool
+      - met_count: int
+      - total: int
+      - results: list of {code, name, met, ...}
+    """
+    results = []
+    met_count = 0
+    answers = (household_state or {}).get("answers", {})
+
+    for prereq in ECONOMIC_INTERVENTION_PREREQUISITES:
+        # بررسی محورهای مرتبط
+        linked_codes = prereq.get("linked_axes", [])
+        if linked_codes:
+            # اگر تمام محورهای مرتبط پاسخ داده شده و شدت low/none باشند
+            all_low = True
+            any_answered = False
+            for code in linked_codes:
+                ans = answers.get(code, {})
+                sev = ans.get("severity")
+                if sev in ("high", "medium"):
+                    all_low = False
+                if sev is not None:
+                    any_answered = True
+            met = any_answered and all_low
+        else:
+            # پیش‌شرط‌های بدون محور مرتبط (مثل PRE7) نیاز به تأیید دستی دارند
+            met = False
+
+        results.append({
+            "code": prereq["code"],
+            "name": prereq["name"],
+            "desc": prereq["desc"],
+            "check_question": prereq["check_question"],
+            "linked_axes": prereq["linked_axes"],
+            "met": met,
+        })
+        if met:
+            met_count += 1
+
+    return {
+        "all_met": met_count == len(ECONOMIC_INTERVENTION_PREREQUISITES),
+        "met_count": met_count,
+        "total": len(ECONOMIC_INTERVENTION_PREREQUISITES),
+        "results": results,
+    }
+
 
 # ─────────────────────────────────────────────────────────────────
 # کنترل دسترسی

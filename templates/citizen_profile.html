@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+{% block crumb %}پروندهٔ شهروندی{% endblock %}
+{% block body %}
+
+<style>
+/* ─── استایل‌های پروندهٔ شهروندی ─── */
+.cp-hero{
+  background:linear-gradient(135deg, var(--p-ll) 0%, #fff 100%);
+  border:1px solid var(--p-l);
+  border-radius:var(--r-lg); padding:24px 28px;
+  display:grid; grid-template-columns: 1fr 280px; gap:32px;
+  margin-bottom:20px; position:relative; overflow:hidden;
+}
+@media(max-width:900px){.cp-hero{grid-template-columns:1fr}}
+.cp-hero::before{
+  content:""; position:absolute; top:-40px; left:-40px;
+  width:200px; height:200px; border-radius:50%;
+  background:radial-gradient(circle, var(--p-l) 0%, transparent 70%);
+  opacity:.4;
+}
+.cp-hero h1{font-size:var(--t-2xl); color:var(--p-dd); margin:0 0 6px; display:flex; align-items:center; gap:10px}
+.cp-hero h1 svg{width:32px; height:32px}
+.cp-hero .sub{color:var(--mut); font-size:var(--t-sm); margin-bottom:16px}
+.cp-hero .id-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+.cp-hero .id-chip{background:#fff; border:1px solid var(--line); border-radius:var(--r-full);
+  padding:5px 12px; font-size:var(--t-xs); color:var(--ink-2); display:inline-flex; align-items:center; gap:5px}
+.cp-hero .id-chip svg{width:13px; height:13px; color:var(--mut)}
+
+.cp-score-card{
+  background:#fff; border:2px solid var(--p-l); border-radius:var(--r-md);
+  padding:20px 18px; text-align:center; position:relative; z-index:1;
+  box-shadow:0 4px 12px rgba(13,148,136,.15);
+}
+.cp-score-card .ring{
+  width:140px; height:140px; border-radius:50%;
+  background:conic-gradient(var(--p) calc(var(--pct) * 1%), var(--bg-2) 0);
+  display:grid; place-items:center; margin:0 auto 12px;
+  position:relative;
+}
+.cp-score-card .ring::before{
+  content:""; position:absolute; inset:8px;
+  border-radius:50%; background:#fff;
+}
+.cp-score-card .ring .num{
+  position:relative; z-index:1;
+  font-size:var(--t-3xl); font-weight:800; color:var(--p-dd);
+  line-height:1;
+}
+.cp-score-card .ring .lbl{
+  position:relative; z-index:1; font-size:var(--t-xs);
+  color:var(--mut); margin-top:2px;
+}
+.cp-score-card .level-name{
+  font-size:var(--t-lg); font-weight:700;
+  color:var(--p-dd); margin-bottom:4px;
+}
+.cp-score-card .level-desc{
+  font-size:var(--t-xs); color:var(--mut); line-height:1.6;
+}
+
+/* Dimension scores */
+.dim-grid{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap:14px; margin-bottom:20px;
+}
+.dim-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
+  padding:14px 16px; box-shadow:var(--sh-xs);
+}
+.dim-card .dh{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.dim-card .dh .ic{
+  width:32px; height:32px; border-radius:8px;
+  background:var(--p-ll); color:var(--p-d);
+  display:grid; place-items:center;
+}
+.dim-card .dh .ic svg{width:18px; height:18px}
+.dim-card .dh .dn{font-weight:700; color:var(--ink); font-size:var(--t-sm)}
+.dim-card .dh .dc{margin-inline-start:auto; font-size:var(--t-xs); color:var(--mut)}
+.dim-card .pct-bar{
+  height:8px; background:var(--bg-2); border-radius:var(--r-full);
+  overflow:hidden; margin-bottom:8px;
+}
+.dim-card .pct-bar .fill{
+  height:100%; background:linear-gradient(90deg, var(--p-l), var(--p));
+  border-radius:var(--r-full);
+  transition:width .5s ease;
+}
+.dim-card .pct-bar .fill.amber{background:linear-gradient(90deg, #fbbf24, var(--amber))}
+.dim-card .pct-bar .fill.red{background:linear-gradient(90deg, #fca5a5, var(--red))}
+.dim-card .stats{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+  font-size:var(--t-xs); color:var(--mut); margin-top:6px;
+}
+.dim-card .stat{text-align:center}
+.dim-card .stat .v{font-weight:700; color:var(--ink); font-size:var(--t-md); display:block}
+.dim-card .stat .l{color:var(--mut); font-size:10.5px}
+
+/* Summary chips */
+.cp-summary-chips{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+  gap:10px; margin-bottom:20px;
+}
+.cp-chip{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r);
+  padding:10px 14px; display:flex; align-items:center; gap:10px;
+}
+.cp-chip.green{border-inline-start:4px solid var(--green)}
+.cp-chip.amber{border-inline-start:4px solid var(--amber)}
+.cp-chip.red{border-inline-start:4px solid var(--red)}
+.cp-chip.blue{border-inline-start:4px solid var(--blue)}
+.cp-chip .ic{
+  width:32px; height:32px; border-radius:8px;
+  display:grid; place-items:center; flex-shrink:0;
+}
+.cp-chip.green .ic{background:var(--green-bg); color:var(--green)}
+.cp-chip.amber .ic{background:var(--amber-bg); color:var(--amber)}
+.cp-chip.red .ic{background:var(--red-bg); color:var(--red)}
+.cp-chip.blue .ic{background:var(--blue-bg); color:var(--blue)}
+.cp-chip .ic svg{width:18px; height:18px}
+.cp-chip .v{font-size:var(--t-2xl); font-weight:800; color:var(--ink); line-height:1}
+.cp-chip .l{font-size:var(--t-xs); color:var(--mut)}
+
+/* Comparison table */
+.cp-table{font-size:var(--t-xs)}
+.cp-table th{font-size:10.5px; text-align:center; vertical-align:middle}
+.cp-table td{padding:8px 10px; vertical-align:middle}
+.cp-table .dim-cell{font-weight:700; width:30px; text-align:center; color:var(--p-d)}
+.cp-table .sd-cell, .cp-table .empi-cell{text-align:center; width:130px}
+.cp-table .gap-cell{text-align:center; width:80px; font-weight:700}
+.cp-table .arrow-cell{text-align:center; width:50px}
+.cp-table tr.matched{background:var(--green-bg)}
+.cp-table tr.partial{background:var(--amber-bg)}
+.cp-table tr.mismatched{background:var(--red-bg)}
+.cp-table tr.matched:hover td,
+.cp-table tr.partial:hover td,
+.cp-table tr.mismatched:hover td{filter:brightness(.98)}
+.cp-pill{
+  display:inline-block; padding:2px 9px; border-radius:var(--r-full);
+  font-size:11px; font-weight:600; border:1px solid;
+}
+.cp-pill.green{background:var(--green-bg); color:var(--green); border-color:var(--green-line)}
+.cp-pill.amber{background:var(--amber-bg); color:var(--amber); border-color:var(--amber-line)}
+.cp-pill.red{background:var(--red-bg); color:var(--red); border-color:var(--red-line)}
+.cp-pill.mut{background:var(--bg-2); color:var(--mut); border-color:var(--line)}
+
+/* Red flags comparison */
+.rf-compare{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;
+}
+@media(max-width:720px){.rf-compare{grid-template-columns:1fr}}
+.rf-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
+  padding:14px 16px; box-shadow:var(--sh-xs);
+}
+.rf-card h3{margin:0 0 10px; font-size:var(--t-sm); color:var(--ink); display:flex; align-items:center; gap:6px}
+.rf-card h3 svg{width:16px; height:16px; color:var(--red)}
+.rf-list{display:flex; flex-wrap:wrap; gap:6px}
+.rf-list .rf-item{
+  background:var(--red-bg); color:var(--red); border:1px solid var(--red-line);
+  border-radius:var(--r-sm); padding:4px 8px; font-size:var(--t-xs); font-weight:600;
+}
+.rf-empty{font-size:var(--t-xs); color:var(--mut); padding:4px 0}
+
+/* AI red line warning */
+.cp-disclaimer{
+  background:var(--amber-bg); border:1px dashed var(--amber-line);
+  border-radius:var(--r); padding:10px 14px; margin-top:14px;
+  font-size:var(--t-xs); color:#92400e;
+  display:flex; align-items:flex-start; gap:8px;
+}
+.cp-disclaimer svg{width:16px; height:16px; flex-shrink:0; color:var(--amber); margin-top:2px}
+
+/* Not-ready state */
+.cp-empty{
+  background:#fff; border:2px dashed var(--line); border-radius:var(--r-md);
+  padding:40px 20px; text-align:center; color:var(--mut);
+}
+.cp-empty svg{width:56px; height:56px; color:var(--mut-3); margin-bottom:10px}
+.cp-empty .t{font-size:var(--t-md); color:var(--ink-2); font-weight:700; margin-bottom:6px}
+.cp-empty .s{font-size:var(--t-sm)}
+</style>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>پروندهٔ شهروندی</h1>
+    <p class="sub">مقایسهٔ خوداظهاری نیازمند با ارزیابی همیار، سنجش صداقت در ۵ بُعد محرومیت و تولید گزارش برای تصمیم‌گیری.</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      پروندهٔ خانوار
+    </a>
+  </div>
+</div>
+
+{% if not_ready %}
+  {# EM-MPI هنوز انجام نشده #}
+  <div class="cp-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    <div class="t">پروندهٔ شهروندی هنوز تهیه نشده</div>
+    <div class="s">برای تهیهٔ پرونده، ابتدا باید ارزیابی EM-MPI توسط همیار تکمیل شود.</div>
+    <div style="margin-top:18px">
+      <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        بازگشت به پرونده
+      </a>
+    </div>
+  </div>
+{% else %}
+
+{% set cp_data = cp %}
+{% set sum = cp_data.summary %}
+{% set lvl = cp_data.honesty_level %}
+
+{# ═════════ Hero: Identity + Honesty Ring ═════════ #}
+<div class="cp-hero">
+  <div>
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      پروندهٔ شهروندی {{ h.identity.name or hid }}
+    </h1>
+    <p class="sub">این پرونده بر اساس مقایسهٔ پاسخ‌های نیازمند در خوداظهاری با ارزیابی همیار (EM-MPI) تهیه شده است. امتیاز صداقت، شاخصی برای سنجش میزان انطباق اطلاعات اولیهٔ نیازمند با واقعیت میدانی است.</p>
+    <div class="id-row">
+      <span class="id-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        شناسه: <b class="mono">{{ hid }}</b>
+      </span>
+      <span class="id-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        {{ h.identity.location or 'نامشخص' }}
+      </span>
+      <span class="id-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        ارزیاب: <b>{{ h.emmpi.computed_by or '—' }}</b>
+      </span>
+      <span class="id-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        تاریخ: <b class="mono">{{ h.emmpi.computed_at[:10] if h.emmpi.computed_at else '—' }}</b>
+      </span>
+    </div>
+
+    {# EM-MPI Summary chips #}
+    <div style="display:flex; gap:8px; flex-wrap:wrap">
+      <span class="cp-pill {% if emmpi_result.level %}{{ emmpi_result.level.color }}{% else %}mut{% endif %}">
+        امتیاز EM-MPI: <b>{{ emmpi_result.score }}</b> / ۱۰۰۰
+      </span>
+      <span class="cp-pill {% if emmpi_result.level %}{{ emmpi_result.level.color }}{% else %}mut{% endif %}">
+        {{ emmpi_result.level.name if emmpi_result.level else 'نامشخص' }}
+      </span>
+      {% if emmpi_result.referral_path %}
+      <span class="cp-pill {% if emmpi_result.referral_path %}{{ emmpi_result.referral_path.color }}{% else %}mut{% endif %}">
+        مسیر ارجاع: {{ emmpi_result.referral_path.name }}
+      </span>
+      {% endif %}
+      {% if emmpi_result.red_flags %}
+      <span class="cp-pill red">⚠ {{ emmpi_result.red_flags|length }} پرچم قرمز</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Honesty Ring #}
+  <div class="cp-score-card" style="--pct: {{ cp_data.honesty_score }}">
+    <div class="ring" style="--pct: {{ cp_data.honesty_score }}">
+      <div>
+        <div class="num">{{ cp_data.honesty_score }}</div>
+        <div class="lbl">از ۱۰۰</div>
+      </div>
+    </div>
+    <div class="level-name">{{ lvl.name if lvl else 'نامشخص' }}</div>
+    <div class="level-desc">امتیاز صداقت شهروندی</div>
+  </div>
+</div>
+
+{# ═════════ Summary chips ═════════ #}
+<div class="cp-summary-chips">
+  <div class="cp-chip green">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div>
+      <div class="v">{{ sum.matched }}</div>
+      <div class="l">انطباق کامل</div>
+    </div>
+  </div>
+  <div class="cp-chip amber">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div>
+      <div class="v">{{ sum.partial }}</div>
+      <div class="l">مغایرت جزئی</div>
+    </div>
+  </div>
+  <div class="cp-chip red">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+    <div>
+      <div class="v">{{ sum.mismatched }}</div>
+      <div class="l">مغایرت کامل</div>
+    </div>
+  </div>
+  <div class="cp-chip blue">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg></div>
+    <div>
+      <div class="v">{{ sum.match_rate }}٪</div>
+      <div class="l">نرخ انطباق</div>
+    </div>
+  </div>
+</div>
+
+{# ═════════ Interpretation ═════════ #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      تفسیر خودکار سامانه
+    </h2>
+    <span class="tag teal">پیشنهاد سامانه</span>
+  </div>
+  <p style="font-size:var(--t-sm); color:var(--ink-2); line-height:1.9; margin:0">{{ cp_data.interpretation }}</p>
+  <div class="cp-disclaimer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>
+      <b>خط قرمز:</b> این امتیاز صرفاً تصمیم‌یار است و به‌تنهایی مبنای پذیرش، رد یا لغو حمایت نیست.
+      تصمیم نهایی با مددکار خانواده است و باید مستند، قابل توضیح، قابل اعتراض و قابل بازنگری باشد.
+      مغایرت‌ها می‌تواند ناشی از پنهان‌کاری نیازمند، اشتباه همیار، یا تفاوت تفسیر سؤال باشد.
+    </div>
+  </div>
+</div>
+
+{# ═════════ Dimension Scores ═════════ #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
+      امتیاز صداقت در ۵ بُعد محرومیت
+    </h2>
+  </div>
+  <div class="dim-grid">
+    {% for dk, d in cp_data['dimension_scores'].items() %}
+    <div class="dim-card">
+      <div class="dh">
+        {% set dim_icon = DIMENSIONS[dk].icon if DIMENSIONS[dk] and DIMENSIONS[dk].icon else 'M12 2v20M7 7l-3 7a3 3 0 0 0 6 0L7 7zM17 7l-3 7a3 3 0 0 0 6 0l-3-7z' %}
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ dim_icon }}"/></svg></span>
+        <span class="dn">{{ dk }}. {{ d.name }}</span>
+        <span class="dc">{{ d.pct }}٪</span>
+      </div>
+      <div class="pct-bar">
+        <div class="fill {% if d.pct >= 85 %}{% elif d.pct >= 50 %}amber{% else %}red{% endif %}" style="width: {{ d.pct }}%"></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="v" style="color:var(--green)">{{ d.matched }}</span><span class="l">انطباق</span></div>
+        <div class="stat"><span class="v" style="color:var(--amber)">{{ d.partial }}</span><span class="l">جزئی</span></div>
+        <div class="stat"><span class="v" style="color:var(--red)">{{ d.mismatched }}</span><span class="l">مغایرت</span></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ═════════ Comparison Table ═════════ #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      مقایسهٔ جزئیات: خوداظهاری نیازمند در برابر ارزیابی همیار
+    </h2>
+    <span class="tag teal">{{ cp_data['items']|length }} مورد مقایسه</span>
+  </div>
+  <div class="table-wrap">
+    <table class="cp-table">
+      <thead>
+        <tr>
+          <th>بُعد</th>
+          <th>محور / موضوع</th>
+          <th>پاسخ نیازمند</th>
+          <th>ارزیابی همیار</th>
+          <th>وضعیت</th>
+          <th>جهت</th>
+          <th>اختلاف</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cp_data['items'] %}
+        <tr class="{{ item.match_status }}">
+          <td class="dim-cell">{{ item.dim }}</td>
+          <td>
+            <div style="font-weight:600;color:var(--ink)">{{ item.sd_label }}</div>
+            <div class="small mono" style="color:var(--mut)">{{ item.empi_code }}: {{ item.empi_title }}</div>
+          </td>
+          <td class="sd-cell">
+            <span class="cp-pill {{ item.sd_answer_color }}">{{ item.sd_answer_short }}</span>
+            <div class="small" style="color:var(--mut);margin-top:2px">{{ item.sd_answer_label }}</div>
+          </td>
+          <td class="empi-cell">
+            <span class="cp-pill {{ item.empi_severity_color }}">{{ item.empi_severity_short }}</span>
+            <div class="small" style="color:var(--mut);margin-top:2px">{{ item.empi_severity_label }}</div>
+          </td>
+          <td class="gap-cell">
+            {% if item.match_status == 'matched' %}
+            <span class="cp-pill green">✓ انطباق</span>
+            {% elif item.match_status == 'partial' %}
+            <span class="cp-pill amber">جزئی</span>
+            {% else %}
+            <span class="cp-pill red">✗ مغایرت</span>
+            {% endif %}
+          </td>
+          <td class="arrow-cell">
+            {% if item.direction == 'ثابت' %}
+            <span style="color:var(--mut)">=</span>
+            {% elif item.direction == 'تشدید' %}
+            <span style="color:var(--red);font-weight:700" title="همیار شدیدتر ارزیابی کرده — احتمال پنهان‌کاری">↑</span>
+            {% elif item.direction == 'تسهیل' %}
+            <span style="color:var(--blue);font-weight:700" title="همیار سبک‌تر ارزیابی کرده — احتمال اغراق">↓</span>
+            {% endif %}
+          </td>
+          <td class="gap-cell">
+            <span style="color:var(--mut);font-weight:600">{{ item.gap }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="small" style="margin-top:10px;color:var(--mut);line-height:1.7">
+    <b>راهنما:</b>
+    <span style="color:var(--red)">↑ تشدید</span> = همیار شدیدتر از نیازمند ارزیابی کرده (احتمال پنهان‌کاری نیازمند)؛
+    <span style="color:var(--blue)">↓ تسهیل</span> = همیار سبک‌تر از نیازمند ارزیابی کرده (احتمال اغراق نیازمند)؛
+    <span style="color:var(--mut)">= ثابت</span> = ارزیابی‌ها هم‌سو هستند.
+  </div>
+</div>
+
+{# ═════════ Red flags comparison ═════════ #}
+{% if cp_data.red_flags_from_sd or cp_data.red_flags_from_emmpi %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      مقایسهٔ پرچم‌های قرمز
+    </h2>
+  </div>
+  <div class="rf-compare">
+    <div class="rf-card">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        اعلام‌شده توسط نیازمند (خوداظهاری)
+      </h3>
+      {% if cp_data.red_flags_from_sd %}
+      <div class="rf-list">
+        {% for rf in cp_data.red_flags_from_sd %}
+        <span class="rf-item">{{ rf.code }} — {{ rf.title }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rf-empty">هیچ پرچم قرمزی از خوداظهاری استخراج نشده است.</div>
+      {% endif %}
+    </div>
+    <div class="rf-card">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        تأییدشده توسط همیار (ارزیابی)
+      </h3>
+      {% if cp_data.red_flags_from_emmpi %}
+      <div class="rf-list">
+        {% for rf in cp_data.red_flags_from_emmpi %}
+        <span class="rf-item">{{ rf.code }} — {{ rf.title }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rf-empty">هیچ پرچم قرمزی در ارزیابی همیار شناسایی نشده است.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% if cp_data.red_flags_from_sd and not cp_data.red_flags_from_emmpi %}
+  <div class="alert amber">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>نیازمند پرچم قرمز اعلام کرده اما همیار تأیید نکرده — راستی‌آزمایی لازم است.</div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ═════════ Honesty Levels Reference ═════════ #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      سطوح صداقت و معنای امتیاز
+    </h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>کد</th><th>نام سطح</th><th>دامنه</th><th>تفسیر</th><th>تأثیر بر اعتبار</th></tr>
+      </thead>
+      <tbody>
+        {% for h_level in HONESTY_LEVELS %}
+        <tr style="{% if lvl and lvl.code == h_level.code %}background:var(--p-ll);font-weight:700{% endif %}">
+          <td><span class="cp-pill {{ h_level.color }}">{{ h_level.code }}</span></td>
+          <td>{{ h_level.name }}</td>
+          <td class="mono">{{ h_level.min }}-{{ h_level.max }}</td>
+          <td style="font-size:var(--t-xs);color:var(--ink-2)">{{ h_level.interp }}</td>
+          <td>{% if h_level.trust_score_boost > 0 %}+{% endif %}{{ h_level.trust_score_boost }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ═════════ Action buttons ═════════ #}
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:20px">
+  <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+    بازگشت به پروندهٔ خانوار
+  </a>
+  {% if u.role in ('worker', 'swclinic', 'rose', 'hqmanager') %}
+  <a class="btn sec" href="{{ url_for('refer', hid=hid) }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+    ارجاع برای بررسی تخصصی
+  </a>
+  {% endif %}
+  {% if u.role == 'hqmanager' %}
+  <a class="btn sec" href="{{ url_for('citizen_profiles_report') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg>
+    گزارش همهٔ پرونده‌های شهروندی
+  </a>
+  {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,305 @@
+{# ═══════════════════════════════════════════════════════════
+   ماکرو: نقشه راه پرونده (Roadmap)
+   نمایش بصری مراحل با وضعیت هر یک
+   ═══════════════════════════════════════════════════════════ #}
+
+{% macro render_roadmap(h, res, u, hid) %}
+<style>
+.roadmap-wrap{background:linear-gradient(135deg,var(--p-ll) 0%,#fff 100%);border:2px solid var(--p-l);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden}
+.roadmap-wrap::before{content:"";position:absolute;top:-60px;left:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,var(--p-l) 0%,transparent 70%);opacity:.25}
+.roadmap-title{font-size:16px;font-weight:800;color:var(--p-dd);margin:0 0 4px;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+.roadmap-title svg{width:24px;height:24px}
+.roadmap-sub{font-size:12px;color:var(--mut);margin:0 0 16px;position:relative;z-index:1}
+
+.roadmap-track{display:flex;align-items:stretch;gap:0;position:relative;z-index:1;overflow-x:auto;padding-bottom:4px}
+.roadmap-step{flex:1;min-width:140px;max-width:200px;display:flex;flex-direction:column;align-items:center;position:relative;padding:0 6px}
+
+/* خط اتصال بین مراحل */
+.roadmap-step:not(:last-child)::after{content:"";position:absolute;top:24px;left:50%;width:100%;height:3px;background:var(--line);z-index:0}
+.roadmap-step.completed:not(:last-child)::after{background:linear-gradient(90deg,var(--green),var(--p))}
+.roadmap-step.in-progress:not(:last-child)::after{background:linear-gradient(90deg,var(--amber),var(--line))}
+
+.roadmap-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;position:relative;z-index:1;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.1);transition:all .3s var(--ease)}
+.roadmap-step.completed .roadmap-icon{background:linear-gradient(135deg,var(--green),#15803d);box-shadow:0 4px 12px rgba(22,163,74,.3)}
+.roadmap-step.in-progress .roadmap-icon{background:linear-gradient(135deg,var(--amber),#b45309);box-shadow:0 4px 12px rgba(217,119,6,.3);animation:pulse 2s infinite}
+.roadmap-step.pending .roadmap-icon{background:linear-gradient(135deg,var(--mut-2),var(--mut-3));opacity:.5}
+.roadmap-step.skipped .roadmap-icon{background:var(--bg-2);color:var(--mut);border:2px dashed var(--mut-3)}
+
+@keyframes pulse{0%,100%{box-shadow:0 4px 12px rgba(217,119,6,.3)}50%{box-shadow:0 6px 20px rgba(217,119,6,.5)}}
+
+.roadmap-step-num{font-size:10px;color:var(--mut);margin-top:6px;font-weight:700}
+.roadmap-step-name{font-size:11px;font-weight:700;color:var(--ink);text-align:center;margin-top:2px;line-height:1.3}
+.roadmap-step-status{font-size:10px;color:var(--mut);text-align:center;margin-top:3px}
+.roadmap-step.completed .roadmap-step-status{color:var(--green)}
+.roadmap-step.in-progress .roadmap-step-status{color:var(--amber)}
+.roadmap-step.skipped .roadmap-step-status{color:var(--mut-2)}
+
+.roadmap-step-action{margin-top:6px}
+.roadmap-step-action a{font-size:10px;padding:3px 8px;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+.roadmap-step-action .btn-go{background:var(--amber);color:#fff}
+.roadmap-step-action .btn-go:hover{background:#b45309}
+.roadmap-step-action .btn-view{background:var(--p-ll);color:var(--p-d);border:1px solid var(--p-l)}
+
+.roadmap-summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px dashed var(--line);position:relative;z-index:1}
+.roadmap-summary-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2)}
+.roadmap-summary-item .dot{width:8px;height:8px;border-radius:50%}
+.roadmap-summary-item .dot.green{background:var(--green)}
+.roadmap-summary-item .dot.amber{background:var(--amber)}
+.roadmap-summary-item .dot.mut{background:var(--mut-2)}
+.roadmap-summary-item b{color:var(--ink)}
+
+@media(max-width:768px){
+  .roadmap-track{flex-direction:column;gap:0}
+  .roadmap-step{flex-direction:row;max-width:none;width:100%;justify-content:flex-start;padding:8px 0}
+  .roadmap-step:not(:last-child)::after{top:48px;left:24px;width:3px;height:100%}
+  .roadmap-step:not(:last-child)::after{height:calc(100% - 12px)}
+  .roadmap-icon{margin-bottom:0}
+  .roadmap-step-num,.roadmap-step-name,.roadmap-step-status{margin-top:0;margin-inline-start:10px;text-align:right}
+}
+</style>
+
+{% set has_emmpi = h.emmpi is defined and h.emmpi %}
+{% set has_active = res and res.active_axes and res.active_axes|length > 0 %}
+{% set has_answers = h.state and h.state.answers and h.state.answers|length > 0 %}
+{% set layer2_done = h.layer2_done %}
+{% set layer3_required = res and res.layer3_required %}
+{% set layer3_done = h.layer3_done %}
+{% set has_decision = h.decisions and h.decisions|length > 0 %}
+{% set is_completed = h.status == 'completed' %}
+
+{% set steps = [
+  {
+    'num': 1,
+    'name': 'ثبت درخواست',
+    'icon': '📝',
+    'completed': true,
+    'in_progress': false,
+    'skipped': false,
+    'status': '✓ ثبت شد',
+    'url': url_for('beneficiary_status', hid=hid) if u.role == 'beneficiary' else None,
+    'url_label': 'مشاهده',
+    'url_class': 'btn-view',
+  },
+  {
+    'num': 2,
+    'name': 'غربالگری و فعال‌سازی',
+    'subname': 'EM-MPI + CDI سریع',
+    'icon': '🔍',
+    'completed': has_emmpi,
+    'in_progress': h.claimed_by and not has_emmpi,
+    'skipped': false,
+    'status': '✓ تکمیل شد' if has_emmpi else ('⏳ در حال انجام' if h.claimed_by else '⬜ در انتظار'),
+    'url': url_for('emmpi_form', hid=hid) if not has_emmpi else url_for('emmpi_result', hid=hid),
+    'url_label': 'شروع' if not has_emmpi else 'مشاهده',
+    'url_class': 'btn-go' if not has_emmpi else 'btn-view',
+  },
+  {
+    'num': 3,
+    'name': 'CDI هدفمند',
+    'subname': 'لایه ۲ — تحلیل محورها',
+    'icon': '📊',
+    'completed': layer2_done,
+    'in_progress': has_active and not layer2_done,
+    'skipped': not has_emmpi or not has_active,
+    'status': '✓ تکمیل شد' if layer2_done else ('⏳ در حال انجام' if has_active and not layer2_done else ('— لازم نیست' if not has_active else '⬜ در انتظار')),
+    'url': url_for('assess', hid=hid) if has_active and not layer2_done else (url_for('household_view', hid=hid) if layer2_done else None),
+    'url_label': 'شروع' if has_active and not layer2_done else ('مشاهده' if layer2_done else ''),
+    'url_class': 'btn-go' if has_active and not layer2_done else 'btn-view',
+  },
+  {
+    'num': 4,
+    'name': 'CDI عمیق',
+    'subname': 'لایه ۳ — تحلیل تخصصی',
+    'icon': '🔬',
+    'completed': layer3_done,
+    'in_progress': layer3_required and not layer3_done,
+    'skipped': not layer3_required,
+    'status': '✓ تکمیل شد' if layer3_done else ('⏳ در حال انجام' if layer3_required and not layer3_done else ('— لازم نیست' if not layer3_required else '⬜ در انتظار')),
+    'url': url_for('layer3', hid=hid) if layer3_required and not layer3_done else (url_for('household_view', hid=hid) if layer3_done else None),
+    'url_label': 'شروع' if layer3_required and not layer3_done else ('مشاهده' if layer3_done else ''),
+    'url_class': 'btn-go' if layer3_required and not layer3_done else 'btn-view',
+  },
+  {
+    'num': 5,
+    'name': 'تصمیم نهایی',
+    'subname': 'مددکار خانواده',
+    'icon': '✅',
+    'completed': has_decision,
+    'in_progress': (layer2_done or layer3_done) and not has_decision,
+    'skipped': not (layer2_done or layer3_done),
+    'status': '✓ ثبت شد' if has_decision else ('⏳ در انتظار' if (layer2_done or layer3_done) and not has_decision else ('— لازم نیست' if not (layer2_done or layer3_done) else '⬜ در انتظار')),
+    'url': url_for('household_view', hid=hid) if has_decision else None,
+    'url_label': 'مشاهده' if has_decision else '',
+    'url_class': 'btn-view',
+  },
+  {
+    'num': 6,
+    'name': 'پایش و خروج',
+    'subname': 'اجرای سبد + پایداری',
+    'icon': '🏁',
+    'completed': is_completed,
+    'in_progress': has_decision and not is_completed,
+    'skipped': not has_decision,
+    'status': '✓ تکمیل شد' if is_completed else ('⏳ در حال اجرا' if has_decision and not is_completed else '⬜ در انتظار'),
+    'url': url_for('intervention_basket', hid=hid) if has_decision and not is_completed else None,
+    'url_label': 'سبد مدخله' if has_decision and not is_completed else '',
+    'url_class': 'btn-view',
+  },
+] %}
+
+<div class="roadmap-wrap">
+  <div class="roadmap-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+    نقشهٔ راه پرونده
+  </div>
+  <p class="roadmap-sub">مسیر کامل ارزیابی و توانمندسازی این خانوار — بر اساس نقش شما ({{ u.label or u.role }}) می‌توانید در مراحل قابل انجام مشارکت کنید.</p>
+
+  <div class="roadmap-track">
+    {% for step in steps %}
+    <div class="roadmap-step {% if step.completed %}completed{% elif step.in_progress %}in-progress{% elif step.skipped %}skipped{% else %}pending{% endif %}">
+      <div class="roadmap-icon">
+        {% if step.completed %}✓{% elif step.in_progress %}⏳{% elif step.skipped %}—{% else %}{{ step.num }}{% endif %}
+      </div>
+      <div class="roadmap-step-num">گام {{ step.num }}</div>
+      <div class="roadmap-step-name">{{ step.name }}{% if step.subname %}<br><span style="font-size:9.5px;color:var(--mut);font-weight:400">{{ step.subname }}</span>{% endif %}</div>
+      <div class="roadmap-step-status">{{ step.status }}</div>
+      {% if step.url and step.url_label %}
+      <div class="roadmap-step-action">
+        <a href="{{ step.url }}" class="{{ step.url_class }}">{{ step.url_label }}</a>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="roadmap-summary">
+    <div class="roadmap-summary-item"><span class="dot green"></span> <b>{{ steps|selectattr('completed')|list|length }}</b> مرحله تکمیل شده</div>
+    <div class="roadmap-summary-item"><span class="dot amber"></span> <b>{{ steps|selectattr('in_progress')|list|length }}</b> مرحله در حال انجام</div>
+    <div class="roadmap-summary-item"><span class="dot mut"></span> <b>{{ steps|selectattr('skipped')|list|length }}</b> مرحله لازم نیست</div>
+    <div class="roadmap-summary-item" style="margin-inline-start:auto">
+      <b style="color:var(--p-d)">{{ steps|selectattr('completed')|list|length }}</b> از <b>{{ steps|length }}</b> مرحله
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# ═══════════════════════════════════════════════════════════
+   ماکرو: کارت زیبای PEH (امتیاز اولویت اجرایی خانوار)
+   ═══════════════════════════════════════════════════════════ #}
+
+{% macro render_peh_gauge(peh_score, peh_breakdown) %}
+<style>
+.peh-gauge-wrap{display:flex;align-items:center;gap:24px;background:linear-gradient(135deg,var(--p-ll) 0%,#fff 100%);border:1px solid var(--p-l);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:14px}
+.peh-gauge{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--p) calc(var(--pct,0) * 1%),var(--bg-2) 0);display:grid;place-items:center;position:relative;flex-shrink:0;box-shadow:0 4px 20px rgba(13,148,136,.15)}
+.peh-gauge::before{content:"";position:absolute;inset:8px;border-radius:50%;background:#fff}
+.peh-gauge-inner{position:relative;z-index:1;text-align:center}
+.peh-gauge-num{font-size:32px;font-weight:800;color:var(--p-dd);line-height:1}
+.peh-gauge-lbl{font-size:10px;color:var(--mut);margin-top:2px}
+
+.peh-comps{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.peh-comp-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;text-align:center;position:relative;overflow:hidden}
+.peh-comp-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%}
+.peh-comp-card[data-c="em"]::before{background:var(--p)}
+.peh-comp-card[data-c="r"]::before{background:var(--red)}
+.peh-comp-card[data-c="f"]::before{background:var(--amber)}
+.peh-comp-card[data-c="g"]::before{background:var(--blue)}
+.peh-comp-card[data-c="e"]::before{background:var(--green)}
+.peh-comp-card[data-c="w"]::before{background:var(--mut)}
+.peh-comp-card .pc-key{font-size:9px;font-weight:800;color:var(--p-d);margin-bottom:2px}
+.peh-comp-card .pc-val{font-size:16px;font-weight:800;color:var(--ink);line-height:1}
+.peh-comp-card .pc-w{font-size:9px;color:var(--mut);margin-top:1px}
+.peh-comp-card .pc-bar{height:3px;background:var(--bg-2);border-radius:2px;margin-top:4px;overflow:hidden}
+.peh-comp-card .pc-bar-fill{height:100%;background:var(--p);border-radius:2px;transition:width .6s var(--ease)}
+
+@media(max-width:600px){.peh-gauge-wrap{flex-direction:column;text-align:center}.peh-gauge{margin:0 auto}}
+</style>
+
+{% if peh_score is defined and peh_score is not none %}
+<div class="peh-gauge-wrap">
+  <div class="peh-gauge" style="--pct: {{ peh_score }}">
+    <div class="peh-gauge-inner">
+      <div class="peh-gauge-num">{{ peh_score }}</div>
+      <div class="peh-gauge-lbl">از ۱۰۰</div>
+    </div>
+  </div>
+  <div class="peh-comps">
+    {% if peh_breakdown %}
+    <div class="peh-comp-card" data-c="em"><div class="pc-key">EM</div><div class="pc-val">{{ peh_breakdown.em }}</div><div class="pc-w">۱۵٪</div><div class="pc-bar"><div class="pc-bar-fill" style="width:{{ peh_breakdown.em }}%"></div></div></div>
+    <div class="peh-comp-card" data-c="r"><div class="pc-key">R</div><div class="pc-val">{{ peh_breakdown.r }}</div><div class="pc-w">۳۵٪</div><div class="pc-bar"><div class="pc-bar-fill" style="width:{{ peh_breakdown.r }}%;background:var(--red)"></div></div></div>
+    <div class="peh-comp-card" data-c="f"><div class="pc-key">F</div><div class="pc-val">{{ peh_breakdown.f }}</div><div class="pc-w">۲۰٪</div><div class="pc-bar"><div class="pc-bar-fill" style="width:{{ peh_breakdown.f }}%;background:var(--amber)"></div></div></div>
+    <div class="peh-comp-card" data-c="g"><div class="pc-key">G</div><div class="pc-val">{{ peh_breakdown.g }}</div><div class="pc-w">۱۵٪</div><div class="pc-bar"><div class="pc-bar-fill" style="width:{{ peh_breakdown.g }}%;background:var(--blue)"></div></div></div>
+    <div class="peh-comp-card" data-c="e"><div class="pc-key">E</div><div class="pc-val">{{ peh_breakdown.e }}</div><div class="pc-w">۱۰٪</div><div class="pc-bar"><div class="pc-bar-fill" style="width:{{ peh_breakdown.e }}%;background:var(--green)"></div></div></div>
+    <div class="peh-comp-card" data-c="w"><div class="pc-key">W</div><div class="pc-val">{{ peh_breakdown.w }}</div><div class="pc-w">۵٪</div><div class="pc-bar"><div class="pc-bar-fill" style="width:{{ peh_breakdown.w }}%;background:var(--mut)"></div></div></div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# ═══════════════════════════════════════════════════════════
+   ماکرو: کارت زیبای سبد مدخله
+   ═══════════════════════════════════════════════════════════ #}
+
+{% macro render_basket_visual(basket) %}
+<style>
+.basket-visual{background:linear-gradient(135deg,var(--p-ll) 0%,#fff 100%);border:1px solid var(--p-l);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:14px}
+.basket-ranks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.basket-rank-card{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:12px 8px;text-align:center;position:relative;overflow:hidden;transition:all .3s var(--ease)}
+.basket-rank-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.basket-rank-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:4px}
+.basket-rank-card[data-rank="A"]::before{background:var(--red)}
+.basket-rank-card[data-rank="B"]::before{background:var(--amber)}
+.basket-rank-card[data-rank="C"]::before{background:var(--blue)}
+.basket-rank-card[data-rank="D"]::before{background:var(--green)}
+.basket-rank-card[data-rank="E"]::before{background:var(--purple)}
+.basket-rank-card .br-letter{font-size:28px;font-weight:800;line-height:1;margin-top:4px}
+.basket-rank-card[data-rank="A"] .br-letter{color:var(--red)}
+.basket-rank-card[data-rank="B"] .br-letter{color:var(--amber)}
+.basket-rank-card[data-rank="C"] .br-letter{color:var(--blue)}
+.basket-rank-card[data-rank="D"] .br-letter{color:var(--green)}
+.basket-rank-card[data-rank="E"] .br-letter{color:var(--purple)}
+.basket-rank-card .br-count{font-size:18px;font-weight:800;color:var(--ink);margin-top:4px}
+.basket-rank-card .br-name{font-size:9.5px;color:var(--mut);margin-top:2px;line-height:1.3}
+.basket-rank-card .br-deadline{font-size:9px;color:var(--mut-2);margin-top:4px;padding:2px 6px;background:var(--bg-2);border-radius:4px;display:inline-block}
+
+.basket-chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;background:var(--bg-2);border-radius:var(--r);margin-top:10px;font-size:11px}
+.basket-chain-item{padding:3px 8px;border-radius:4px;font-weight:600;color:#fff}
+.basket-chain-arrow{color:var(--mut);font-size:14px}
+</style>
+
+{% if basket and basket.total > 0 %}
+<div class="basket-visual">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--p-d)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+    <h3 style="margin:0;font-size:14px;color:var(--p-dd)">سبد مدخله — {{ basket.total }} اقدام</h3>
+  </div>
+
+  <div class="basket-ranks">
+    {% for rank, info in [('A', {'name':'فوری','deadline':'همان روز'}), ('B', {'name':'مقدم','deadline':'۳۰ روز'}), ('C', {'name':'هم‌زمان','deadline':'۶۰ روز'}), ('D', {'name':'توانمندساز','deadline':'۳ ماه'}), ('E', {'name':'مشروط','deadline':'پس از شرط'})] %}
+    <div class="basket-rank-card" data-rank="{{ rank }}">
+      <div class="br-letter">{{ rank }}</div>
+      <div class="br-count">{{ basket.counts.get(rank, 0) if basket.counts else 0 }}</div>
+      <div class="br-name">{{ info.name }}</div>
+      <div class="br-deadline">{{ info.deadline }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# زنجیره پایه مداخلات (بند ۲ـ۳) #}
+  <div class="basket-chain">
+    <span style="color:var(--mut);font-size:10px;font-weight:700">توالی پایه:</span>
+    <span class="basket-chain-item" style="background:var(--red)">حفاظت فوری</span>
+    <span class="basket-chain-arrow">→</span>
+    <span class="basket-chain-item" style="background:var(--amber)">تثبیت</span>
+    <span class="basket-chain-arrow">→</span>
+    <span class="basket-chain-item" style="background:var(--blue)">رفع مانع</span>
+    <span class="basket-chain-arrow">→</span>
+    <span class="basket-chain-item" style="background:var(--green)">توانمندسازی</span>
+    <span class="basket-chain-arrow">→</span>
+    <span class="basket-chain-item" style="background:var(--purple)">پایداری</span>
+    <span class="basket-chain-arrow">→</span>
+    <span class="basket-chain-item" style="background:var(--mut)">خروج</span>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}

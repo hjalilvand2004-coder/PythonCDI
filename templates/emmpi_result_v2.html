@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نتیجه EM-MPI — پرسشنامه غربالگری</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<style>
+:root {
+  --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --text: #1e293b;
+  --primary: #0284c7; --primary-dark: #0369a1; --accent: #f59e0b;
+  --danger: #dc2626; --success: #16a34a; --warn: #f97316; --muted: #64748b; --soft: #f1f5f9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Vazirmatn', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+.header { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.header h1 { color: var(--primary-dark); margin-bottom: 4px; }
+.meta-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+/* کارت امتیاز کل */
+.score-card { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white;
+              border-radius: 12px; padding: 28px; margin-bottom: 16px; text-align: center; }
+.score-card .score-value { font-size: 48px; font-weight: 700; }
+.score-card .score-label { font-size: 14px; opacity: 0.9; }
+.score-card .level-badge { display: inline-block; margin-top: 12px; padding: 8px 20px;
+                          background: rgba(255,255,255,0.2); border-radius: 20px; font-weight: 600; }
+
+/* کارت ابعاد */
+.dimensions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.dim-card { background: var(--card); border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
+.dim-card[data-dim="A"] { border-top-color: #ef4444; }
+.dim-card[data-dim="B"] { border-top-color: #3b82f6; }
+.dim-card[data-dim="C"] { border-top-color: #10b981; }
+.dim-card[data-dim="D"] { border-top-color: #f59e0b; }
+.dim-card[data-dim="E"] { border-top-color: #8b5cf6; }
+.dim-card h3 { font-size: 14px; margin-bottom: 8px; }
+.dim-card .score { font-size: 24px; font-weight: 700; }
+.dim-card .cap { font-size: 12px; color: var(--muted); }
+.dim-card .pct-bar { height: 6px; background: var(--soft); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.dim-card .pct-fill { height: 100%; background: var(--primary); }
+
+/* پرچم‌ها */
+.section { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.section h2 { font-size: 18px; margin-bottom: 12px; color: var(--primary-dark); }
+.flag-item { padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; }
+.flag-item.strict { background: #fef2f2; border: 1px solid #fecaca; }
+.flag-item.normal { background: #fffbeb; border: 1px solid #fde68a; }
+.flag-item.restricted { background: #faf5ff; border: 1px solid #e9d5ff; }
+.flag-code { font-weight: 700; color: var(--danger); flex-shrink: 0; }
+
+/* شاخص‌ها */
+.indicator-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.indicator-table th, .indicator-table td { padding: 10px; border: 1px solid var(--border); text-align: right; }
+.indicator-table th { background: var(--soft); font-weight: 700; }
+.indicator-table .ok { color: var(--success); }
+.indicator-table .incomplete { color: var(--warn); }
+.indicator-table .pending { font-size: 11px; color: var(--warn); }
+
+/* کیفیت داده */
+.quality-item { padding: 10px; background: var(--soft); border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+.quality-item .type { font-weight: 600; color: var(--warn); }
+
+/* ارجاع */
+.referral-item { padding: 12px; background: var(--soft); border-radius: 8px; margin-bottom: 8px; }
+.referral-item .priority { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.referral-item .priority.immediate { background: var(--danger); color: white; }
+.referral-item .priority.fast { background: var(--warn); color: white; }
+.referral-item .priority.priority { background: var(--accent); color: white; }
+.referral-item .priority.normal { background: var(--success); color: white; }
+
+/* خط قرمز */
+.ai-red-lines { background: #fef3c7; border-radius: 8px; padding: 16px; font-size: 13px; }
+.ai-red-lines ul { padding-inline-start: 20px; }
+.ai-red-lines li { margin-bottom: 4px; }
+
+.btn { display: inline-block; padding: 10px 20px; background: var(--primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
+.btn:hover { background: var(--primary-dark); }
+
+@media (max-width: 768px) { .dimensions-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>نتیجه پرسشنامه غربالگری خانوار</h1>
+  <div>EM-MPI نسخه ۲ — {{ result.ruleSetVersion }}</div>
+  <div class="meta-row">
+    <span>📊 وضعیت: <strong>{{ 'نهایی' if result.status == 'final' else 'غیرنهایی' }}</strong></span>
+    <span>✅ تکمیل: {{ result.completeness }}% ({{ result.finalizedCount }}/۳۰)</span>
+    <span>🕒 محاسبه: {{ result.computedAt[:19] }}</span>
+    {% if meta.computed_by %}<span>👤 توسط: {{ meta.computed_by }}</span>{% endif %}
+  </div>
+</div>
+
+<!-- امتیاز کل -->
+<div class="score-card" {% if not result.total %}style="background: var(--muted);"{% endif %}>
+  {% if result.total is not none %}
+    <div class="score-value">{{ result.total }}</div>
+    <div class="score-label">از ۱۰۰۰ امتیاز</div>
+    {% if result.level %}
+      <div class="level-badge" style="background: {{ result.level.color }};">{{ result.level.label }}</div>
+    {% endif %}
+  {% else %}
+    <div class="score-value">—</div>
+    <div class="score-label">نتیجه غیرنهایی — تکمیل {{ result.finalizedCount }}/۳۰ شاخص</div>
+    <div class="level-badge">سطح اعلام نشده (تکمیل نشده)</div>
+  {% endif %}
+</div>
+
+<!-- وضعیت -->
+{% if result.status != 'final' %}
+<div class="section" style="background: #fffbeb; border: 1px solid #fde68a;">
+  <h2>⚠ نتیجه غیرنهایی</h2>
+  <p>پرسشنامه تکمیل نشده است. {{ 30 - result.finalizedCount }} شاخص ناتمام است. تا تکمیل همه ۳۰ شاخص، سطح نهایی اعلام نمی‌شود.</p>
+  <p><strong>جمع جزئی (فقط شاخص‌های نهایی‌شده):</strong> {{ result.partialSum }}</p>
+</div>
+{% endif %}
+
+<!-- ابعاد -->
+<div class="section">
+  <h2>۵ بُعد محرومیت</h2>
+  <div class="dimensions-grid">
+    {% for d in result.dimensions %}
+    <div class="dim-card" data-dim="{{ d.id }}">
+      <h3>{{ d.title }}</h3>
+      <div class="score">{{ d.score }}</div>
+      <div class="cap">از {{ d.cap }} امتیاز</div>
+      <div class="pct-bar"><div class="pct-fill" style="width: {{ d.pct }}%;"></div></div>
+      <div style="font-size: 11px; margin-top: 4px;">{{ d.pct }}% {% if not d.complete %}⚠ ناتمام{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- پرچم‌های خطر -->
+{% if result.flags %}
+<div class="section">
+  <h2>🚩 پرچم‌های خطر ({{ result.flags|length }})</h2>
+  <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+    پرچم‌ها امتیاز اضافی نمی‌کنند. ثبت اولیه بی‌درنگ است؛ تأیید تخصصی در فرایند انسانی انجام می‌شود.
+  </p>
+  {% for f in result.flags %}
+  <div class="flag-item {{ f.confidentiality if f.confidentiality else 'normal' }}">
+    <span class="flag-code">{{ f.code }}</span>
+    <div>
+      <strong>{{ f.title if f.title else '' }}</strong>
+      {% if f.title is none %}
+        {% set rf_info = RED_FLAGS|default({}) %}
+      {% endif %}
+      <div style="font-size: 13px; margin-top: 4px;">{{ f.detail }}</div>
+      {% if f.confidentiality == 'strict' %}
+        <div style="font-size: 11px; color: var(--danger); margin-top: 4px;">🔒 محرمانگی strict</div>
+      {% endif %}
+      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">منبع: {{ f.source }} | وضعیت: {{ f.status }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ارجاع‌های پیشنهادی -->
+{% if result.referrals %}
+<div class="section">
+  <h2>📤 مسیرهای ارجاع پیشنهادی</h2>
+  {% for r in result.referrals %}
+  <div class="referral-item">
+    <strong>{{ r.name }}</strong>
+    <span class="priority {{ r.priority }}">{{ r.priority }}</span>
+    <div style="font-size: 13px; margin-top: 4px; color: var(--muted);">{{ r.condition }}</div>
+    {% if r.to_cdi %}<div style="font-size: 12px; color: var(--primary);">→ ارجاع به CDI</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- کیفیت داده -->
+{% if result.qualityIssues %}
+<div class="section">
+  <h2>🔍 مسائل کیفیت داده ({{ result.qualityIssues|length }})</h2>
+  {% for q in result.qualityIssues %}
+  <div class="quality-item">
+    <span class="type">[{{ q.type }}]</span>
+    <strong>{{ q.scope }}</strong>: {{ q.description }}
+    <div style="font-size: 11px; color: var(--muted);">وضعیت: {{ q.status }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- شاخص‌های ناتمام -->
+{% if result.status != 'final' %}
+<div class="section">
+  <h2>📋 شاخص‌های ناتمام</h2>
+  <table class="indicator-table">
+    <thead><tr><th>شاخص</th><th>علت</th></tr></thead>
+    <tbody>
+      {% for i in result.indicators if i.status != 'ok' %}
+      <tr><td><strong>{{ i.id }}</strong> (وزن {{ i.weight }})</td><td>{{ i.basis }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- جدول کامل شاخص‌ها -->
+<div class="section">
+  <h2>📋 همه ۳۰ شاخص</h2>
+  <table class="indicator-table">
+    <thead><tr><th>شاخص</th><th>بُعد</th><th>وزن</th><th>ضریب</th><th>امتیاز</th><th>وضعیت</th><th>مبنای محاسبه</th></tr></thead>
+    <tbody>
+      {% for i in result.indicators %}
+      <tr>
+        <td><strong>{{ i.id }}</strong></td>
+        <td>{{ i.dimension }}</td>
+        <td>{{ i.weight }}</td>
+        <td>{{ i.coeff if i.coeff is not none else '—' }}</td>
+        <td>{{ i.score }}</td>
+        <td class="{{ i.status }}">
+          {% if i.status == 'ok' %}✓ نهایی{% else %}⚠ ناتمام{% endif %}
+          {% if i.pendingApproval %}<span class="pending">⚠ نیازمند تصویب</span>{% endif %}
+        </td>
+        <td style="font-size: 11px; max-width: 300px;">{{ i.basis }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- موارد نیازمند تصویب مرجع -->
+<div class="section">
+  <h2>⚠ موارد نیازمند تصویب مرجع</h2>
+  <p style="font-size: 13px; margin-bottom: 12px;">
+    این موارد عیناً با برچسب «پیشنهادی/نیازمند تصویب» منتقل می‌شوند و بدون تصویب مرجع تغییر نمی‌کنند.
+  </p>
+  <ul style="padding-inline-start: 20px; font-size: 13px;">
+    {% for item in result.pendingApprovalItems %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<!-- خط قرمزهای هوش مصنوعی -->
+<div class="section">
+  <h2>🤖 خط قرمزهای هوش مصنوعی</h2>
+  <div class="ai-red-lines">
+    <ul>
+      {% for line in ai_red_lines %}
+      <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div style="text-align: center; margin: 24px 0;">
+  <a href="{{ url_for('emmpi_v2_form') }}" class="btn">↻ پرسشنامه جدید</a>
+</div>
+
+</div>
+</body>
+</html>

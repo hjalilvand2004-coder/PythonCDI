@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block crumb %}گزارش پرونده‌های شهروندی{% endblock %}
+{% block body %}
+
+<style>
+/* ─── استایل‌های گزارش تجمیعی ─── */
+.rpt-hero{
+  background:linear-gradient(135deg, var(--p-ll) 0%, #fff 100%);
+  border:1px solid var(--p-l); border-radius:var(--r-lg);
+  padding:24px 28px; margin-bottom:20px;
+}
+.rpt-hero h1{font-size:var(--t-2xl); color:var(--p-dd); margin:0 0 6px; display:flex; align-items:center; gap:10px}
+.rpt-hero h1 svg{width:30px; height:30px}
+.rpt-hero .sub{color:var(--mut); font-size:var(--t-sm); margin:0; line-height:1.7}
+
+.rpt-stats{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+  gap:12px; margin-bottom:20px;
+}
+
+.h-levels-bar{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:6px;
+  margin-top:10px;
+}
+.h-bar-seg{
+  text-align:center; padding:10px 6px; border-radius:var(--r);
+  border:1px solid;
+}
+.h-bar-seg .count{font-size:var(--t-2xl); font-weight:800; line-height:1; display:block; margin-bottom:4px}
+.h-bar-seg .lbl{font-size:10.5px; font-weight:600; display:block; margin-bottom:2px}
+.h-bar-seg .rng{font-size:10px; color:var(--mut)}
+.h-bar-seg.H4{background:var(--green-bg); color:var(--green); border-color:var(--green-line)}
+.h-bar-seg.H3{background:var(--blue-bg); color:var(--blue); border-color:var(--blue-line)}
+.h-bar-seg.H2{background:var(--amber-bg); color:var(--amber); border-color:var(--amber-line)}
+.h-bar-seg.H1{background:var(--red-bg); color:var(--red); border-color:var(--red-line)}
+
+.dim-mismatch-bar{
+  display:flex; height:24px; border-radius:var(--r); overflow:hidden;
+  margin-top:8px; border:1px solid var(--line);
+}
+.dim-mismatch-bar .seg{
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:#fff;
+  transition:width .5s ease;
+  background:var(--red);
+}
+.dim-mismatch-bar .seg.A{background:var(--red)}
+.dim-mismatch-bar .seg.B{background:#ea580c}
+.dim-mismatch-bar .seg.C{background:var(--amber)}
+.dim-mismatch-bar .seg.D{background:var(--blue)}
+.dim-mismatch-bar .seg.E{background:var(--purple, #9333ea)}
+
+.rpt-table{font-size:var(--t-xs)}
+.rpt-table th{font-size:10.5px; vertical-align:middle}
+.rpt-table td{padding:8px 10px; vertical-align:middle}
+.rpt-table tr.low-honesty{background:var(--red-bg)}
+.rpt-table tr.mid-honesty{background:var(--amber-bg)}
+.rpt-table tr.high-honesty{background:var(--green-bg)}
+.rpt-table tr:hover td{filter:brightness(.98)}
+.rpt-table .h-score-cell{font-weight:700; font-size:var(--t-md)}
+.rpt-table .action-link{font-size:11px}
+
+.rpt-bars{
+  display:flex; align-items:center; gap:6px;
+}
+.rpt-bars .bar{
+  height:8px; background:var(--green-bg); border-radius:var(--r-full); overflow:hidden;
+  width:80px;
+}
+.rpt-bars .bar .fill{height:100%; background:var(--green)}
+.rpt-bars .bar.amber .fill{background:var(--amber)}
+.rpt-bars .bar.red .fill{background:var(--red)}
+.rpt-bars .num{font-size:10.5px; font-weight:600; color:var(--mut)}
+</style>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>گزارش پرونده‌های شهروندی</h1>
+    <p class="sub">گزارش تجمیعی از امتیاز صداقت شهروندی تمام پرونده‌های ارزیابی‌شده — برای مددکار، کلینیک تخصصی و مدیر ستاد.</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{# Hero #}
+<div class="rpt-hero">
+  <h1>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    نمای کلی صداقت شهروندی
+  </h1>
+  <p class="sub">این گزارش بر اساس مقایسهٔ پاسخ‌های خوداظهاری نیازمندان با ارزیابی همیاران (EM-MPI) تهیه شده است.
+  امتیاز صداقت، شاخصی برای سنجش میزان انطباق اطلاعات اولیه با واقعیت میدانی است و در تصمیم‌گیری دربارهٔ نحوهٔ ادامهٔ ارزیابی و شدت راستی‌آزمایی به‌کار می‌رود.</p>
+</div>
+
+{# Stats #}
+<div class="rpt-stats">
+  <div class="stat teal">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+    <div class="num">{{ total }}</div>
+    <div class="lbl">پروندهٔ ارزیابی‌شده</div>
+  </div>
+  <div class="stat green">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="num">{{ avg_honesty }}<span style="font-size:14px;color:var(--mut)">/۱۰۰</span></div>
+    <div class="lbl">میانگین صداقت</div>
+  </div>
+  <div class="stat red">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+    <div class="num">{{ total_mismatched }}</div>
+    <div class="lbl">مجموع مغایرت‌ها</div>
+  </div>
+  <div class="stat amber">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div class="num">{{ by_honesty_level.H1 + by_honesty_level.H2 }}</div>
+    <div class="lbl">پرونده با صداقت پایین</div>
+  </div>
+</div>
+
+{# Honesty levels distribution #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      توزیع پرونده‌ها بر اساس سطح صداقت
+    </h2>
+  </div>
+  <div class="h-levels-bar">
+    {% for h_level in HONESTY_LEVELS %}
+    <div class="h-bar-seg {{ h_level.code }}">
+      <span class="count">{{ by_honesty_level.get(h_level.code, 0) }}</span>
+      <span class="lbl">{{ h_level.name }}</span>
+      <span class="rng">{{ h_level.min }}-{{ h_level.max }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="alert blue" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <div>
+      پرونده‌های با صداقت پایین (H1) نیازمند راستی‌آزمایی فوری هستند. این موارد می‌توانند ناشی از پنهان‌کاری نیازمند، اشتباه همیار، یا سوءفهم سؤال باشند.
+    </div>
+  </div>
+</div>
+
+{# Dimension mismatch distribution #}
+{% if dim_mismatch_dist %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
+      توزیع مغایرت‌ها در ابعاد ۵گانه محرومیت
+    </h2>
+  </div>
+  {% set total_dim = dim_mismatch_dist.values()|sum if dim_mismatch_dist.values() else 0 %}
+  {% if total_dim > 0 %}
+  <div class="dim-mismatch-bar" style="width:100%">
+    {% for dk in ['A','B','C','D','E'] %}
+      {% set val = dim_mismatch_dist.get(dk, 0) %}
+      {% if val > 0 %}
+      <div class="seg {{ dk }}" style="width: {{ (val * 100 / total_dim)|round(1) }}%" title="{{ dk }}. {{ dim_names[dk] }}: {{ val }} مغایرت">
+        {{ dk }}: {{ val }}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="table-wrap" style="margin-top:14px">
+    <table>
+      <thead><tr><th>بُعد</th><th>نام</th><th>تعداد مغایرت</th><th>سهم</th></tr></thead>
+      <tbody>
+        {% for dk in ['A','B','C','D','E'] %}
+        <tr>
+          <td><b>{{ dk }}</b></td>
+          <td>{{ dim_names[dk] }}</td>
+          <td class="num">{{ dim_mismatch_dist.get(dk, 0) }}</td>
+          <td class="num">{% if total_dim > 0 %}{{ (dim_mismatch_dist.get(dk, 0) * 100 / total_dim)|round(1) }}٪{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# Detailed table #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      فهرست پرونده‌ها (مرتب‌شده بر اساس کمترین صداقت)
+    </h2>
+  </div>
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="rpt-table">
+      <thead>
+        <tr>
+          <th>شناسه</th>
+          <th>نام</th>
+          <th>استان</th>
+          <th>EM-MPI</th>
+          <th>پرچم قرمز</th>
+          <th>امتیاز صداقت</th>
+          <th>انطباق</th>
+          <th>جزئی</th>
+          <th>مغایرت</th>
+          <th>نرخ انطباق</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="{% if r.honesty_score < 50 %}low-honesty{% elif r.honesty_score < 70 %}mid-honesty{% else %}high-honesty{% endif %}">
+          <td class="mono">{{ r.hid }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.province }}</td>
+          <td>
+            <b>{{ r.emmpi_score }}</b>
+            <div class="small" style="color:var(--mut)">{{ r.emmpi_level }}</div>
+          </td>
+          <td style="text-align:center">
+            {% if r.has_red_flags %}
+            <span class="cp-pill red">⚠ دارد</span>
+            {% else %}
+            <span class="cp-pill mut">—</span>
+            {% endif %}
+          </td>
+          <td class="h-score-cell">
+            {{ r.honesty_score }}
+            <div class="small" style="color:var(--mut);font-weight:400">{{ r.honesty_level }}</div>
+          </td>
+          <td style="text-align:center;color:var(--green);font-weight:700">{{ r.matched }}</td>
+          <td style="text-align:center;color:var(--amber);font-weight:700">{{ r.partial }}</td>
+          <td style="text-align:center;color:var(--red);font-weight:700">{{ r.mismatched }}</td>
+          <td>
+            <div class="rpt-bars">
+              <div class="bar {% if r.match_rate >= 85 %}{% elif r.match_rate >= 50 %}amber{% else %}red{% endif %}">
+                <div class="fill" style="width: {{ r.match_rate }}%"></div>
+              </div>
+              <span class="num">{{ r.match_rate }}٪</span>
+            </div>
+          </td>
+          <td>
+            <a class="btn sec sm action-link" href="{{ url_for('citizen_profile_view', hid=r.hid) }}">
+              مشاهدهٔ پرونده
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+    <div class="e-title">هنوز پروندهٔ ارزیابی‌شده‌ای موجود نیست</div>
+    <div class="e-sub">پس از تکمیل EM-MPI برای پرونده‌ها، گزارش به‌طور خودکار به‌روزرسانی می‌شود.</div>
+  </div>
+  {% endif %}
+</div>
+
+{# Disclaimer #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      خط قرمز: محدودیت‌های تفسیر
+    </h2>
+  </div>
+  <p style="font-size:var(--t-sm); color:var(--ink-2); line-height:1.9; margin:0">
+    امتیاز صداقت، شاخصی کمّی برای سنجش انطباق اطلاعات خوداظهاری نیازمند با ارزیابی همیار است.
+    این امتیاز به‌تنهایی نمی‌تواند بر صداقت یا عدم صداقت نیازمند حکم قطعی صادر کند، زیرا:
+  </p>
+  <ul style="font-size:var(--t-xs); color:var(--mut); line-height:1.9; margin-top:10px; padding-inline-start:20px">
+    <li>ممکن است همیار در ارزیابی اشتباه کرده باشد (کم‌برآورد یا بیش‌برآورد)</li>
+    <li>تفاوت در تفسیر سؤال خوداظهاری (مثلاً «بیماری مزمن کنترل‌شده» در مقابل «نیاز درمانی ضروری»)</li>
+    <li>نیازمند ممکن است به‌دلیل ترس، شرم یا سوءفهم، برخی مسائل را مخفی کرده باشد</li>
+    <li>برخی شاخص‌ها (مثل E3 — شبکه حمایت) جهت معکوس دارند و در محاسبه لحاظ می‌شود</li>
+    <li>تصمیم نهایی در خصوص نحوهٔ ادامهٔ ارزیابی یا لغو حمایت با مددکار خانواده است</li>
+  </ul>
+</div>
+
+{% endblock %}

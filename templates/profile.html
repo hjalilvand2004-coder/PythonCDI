@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block crumb %}پروفایل توانمندسازی{% endblock %}
 {% block body %}
+{% from "macros.html" import render_roadmap, render_peh_gauge, render_basket_visual %}
 {% set d = prof.data %}
 
 <style>
@@ -465,6 +466,19 @@
     </div>
   </div>
 </div>
+
+{# ═══════ نقشه راه پرونده ═══════ #}
+{{ render_roadmap(h, res, u, hid) }}
+
+{# ═══════ امتیاز PEH (گauge زیبا) ═══════ #}
+{% if res.peh is defined %}
+{{ render_peh_gauge(res.peh, res.peh_breakdown) }}
+{% endif %}
+
+{# ═══════ سبد مدخله (نمایش بصری) ═══════ #}
+{% if res.basket and res.basket.total > 0 %}
+{{ render_basket_visual(res.basket) }}
+{% endif %}
 
 {# ── ۹/۱۲. EMPLOYMENT PATHWAY STEPPER ────────────────────── #}
 <div class="sec-card">

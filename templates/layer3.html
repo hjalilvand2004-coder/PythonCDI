@@ -2,10 +2,47 @@
 {% block crumb %}لایهٔ ۳ — CDI عمیق{% endblock %}
 {% block body %}
 
+<style>
+.l3-form-section{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:14px;overflow:hidden;box-shadow:var(--sh-sm)}
+.l3-form-section > h3{background:linear-gradient(135deg,var(--p-ll),#fff);padding:12px 18px;margin:0;font-size:13.5px;font-weight:700;color:var(--p-dd);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.l3-form-section > h3 .l3-ic{width:30px;height:30px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.l3-form-section > h3 .l3-ic svg{width:16px;height:16px}
+.l3-form-section.rose > h3{background:linear-gradient(135deg,var(--purple-bg),#fff);color:var(--purple)}
+.l3-form-section.rose > h3 .l3-ic{background:var(--purple)}
+.l3-form-section.swclinic > h3{background:linear-gradient(135deg,var(--red-bg),#fff);color:var(--red)}
+.l3-form-section.swclinic > h3 .l3-ic{background:var(--red)}
+.l3-form-section.worker > h3{background:linear-gradient(135deg,var(--blue-bg),#fff);color:var(--blue)}
+.l3-form-section.worker > h3 .l3-ic{background:var(--blue)}
+.l3-form-section.shared > h3{background:linear-gradient(135deg,var(--green-bg),#fff);color:var(--green)}
+.l3-form-section.shared > h3 .l3-ic{background:var(--green)}
+.l3-field{padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.l3-field:last-child{border-bottom:none}
+.l3-field label{display:block;font-size:var(--t-sm);font-weight:700;color:var(--ink);margin-bottom:6px}
+.l3-field .l3-hint{font-size:10.5px;color:var(--mut);margin-bottom:8px}
+.l3-chips{display:flex;flex-wrap:wrap;gap:6px}
+.l3-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:11px;cursor:pointer;background:#fff}
+.l3-chip:has(input:checked){background:var(--p-ll);border-color:var(--p);color:var(--p-dd);font-weight:600}
+.l3-chip input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.l3-info-bar{background:var(--bg-2);padding:10px 14px;border-radius:var(--r);margin-bottom:14px;font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.l3-info-bar b{color:var(--ink)}
+.l3-readonly{background:var(--bg-2);padding:10px 12px;border-radius:var(--r-sm);font-size:11px;color:var(--ink-2);line-height:1.7}
+.l3-history-item{background:var(--bg-2);padding:12px 14px;border-radius:var(--r);margin-bottom:8px;border-inline-start:3px solid var(--p-l)}
+.l3-history-item .l3-hi-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px}
+.l3-history-item .l3-hi-head .role-badge{padding:2px 8px;border-radius:var(--r-full);font-size:10px;font-weight:700}
+.role-badge.rose{background:var(--purple-bg);color:var(--purple)}
+.role-badge.swclinic{background:var(--red-bg);color:var(--red)}
+.role-badge.worker{background:var(--blue-bg);color:var(--blue)}
+.l3-history-item .l3-hi-body{font-size:11.5px;color:var(--ink-2);line-height:1.8}
+.l3-history-item .l3-hi-body b{color:var(--ink)}
+.l3-history-item .l3-hi-body .l3-kv{display:grid;grid-template-columns:140px 1fr;gap:4px 10px;margin-top:4px}
+.l3-history-item .l3-hi-body .l3-kv .l3-k{color:var(--mut);font-size:11px}
+.l3-history-item .l3-hi-body .l3-kv .l3-v{color:var(--ink-2);font-size:11.5px}
+</style>
+
 <div class="page-head">
   <div class="ph-text">
     <h1>لایهٔ ۳ — CDI عمیق و تخصصی</h1>
-    <p class="sub">تحلیل ریشه‌ای و تخصصی؛ ورود فقط با شرایط بند ۴ـ۱ مجاز است.</p>
+    <p class="sub">خانوار: <b>{{ h.identity.name or hid }}</b> · تحلیل ریشه‌ای و تخصصی؛ ورود فقط با شرایط بند ۴ـ۱ مجاز است.</p>
   </div>
   <div class="ph-actions">
     <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">
@@ -22,70 +59,605 @@
 </div>
 {% endif %}
 
+{# ═══════ اطلاعات محرک لایه ۳ ═══════ #}
 {% if allowed %}
 <div class="alert red" style="margin-top:0">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
   <div>
-    <b>شرایط ورود برقرار است (بند ۴ـ۱):</b>
-    <ul>{% for r in res.layer3_reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+    <b>شرایط ورود به لایهٔ ۳ برقرار است (بند ۴ـ۱):</b>
+    <ul style="margin:6px 0 0 18px">{% for r in res.layer3_reasons %}<li>{{ r }}</li>{% endfor %}</ul>
   </div>
 </div>
 
-<div class="card">
-  <div class="head-row">
-    <h2>
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      تحلیل عمیق و ثبت نتیجه
-    </h2>
+<div class="l3-info-bar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--p)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  <div>
+    <b>نقش شما:</b> {{ u.label or u.role }} ·
+    <b>امتیاز EM-MPI:</b> {{ h.emmpi.result.score if h.emmpi else '—' }} ·
+    <b>پرچم‌های قرمز:</b> {{ h.emmpi.result.red_flags|length if h.emmpi else 0 }} ·
+    <b>محورهای فعال:</b> {{ h.state.active_axes|length if h.state.active_axes else 0 }}
   </div>
-  <p class="card-desc">
-    <b>مسئول اجرا:</b> کلینیک رز برای امور مشاوره‌ای، سپس کلینیک تخصصی مددکاری.
-    <b>تأیید نهایی:</b> مددکار خانواده.
-  </p>
-
-  {% if u.role in ['worker', 'rose', 'swclinic'] %}
-  <form method="post">
-    <button class="btn lg" type="submit">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      ثبت انجام تحلیل لایهٔ ۳
-    </button>
-  </form>
-  {% else %}
-  <div class="alert amber" style="margin:0">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    <div>ثبت نتیجهٔ لایهٔ ۳ فقط با کلینیک رز، کلینیک مددکاری یا مددکار خانواده انجام می‌شود (بند ۴).</div>
-  </div>
-  {% endif %}
-</div>
-
-{% if h.layer3_done %}
-<div class="alert green" style="margin-top:0">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-  <div><b>تحلیل لایهٔ ۳ قبلاً ثبت شده است.</b> پرونده آمادهٔ تصمیم نهایی مددکار خانواده است.</div>
 </div>
 {% endif %}
 
-{% else %}
+{# ═══════ نمایش تاریخچه تحلیل‌های قبلی لایه ۳ ═══════ #}
+{% if h.layer3_history %}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      تاریخچهٔ تحلیل‌های لایهٔ ۳ ({{ h.layer3_history|length }} مورد)
+    </h2>
+  </div>
+  {% for item in h.layer3_history %}
+  <div class="l3-history-item">
+    <div class="l3-hi-head">
+      <span class="role-badge {{ item.submitted_by }}">{{ item.role_label or item.submitted_by }}</span>
+      <span class="small">{{ item.submitted_by_name or item.submitted_by }}</span>
+      <span class="small mono" style="margin-inline-start:auto">{{ item.submitted_at[:19] if item.submitted_at else '—' }}</span>
+    </div>
+    <div class="l3-hi-body">
+      {% if item.summary %}<div><b>خلاصه:</b> {{ item.summary }}</div>{% endif %}
+      {% if item.priority_recommendation %}<div><b>توصیهٔ اولویت:</b> {{ item.priority_recommendation }}</div>{% endif %}
+      {% if item.estimated_duration %}<div><b>مدت برآوردی:</b> {{ item.estimated_duration }}</div>{% endif %}
+      {% if item.follow_up_plan %}<div><b>برنامهٔ پیگیری:</b> {{ item.follow_up_plan }}</div>{% endif %}
+
+      {% if item.rose_analysis %}
+      <div class="l3-kv" style="margin-top:6px">
+        <span class="l3-k">نوع مشاوره:</span><span class="l3-v">{{ item.rose_analysis.counseling_type }}{% if item.rose_analysis.counseling_type_other %} ({{ item.rose_analysis.counseling_type_other }}){% endif %}</span>
+        <span class="l3-k">تعداد جلسات برآوردی:</span><span class="l3-v">{{ item.rose_analysis.session_count_estimated }}</span>
+        <span class="l3-k">رویکرد:</span><span class="l3-v">{{ item.rose_analysis.approach }}</span>
+        <span class="l3-k">آمادگی مراجع:</span><span class="l3-v">{{ item.rose_analysis.client_readiness }}</span>
+        <span class="l3-k">نقش‌های خانوادگی:</span><span class="l3-v">{{ item.rose_analysis.family_dynamics }}</span>
+        <span class="l3-k">الگوی ارتباطی:</span><span class="l3-v">{{ item.rose_analysis.communication_pattern }}</span>
+        <span class="l3-k">تاریخچهٔ تروما:</span><span class="l3-v">{{ item.rose_analysis.trauma_history }}</span>
+        <span class="l3-k">شبکهٔ حمایتی:</span><span class="l3-v">{{ item.rose_analysis.support_network }}</span>
+        <span class="l3-k">برنامهٔ مداخله:</span><span class="l3-v">{{ item.rose_analysis.intervention_plan }}</span>
+        <span class="l3-k">توصیهٔ مشاور:</span><span class="l3-v">{{ item.rose_analysis.counselor_recommendation }}</span>
+      </div>
+      {% if item.rose_analysis.risk_indicators %}
+      <div style="margin-top:4px"><b style="color:var(--red)">شاخص‌های خطر:</b>
+        {% for r in item.rose_analysis.risk_indicators %}<span class="badge P0" style="margin:2px"><span class="dot"></span>{{ r }}</span>{% endfor %}
+      </div>
+      {% endif %}
+      {% endif %}
+
+      {% if item.swclinic_analysis %}
+      <div class="l3-kv" style="margin-top:6px">
+        <span class="l3-k">تحلیل ریشه‌ای:</span><span class="l3-v">{{ item.swclinic_analysis.root_cause_analysis }}</span>
+        <span class="l3-k">ارزیابی چندمسئله‌ای:</span><span class="l3-v">{{ item.swclinic_analysis.multi_problem_assessment }}</span>
+        <span class="l3-k">عوامل پنهان:</span><span class="l3-v">{{ item.swclinic_analysis.hidden_factors }}</span>
+        <span class="l3-k">ساختار خانواده:</span><span class="l3-v">{{ item.swclinic_analysis.family_structure }}</span>
+        <span class="l3-k">ارزیابی اقتصادی:</span><span class="l3-v">{{ item.swclinic_analysis.economic_assessment }}</span>
+        <span class="l3-k">ارزیابی سلامت:</span><span class="l3-v">{{ item.swclinic_analysis.health_assessment }}</span>
+        <span class="l3-k">تشخیص روان‌شناختی-اجتماعی:</span><span class="l3-v">{{ item.swclinic_analysis.psychosocial_diagnosis }}</span>
+        <span class="l3-k">اولویت‌بندی مداخله:</span><span class="l3-v">{{ item.swclinic_analysis.intervention_priority }}</span>
+        <span class="l3-k">ارزیابی ظرفیت:</span><span class="l3-v">{{ item.swclinic_analysis.capacity_assessment }}</span>
+        <span class="l3-k">عوامل تاب‌آوری:</span><span class="l3-v">{{ item.swclinic_analysis.resilience_factors }}</span>
+        <span class="l3-k">پیامدهای مورد انتظار:</span><span class="l3-v">{{ item.swclinic_analysis.expected_outcomes }}</span>
+        <span class="l3-k">شاخص‌های پایش:</span><span class="l3-v">{{ item.swclinic_analysis.monitoring_indicators }}</span>
+      </div>
+      {% if item.swclinic_analysis.structural_barriers %}
+      <div style="margin-top:4px"><b>موانع ساختاری:</b>
+        {% for b in item.swclinic_analysis.structural_barriers %}<span class="tag" style="margin:2px">{{ b }}</span>{% endfor %}
+      </div>
+      {% endif %}
+      {% if item.swclinic_analysis.recommended_interventions %}
+      <div style="margin-top:4px"><b>مداخلات پیشنهادی:</b>
+        {% for i in item.swclinic_analysis.recommended_interventions %}<span class="badge P2" style="margin:2px"><span class="dot"></span>{{ i }}</span>{% endfor %}
+      </div>
+      {% endif %}
+      {% endif %}
+
+      {% if item.worker_decision %}
+      <div class="l3-kv" style="margin-top:6px">
+        <span class="l3-k">نوع تصمیم:</span><span class="l3-v">{{ item.worker_decision.decision_type }}</span>
+        <span class="l3-k">اولویت نهایی:</span><span class="l3-v">{{ item.worker_decision.final_priority }}</span>
+        <span class="l3-k">برنامهٔ یکپارچه:</span><span class="l3-v">{{ item.worker_decision.integrated_plan }}</span>
+        <span class="l3-k">موافقت خانوار:</span><span class="l3-v">{{ item.worker_decision.household_agreement }}</span>
+        <span class="l3-k">زمان اجرا:</span><span class="l3-v">{{ item.worker_decision.implementation_timeline }}</span>
+        <span class="l3-k">مددکار مسئول:</span><span class="l3-v">{{ item.worker_decision.responsible_worker }}</span>
+        <span class="l3-k">برآورد بودجه:</span><span class="l3-v">{{ item.worker_decision.budget_estimate }}</span>
+        <span class="l3-k">اصلاحات:</span><span class="l3-v">{{ item.worker_decision.modifications }}</span>
+        <span class="l3-k">یادداشت نهایی:</span><span class="l3-v">{{ item.worker_decision.final_note }}</span>
+      </div>
+      {% if item.worker_decision.approved %}
+      <div style="margin-top:4px"><span class="badge P3"><span class="dot"></span>✓ تأیید نهایی</span></div>
+      {% endif %}
+      {% if item.worker_decision.service_package %}
+      <div style="margin-top:4px"><b>بستهٔ خدمت:</b>
+        {% for s in item.worker_decision.service_package %}<span class="badge P2" style="margin:2px"><span class="dot"></span>{{ s }}</span>{% endfor %}
+      </div>
+      {% endif %}
+      {% endif %}
+
+      {% if item.notes %}<div style="margin-top:6px"><b>یادداشت:</b> {{ item.notes }}</div>{% endif %}
+      {% if item.requires_external_referral %}
+      <div style="margin-top:4px"><span class="badge P1"><span class="dot"></span>⚠ ارجاع به نهاد خارجی لازم است</span>
+        {% if item.external_referral_details %}<div class="small" style="margin-top:4px">{{ item.external_referral_details }}</div>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if not allowed %}
 <div class="alert amber" style="margin-top:0">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
   <div>ورود به لایهٔ سوم فقط در یکی از شرایط بند ۴ـ۱ مجاز است. فعلاً هیچ شرطی فعال نشده است.</div>
 </div>
+
+{% elif u.role not in ['worker', 'rose', 'swclinic'] %}
+<div class="alert amber" style="margin-top:0">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <div>ثبت نتیجهٔ لایهٔ ۳ فقط با کلینیک رز، کلینیک مددکاری یا مددکار خانواده انجام می‌شود (بند ۴).</div>
+</div>
+
+{% else %}
+<form method="post">
+
+  {# ═══════ فیلدهای مشترک ═══════ #}
+  <div class="l3-form-section shared">
+    <h3>
+      <span class="l3-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+      فیلدهای مشترک (برای تمام نقش‌ها)
+    </h3>
+
+    <div class="l3-field">
+      <label>خلاصهٔ تحلیل *</label>
+      <div class="l3-hint">خلاصه‌ای از تحلیل تخصصی شما از وضعیت این خانوار (حداقل ۵۰ کلمه).</div>
+      <textarea name="summary" required placeholder="در این تحلیل، عوامل اصلی محرومیت خانوار شامل... بر اساس مشاهدات و ارزیابی‌های انجام‌شده..." style="min-height:90px"></textarea>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>توصیهٔ اولویت</label>
+        <div class="l3-hint">اولویت پیشنهادی برای اقدام بعدی.</div>
+        <select name="priority_recommendation">
+          <option value="">— انتخاب کنید —</option>
+          <option value="P0">P0 — فوری (۲۴ ساعت)</option>
+          <option value="P1">P1 — فوری (۳-۷ روز)</option>
+          <option value="P2">P2 — اولویت‌دار (۱۴ روز)</option>
+          <option value="P3">P3 — توانمندسازی (۳۰ روز)</option>
+          <option value="P4">P4 — پایش (۹۰ روز)</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>مدت برآوردی مداخله</label>
+        <div class="l3-hint">زمان تخمینی برای تکمیل مداخله.</div>
+        <select name="estimated_duration">
+          <option value="">— انتخاب کنید —</option>
+          <option value="کوتاه‌مدت (تا ۱ ماه)">کوتاه‌مدت (تا ۱ ماه)</option>
+          <option value="میان‌مدت (۱-۳ ماه)">میان‌مدت (۱-۳ ماه)</option>
+          <option value="بلندمدت (۳-۶ ماه)">بلندمدت (۳-۶ ماه)</option>
+          <option value="مداوم (بیش از ۶ ماه)">مداوم (بیش از ۶ ماه)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>برنامهٔ پیگیری</label>
+      <div class="l3-hint">چگونه و در چه زمان‌هایی پیگیری انجام می‌شود.</div>
+      <textarea name="follow_up_plan" placeholder="پیگیری در ۲ هفته، ۱ ماه و ۳ ماه از طریق بازدید میدانی/تماس تلفنی..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>نیاز به ارجاع به نهاد خارجی</label>
+      <div class="l3-hint">اگر نیاز به ارجاع به نهادهای خارج از کمیتهٔ امداد دارید، این گزینه را فعال کنید.</div>
+      <label class="chk">
+        <label><input type="checkbox" name="requires_external_referral" value="yes"> بله، نیاز به ارجاع خارجی وجود دارد</label>
+      </label>
+      <textarea name="external_referral_details" placeholder="نهاد مقصد، دلیل ارجاع، نوع خدمت مورد نیاز..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>موافقت خانوار با ادامهٔ مداخله</label>
+      <div class="l3-hint">آیا خانوار با برنامهٔ پیشنهادی موافقت کرده است؟</div>
+      <label class="chk">
+        <label><input type="checkbox" name="consent_to_proceed" value="yes"> بله، خانوار موافقت کرده است</label>
+      </label>
+    </div>
+
+    <div class="l3-field">
+      <label>یادداشت تکمیلی</label>
+      <textarea name="notes" placeholderتوضیحات تکمیلی، ملاحظات، توصیه‌های ویژه..."></textarea>
+    </div>
+  </div>
+
+  {# ═══════ فرم اختصاصی کلینیک رز (rose) ═══════ #}
+  {% if u.role == 'rose' %}
+  <div class="l3-form-section rose">
+    <h3>
+      <span class="l3-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+      تحلیل تخصصی کلینیک رز (مشاوره‌ای)
+    </h3>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>نوع مشاورهٔ لازم *</label>
+        <select name="counseling_type" required>
+          <option value="">— انتخاب کنید —</option>
+          <option value="مشاورهٔ خانواده">مشاورهٔ خانواده</option>
+          <option value="مشاورهٔ کودک">مشاورهٔ کودک</option>
+          <option value="مشاورهٔ روان‌شناختی">مشاورهٔ روان‌شناختی</option>
+          <option value="مشاورهٔ سوگ">مشاورهٔ سوگ</option>
+          <option value="مشاورهٔ تاب‌آوری">مشاورهٔ تاب‌آوری</option>
+          <option value="مشاورهٔ تحصیلی">مشاورهٔ تحصیلی</option>
+          <option value="مشاورهٔ شغلی">مشاورهٔ شغلی</option>
+          <option value="مشاورهٔ ازدواج">مشاورهٔ ازدواج</option>
+          <option value="سایر">سایر</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>اگر «سایر» را انتخاب کردید، مشخص کنید</label>
+        <input type="text" name="counseling_type_other" placeholder="نوع مشاورهٔ مورد نیاز">
+      </div>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>تعداد جلسات برآوردی</label>
+        <select name="session_count_estimated">
+          <option value="">— انتخاب کنید —</option>
+          <option value="۱-۳ جلسه">۱-۳ جلسه</option>
+          <option value="۴-۶ جلسه">۴-۶ جلسه</option>
+          <option value="۷-۱۲ جلسه">۷-۱۲ جلسه</option>
+          <option value="بیش از ۱۲ جلسه">بیش از ۱۲ جلسه</option>
+          <option value="نیازمند ارزیابی بیشتر">نیازمند ارزیابی بیشتر</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>رویکرد مشاوره‌ای پیشنهادی</label>
+        <select name="approach">
+          <option value="">— انتخاب کنید —</option>
+          <option value="شناختی-رفتاری (CBT)">شناختی-رفتاری (CBT)</option>
+          <option value="روان‌پویشی">روان‌پویشی</option>
+          <option value="سیستمی-خانوادگی">سیستمی-خانوادگی</option>
+          <option value="بوم‌شناسی اجتماعی">بوم‌شناسی اجتماعی</option>
+          <option value="راه‌حل‌محور (SFBT)">راه‌حل‌محور (SFBT)</option>
+          <option value="تراومایی (EMDR/Trauma-informed)">تراومایی (EMDR/Trauma-informed)</option>
+          <option value="ترکیبی">ترکیبی</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>آمادگی مراجع برای مداخله</label>
+      <select name="client_readiness">
+        <option value="">— انتخاب کنید —</option>
+        <option value="آماده و مشارکت‌جو">آماده و مشارکت‌جو</option>
+        <option value="مقاومت اولیه اما قابل کار">مقاومت اولیه اما قابل کار</option>
+        <option value="مقاومت بالا — نیازمند آماده‌سازی">مقاونت بالا — نیازمند آماده‌سازی</option>
+        <option value="عدم آمادگی فعلی">عدم آمادگی فعلی</option>
+      </select>
+    </div>
+
+    <div class="l3-field">
+      <label>شاخص‌های خطر (چند گزینه)</label>
+      <div class="l3-hint">اگر شاخص‌ای از خطر مشاهده کرده‌اید، انتخاب کنید.</div>
+      <div class="l3-chips">
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="افکار خودکشی"> افکار خودکشی</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="خشونت فعال"> خشونت فعال</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="سوءمصرف مواد"> سوءمصرف مواد</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="آزار کودک"> آزار کودک</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="بحران روان‌پریشی"> بحران روان‌پریشی</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="ترک تحصیل قریب‌الوقوع"> ترک تحصیل قریب‌الوقوع</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="فرار خانگی"> فرار خانگی</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="سقط جنین/خطر جنین"> سقط جنین/خطر جنین</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="خطر طلاق"> خطر طلاق</label>
+        <label class="l3-chip"><input type="checkbox" name="risk_indicators" value="بدون شاخص خطر"> بدون شاخص خطر</label>
+      </div>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>نقش‌های خانوادگی و دینامیک</label>
+        <textarea name="family_dynamics" placeholder="ساختار قدرت، نقش‌های والدینی، الگوهای ارتباطی..."></textarea>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>الگوی ارتباطی خانوار</label>
+        <select name="communication_pattern">
+          <option value="">— انتخاب کنید —</option>
+          <option value="باز و سالم">باز و سالم</option>
+          <option value="محدود اما عملکردی">محدود اما عملکردی</option>
+          <option value="پرخاشمتی/تضادی">پرخاشمتی/تضادی</option>
+          <option value="منفعل/پنهان‌کار">منفعل/پنهان‌کار</option>
+          <option value="قطع ارتباط">قطع ارتباط</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>تاریخچهٔ تروما (در صورت وجود)</label>
+      <textarea name="trauma_history" placeholder="تجربه‌های تروماتیک گذشته (خشونت، فقدان، آزار، جنگ، حادثه) که بر وضعیت فعلی اثر گذاشته..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>ارزیابی شبکهٔ حمایتی</label>
+      <textarea name="support_network" placeholder="خانوادهٔ بزرگ‌تر، دوستان، همسایگان، نهادهای محلی، گروه مذهبی..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>برنامهٔ مداخلهٔ مشاوره‌ای</label>
+      <textarea name="intervention_plan" placeholder="گام‌های اجرایی مشاوره، جلسات، اهداف کوتاه‌مدت و میان‌مدت..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>توصیهٔ نهایی مشاور</label>
+      <textarea name="counselor_recommendation" placeholder="توصیهٔ نهایی برای ادامه/پایان/ارجاع..."></textarea>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ═══════ فرم اختصاصی کلینیک مددکاری (swclinic) ═══════ #}
+  {% if u.role == 'swclinic' %}
+  <div class="l3-form-section swclinic">
+    <h3>
+      <span class="l3-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+      تحلیل تخصصی کلینیک مددکاری (تحلیل ریشه‌ای)
+    </h3>
+
+    <div class="l3-field">
+      <label>تحلیل ریشه‌ای وضعیت *</label>
+      <div class="l3-hint">علل ریشه‌ای محرومیت این خانوار را به‌طور عمیق تحلیل کنید.</div>
+      <textarea name="root_cause_analysis" required placeholder="علل ریشه‌ای: ترکیبی از عوامل ساختاری (بیکاری منطقه‌ای)، فردی (بیماری سرپرست)، و محیطی (نبود خدمات)..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>ارزیابی چندمسئله‌ای (پرونده چندگانه)</label>
+      <textarea name="multi_problem_assessment" placeholder="این خانوار هم‌زمان با ۳ مسئله مواجه است: ۱) ناامنی مسکن، ۲) بیکاری، ۳) مشکلات سلامت روان..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>موانع ساختاری (چند گزینه)</label>
+      <div class="l3-hint">موانع ساختاری که دسترسی به خدمات را مسدود می‌کنند.</div>
+      <div class="l3-chips">
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="نبود مدارک هویتی"> نبود مدارک هویتی</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="نبود پوشش بیمه"> نبود پوشش بیمه</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="دوری از خدمات"> دوری از خدمات</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="سواد پایین"> سواد پایین</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="مانع دیجیتال"> مانع دیجیتال</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="مانع حقوقی/دادگاهی"> مانع حقوقی/دادگاهی</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="تبعیض/طرد اجتماعی"> تبعیض/طرد اجتماعی</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="نبود زیرساخت (آب/برق/گاز)"> نبود زیرساخت (آب/برق/گاز)</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="نبود مهدکودک/مدرسه"> نبود مهدکودک/مدرسه</label>
+        <label class="l3-chip"><input type="checkbox" name="structural_barriers" value="سایر"> سایر</label>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>عوامل پنهان (Hidden factors)</label>
+      <textarea name="hidden_factors" placeholder="عواملی که در ارزیابی سطحی دیده نمی‌شوند اما بر وضعیت اثر گذاشته‌اند (سوءاستفاده، اعتیاد پنهان، بدهی پنهان، مشکلات حقوقی حل‌نشده)"></textarea>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>ساختار خانواده</label>
+        <select name="family_structure">
+          <option value="">— انتخاب کنید —</option>
+          <option value="هسته‌ای (والدین + کودکان)">هسته‌ای (والدین + کودکان)</option>
+          <option value="گسترده (چند نسل)">گسترده (چند نسل)</option>
+          <option value="تک‌والدی (زن سرپرست)">تک‌والدی (زن سرپرست)</option>
+          <option value="تک‌والدی (مرد سرپرست)">تک‌والدی (مرد سرپرست)</option>
+          <option value="کودک‌سرپرست">کودک‌سرپرست</option>
+          <option value="سایر">سایر</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>اولویت‌بندی مداخله</label>
+        <select name="intervention_priority">
+          <option value="">— انتخاب کنید —</option>
+          <option value="اولین مسئله بحرانی را حل کن">اولین مسئله بحرانی را حل کن</option>
+          <option value="تمام مسائل را هم‌زمان حل کن">تمام مسائل را هم‌زمان حل کن</option>
+          <option value="مسئلهٔ اصلی را هدف بگیر">مسئلهٔ اصلی را هدف بگیر</option>
+          <option value="مداخلهٔ مرحله‌ای">مداخلهٔ مرحله‌ای</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>ارزیابی اقتصادی</label>
+        <textarea name="economic_assessment" placeholder="درآمد، بدهی، دارایی، هزینه‌های ثابت، تورم منطقه..."></textarea>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>ارزیابی سلامت</label>
+        <textarea name="health_assessment" placeholder="بیماری‌های فعال، نیاز درمانی، معلولیت، سلامت روان..."></textarea>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>تشخیص روان‌شناختی-اجتماعی</label>
+      <textarea name="psychosocial_diagnosis" placeholder="تشخیص تخصصی ترکیبی از عوامل روان‌شناختی، اجتماعی، اقتصادی..."></textarea>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>ارزیابی ظرفیت خانوار</label>
+        <select name="capacity_assessment">
+          <option value="">— انتخاب کنید —</option>
+          <option value="ظرفیت بالا — آمادهٔ توانمندسازی">ظرفیت بالا — آمادهٔ توانمندسازی</option>
+          <option value="ظرفیت متوسط">ظرفیت متوسط</option>
+          <option value="ظرفیت محدود — نیازمند حمایت همراه">ظرفیت محدود — نیازمند حمایت همراه</option>
+          <option value="ظرفیت پایین — مداخلهٔ اضطراری">ظرفیت پایین — مداخلهٔ اضطراری</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>عوامل تاب‌آوری (Resilience)</label>
+        <textarea name="resilience_factors" placeholder="نقاط قوت خانوار، مهارت‌ها، تجربه‌های مثبت گذشته، شبکهٔ حمایتی..."></textarea>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>مداخلات پیشنهادی (چند گزینه)</label>
+      <div class="l3-hint">مداخله‌هایی که بر اساس تحلیل شما لازم است.</div>
+      <div class="l3-chips">
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="مداخلهٔ مسکن اضطراری"> مداخلهٔ مسکن اضطراری</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="بستهٔ غذایی فوری"> بستهٔ غذایی فوری</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="ارتقای مهارت"> ارتقای مهارت</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="اشتغال‌زایی"> اشتغال‌زایی</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="ارتقای سواد"> ارتقای سواد</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="مداخلهٔ سلامت روان"> مداخلهٔ سلامت روان</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="مداخلهٔ خانوادگی"> مداخلهٔ خانوادگی</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="حمایت حقوقی"> حمایت حقوقی</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="ارتقای بیمه"> ارتقای بیمه</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="مداخلهٔ کودک"> مداخلهٔ کودک</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="توان‌بخشی"> توان‌بخشی</label>
+        <label class="l3-chip"><input type="checkbox" name="recommended_interventions" value="سایر"> سایر</label>
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>پیامدهای مورد انتظار (Expected outcomes)</label>
+      <textarea name="expected_outcomes" placeholder="پیامدهای قابل سنجش: کاهش بدهی ۵۰٪ در ۶ ماه، بازگشت کودک به مدرسه، بهبود سلامت روان..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>شاخص‌های پایش (Monitoring indicators)</label>
+      <textarea name="monitoring_indicators" placeholder="شاخص‌های قابل سنجش برای ارزیابی اثربخشی مداخله..."></textarea>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ═══════ فرم اختصاصی مددکار خانواده (worker) ═══════ #}
+  {% if u.role == 'worker' %}
+  <div class="l3-form-section worker">
+    <h3>
+      <span class="l3-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+      تأیید نهایی مددکار خانواده (یکپارچه‌سازی)
+    </h3>
+
+    <div class="l3-field">
+      <label>نوع تصمیم نهایی *</label>
+      <select name="decision_type" required>
+        <option value="">— انتخاب کنید —</option>
+        <option value="تأیید پیشنهاد سامانه">تأیید پیشنهاد سامانه</option>
+        <option value="اصلاح و تأیید">اصلاح و تأیید</option>
+        <option value="رد پیشنهاد و ارائهٔ جایگزین">رد پیشنهاد و ارائهٔ جایگزین</option>
+        <option value="ارجاع به سطح بالاتر">ارجاع به سطح بالاتر</option>
+        <option value="تعلیق موقت">تعلیق موقت</option>
+      </select>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>اولویت نهایی (اصلاح‌شده)</label>
+        <select name="final_priority">
+          <option value="">— انتخاب کنید —</option>
+          <option value="P0">P0 — فوری</option>
+          <option value="P1">P1 — اولویت‌دار</option>
+          <option value="P2">P2 — متوسط</option>
+          <option value="P3">P3 — توانمندسازی</option>
+          <option value="P4">P4 — پایش</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>مددکار مسئول اجرا</label>
+        <input type="text" name="responsible_worker" placeholder="نام مددکار مسئول پیگیری">
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>برنامهٔ یکپارچهٔ مداخله *</label>
+      <div class="l3-hint">یکپارچه‌سازی تمام تحلیل‌های لایه ۲ و ۳ در یک برنامهٔ اجرایی.</div>
+      <textarea name="integrated_plan" required placeholder="برنامهٔ اجرایی نهایی شامل گام‌ها، مسئولان، زمان‌بندی و منابع..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>بستهٔ خدمت (چند گزینه)</label>
+      <div class="l3-hint">خدماتی که به این خانوار ارائه خواهد شد.</div>
+      <div class="l3-chips">
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="بستهٔ معیشتی"> بستهٔ معیشتی</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="بستهٔ غذایی"> بستهٔ غذایی</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="بیمهٔ درمانی"> بیمهٔ درمانی</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="مسکن/اجاره"> مسکن/اجاره</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="وام اشتغال"> وام اشتغال</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="دورهٔ مهارت‌آموزی"> دورهٔ مهارت‌آموزی</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="جلسات مشاوره"> جلسات مشاوره</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="خدمات آموزشی"> خدمات آموزشی</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="توان‌بخشی"> توان‌بخشی</label>
+        <label class="l3-chip"><input type="checkbox" name="service_package" value="حمایت حقوقی"> حمایت حقوقی</label>
+      </div>
+    </div>
+
+    <div class="grid-2" style="padding:14px 18px;gap:14px">
+      <div class="l3-field" style="padding:0;border:none">
+        <label>موافقت خانوار</label>
+        <select name="household_agreement">
+          <option value="">— انتخاب کنید —</option>
+          <option value="موافقت کامل">موافقت کامل</option>
+          <option value="موافقت با اصلاحات">موافقت با اصلاحات</option>
+          <option value="مقاونت اولیه">مقاونت اولیه</option>
+          <option value="عدم موافقت">عدم موافقت</option>
+        </select>
+      </div>
+      <div class="l3-field" style="padding:0;border:none">
+        <label>زمان‌بندی اجرا</label>
+        <input type="text" name="implementation_timeline" placeholder="مثال: شروع در هفتهٔ آینده، تکمیل در ۳ ماه">
+      </div>
+    </div>
+
+    <div class="l3-field">
+      <label>برآورد بودجه (تومان)</label>
+      <input type="text" name="budget_estimate" placeholder="مثال: ۵۰ میلیون تومان برای ۳ ماه">
+    </div>
+
+    <div class="l3-field">
+      <label>اصلاحات اعمال‌شده بر پیشنهاد سامانه</label>
+      <textarea name="modifications" placeholder="اگر پیشنهاد سامانه را اصلاح کرده‌اید، توضیح دهید..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label>یادداشت نهایی مددکار</label>
+      <textarea name="final_note" placeholder="ملاحظات نهایی، توصیه‌های خاص، نکات مهم برای پایش..."></textarea>
+    </div>
+
+    <div class="l3-field">
+      <label class="chk" style="font-size:13px;font-weight:700">
+        <label><input type="checkbox" name="approved" value="yes" style="width:18px;height:18px"> تأیید نهایی برنامهٔ مداخله</label>
+      </label>
+      <div class="l3-hint">با فعال کردن این گزینه، برنامهٔ مداخله نهایی شده و به وضعیت اجرا در می‌آید.</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="alert blue" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div>
+      <b>یادآوری:</b> پس از ثبت، تحلیل در تاریخچهٔ لایه ۳ ذخیره می‌شود.
+      {% if u.role == 'rose' %} به‌عنوان کلینیک رز، تحلیل شما توسط کلینیک مددکاری تکمیل می‌شود.{% endif %}
+      {% if u.role == 'swclinic' %} به‌عنوان کلینیک مددکاری، تحلیل شما به مددکار خانواده برای تأیید نهایی ارسال می‌شود.{% endif %}
+      {% if u.role == 'worker' %} به‌عنوان مددکار خانواده، تأیید شما نهایی است.{% endif %}
+    </div>
+  </div>
+
+  <div style="position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 0;margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
+    <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">انصراف</a>
+    <button class="btn lg" type="submit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      ثبت تحلیل لایهٔ ۳
+    </button>
+  </div>
+</form>
 {% endif %}
 
 <div class="card">
   <div class="head-row">
     <h2>
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      شرایط ۹گانهٔ ورود <span class="small" style="font-weight:400">(مرجع)</span>
+      شرایط ۹گانهٔ ورود به لایهٔ ۳ (مرجع بند ۴ـ۱)
     </h2>
   </div>
-  <ol style="margin:0 18px; line-height:2.2; color:var(--ink-2)">
+  <ol style="margin:0 18px;line-height:2.2;color:var(--ink-2)">
     {% for t in triggers %}
-    <li style="margin-bottom:4px; padding-inline-start:4px">
-      <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--bg-2); color:var(--p-d); font-size:11px; font-weight:700; margin-inline-end:6px">{{ loop.index }}</span>
+    <li style="margin-bottom:4px;padding-inline-start:4px">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--bg-2);color:var(--p-d);font-size:11px;font-weight:700;margin-inline-end:6px">{{ loop.index }}</span>
       {{ t }}
     </li>
     {% endfor %}
   </ol>
 </div>
+
 {% endblock %}

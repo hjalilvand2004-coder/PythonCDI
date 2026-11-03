@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block crumb %}ارزیابی اثربخشی{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>ارزیابی اثربخشی خدمات</h1>
+    <p class="sub">خانوار: <b>{{ h.identity.name or hid }}</b> — ارزیابی تأثیر مداخلات و نقشه راه توانمندسازی</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">بازگشت</a>
+  </div>
+</div>
+
+<form method="post">
+<div class="card">
+  <div class="head-row">
+    <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>امتیاز کلی اثربخشی</h2>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    {% for i in range(1,6) %}
+    <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 12px;border:2px solid var(--line);border-radius:var(--r)">
+      <input type="radio" name="overall_rating" value="{{ i }}" {% if i == 3 %}checked{% endif %} style="accent-color:var(--p);width:20px;height:20px" required>
+      <span style="font-size:20px;font-weight:800;color:var(--ink)">{{ i }}</span>
+      <span style="font-size:10px;color:var(--mut)">{% if i == 1 %}کمترین{% elif i == 5 %}بیشترین{% endif %}</span>
+    </label>
+    {% endfor %}
+  </div>
+
+  {# معیارهای ۸گانه #}
+  <h3 style="margin:16px 0 10px;font-size:14px;color:var(--ink)">معیارهای ارزیابی</h3>
+  {% for crit in criteria %}
+  <div style="padding:12px 0;border-bottom:1px solid var(--line-2)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="width:28px;height:28px;border-radius:6px;background:var(--p-ll);color:var(--p-d);display:grid;place-items:center;font-weight:800;font-size:11px;flex-shrink:0">{{ loop.index }}</span>
+      <div><b style="font-size:13px;color:var(--ink)">{{ crit.name }}</b><div class="small" style="color:var(--mut)">{{ crit.desc }}</div></div>
+    </div>
+    <div style="display:flex;gap:4px;margin-inline-start:38px">
+      {% for i in range(1,6) %}
+      <label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">
+        <input type="radio" name="crit_{{ crit.code }}" value="{{ i }}" {% if i == 3 %}checked{% endif %} style="accent-color:var(--p);width:16px;height:16px" required>
+        <span style="font-size:10px;color:var(--mut)">{{ i }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="head-row"><h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>بررسی نقشه راه</h2></div>
+  <div class="grid" style="gap:14px">
+    <div>
+      <label>اقدامات تکمیل‌شده</label>
+      <textarea name="completed_actions" placeholder="کدام اقدامات از سبد مدخله تکمیل شد؟ کدام هنوز باقی است؟"></textarea>
+    </div>
+    <div>
+      <label>میزان پیروی از نقشه راه</label>
+      <select name="roadmap_followed">
+        <option value="کامل">کامل — طبق نقشه پیش رفت</option>
+        <option value="بخش‌عمده">بخش عمده — با انحرافات جزئی</option>
+        <option value="بخشی">بخشی از نقشه اجرا شد</option>
+        <option value="کم">کم — انحراف قابل توجه</option>
+        <option value="اجراشده">نقشه راه اجرا نشد</option>
+      </select>
+    </div>
+  </div>
+  <label>میزان اثربخشی نقشه راه</label>
+  <textarea name="roadmap_effectiveness" placeholder="نقشه راه چقدر مؤثر بود؟ چه تغییرات مثبتی مشاهده شد؟"></textarea>
+  <label>توصیه‌ها</label>
+  <textarea name="recommendations" placeholder="توصیه برای بهبود، اصلاح نقشه راه، یا اقدامات بعدی..."></textarea>
+  <label>خلاصه</label>
+  <textarea name="summary" placeholder="خلاصه ارزیابی..."></textarea>
+</div>
+
+<div style="margin-top:14px;display:flex;gap:8px">
+  <button class="btn lg" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>ثبت ارزیابی</button>
+  <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">انصراف</a>
+</div>
+</form>
+
+{% endblock %}

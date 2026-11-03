@@ -2,6 +2,34 @@
 {% block crumb %}وضعیت درخواست{% endblock %}
 {% block body %}
 
+<style>
+.cp-mini-card{
+  background:linear-gradient(135deg, var(--p-ll) 0%, #fff 100%);
+  border:1px solid var(--p-l); border-radius:var(--r-md);
+  padding:16px 18px; display:flex; align-items:center; gap:18px; margin-bottom:14px;
+}
+.cp-mini-card .ring{
+  width:80px; height:80px; border-radius:50%;
+  background:conic-gradient(var(--p) calc(var(--pct) * 1%), var(--bg-2) 0);
+  display:grid; place-items:center; position:relative; flex-shrink:0;
+}
+.cp-mini-card .ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff}
+.cp-mini-card .ring .num{position:relative;z-index:1;font-size:22px;font-weight:800;color:var(--p-dd);line-height:1}
+.cp-mini-card .ring .lbl{position:relative;z-index:1;font-size:9px;color:var(--mut)}
+.cp-mini-card .cp-info h3{margin:0 0 4px;font-size:var(--t-md);color:var(--p-dd);display:flex;align-items:center;gap:6px}
+.cp-mini-card .cp-info h3 svg{width:18px;height:18px}
+.cp-mini-card .cp-info .lvl{font-weight:700;color:var(--ink);font-size:var(--t-sm)}
+.cp-mini-card .cp-info .desc{color:var(--mut);font-size:var(--t-xs);line-height:1.6;margin-top:6px}
+.cp-mini-card .cp-info .stats{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.cp-mini-card .cp-info .stat-chip{
+  background:#fff; border:1px solid var(--line); border-radius:var(--r-full);
+  padding:2px 8px; font-size:11px;
+}
+.cp-mini-card .cp-info .stat-chip.green{border-color:var(--green-line);background:var(--green-bg);color:var(--green)}
+.cp-mini-card .cp-info .stat-chip.amber{border-color:var(--amber-line);background:var(--amber-bg);color:var(--amber)}
+.cp-mini-card .cp-info .stat-chip.red{border-color:var(--red-line);background:var(--red-bg);color:var(--red)}
+</style>
+
 <div class="page-head">
   <div class="ph-text">
     <h1>وضعیت درخواست شما</h1>
@@ -17,17 +45,38 @@
 
 {# ── Status banner ───────────────────────────────────── #}
 {% set status = h.status|default('pending') %}
-<div class="card" style="border-inline-start:4px solid {% if status == 'pending' %}var(--amber){% elif status == 'claimed' %}var(--blue){% elif status == 'emmpi_done' %}var(--p){% elif status == 'cdi_in_progress' %}var(--blue){% elif status == 'completed' %}var(--green){% else %}var(--mut){% endif %}">
+<div class="card" style="border-inline-start:4px solid {% if status == 'pending' %}var(--amber){% elif status == 'claimed' %}var(--blue){% elif status == 'emmpi_done' %}var(--p){% elif status == 'cdi_in_progress' %}var(--blue){% elif status == 'completed' %}var(--green){% elif status == 'not_eligible' %}var(--amber){% elif status == 'appeal_pending' %}var(--blue){% else %}var(--mut){% endif %}">
   <div class="head-row">
     <h2>
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       وضعیت فعلی درخواست
     </h2>
-    <span class="badge {% if status == 'pending' %}P1{% elif status == 'claimed' %}P2{% elif status == 'emmpi_done' %}P3{% elif status == 'completed' %}P3{% else %}P4{% endif %}">
+    <span class="badge {% if status == 'pending' %}P1{% elif status == 'claimed' %}P2{% elif status == 'emmpi_done' %}P3{% elif status == 'completed' %}P3{% elif status == 'not_eligible' %}P4{% elif status == 'appeal_pending' %}P2{% else %}P4{% endif %}">
       <span class="dot"></span>
-      {% if status == 'pending' %}در انتظار تخصیص همیار{% elif status == 'claimed' %}تخصیص یافت — در حال غربالگری{% elif status == 'emmpi_done' %}غربالگری EM-MPI انجام شد{% elif status == 'cdi_in_progress' %}در حال ارزیابی جامع CDI{% elif status == 'completed' %}تکمیل شد{% else %}{{ status }}{% endif %}
+      {% if status == 'pending' %}در انتظار تخصیص همیار{% elif status == 'claimed' %}تخصیص یافت — در حال غربالگری{% elif status == 'emmpi_done' %}غربالگری EM-MPI انجام شد{% elif status == 'cdi_in_progress' %}در حال ارزیابی جامع CDI{% elif status == 'completed' %}تکمیل شد{% elif status == 'not_eligible' %}غیرنیازمند — خارج از چرخه{% elif status == 'appeal_pending' %}اعتراض در انتظار بررسی{% else %}{{ status }}{% endif %}
     </span>
   </div>
+
+  {# ── بنر غیرنیازمند برای نیازمند ── #}
+  {% if h.emmpi and h.emmpi.get('not_eligible') %}
+  <div class="alert amber" style="margin-top:10px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>
+      <b>پروندهٔ شما به‌عنوان غیرنیازمند ثبت شد.</b>
+      امتیاز غربالگری شما {{ h.emmpi.result.score }} از ۱۰۰۰ است که زیر آستانهٔ نیاز (۱۵۰) قرار دارد.
+      {% if h.status == 'not_eligible' %}
+      شما حق دارید نسبت به این نتیجه اعتراض کنید.
+      <a class="btn warn sm" style="margin-inline-start:8px;background:var(--amber);border-color:var(--amber)" href="{{ url_for('emmpi_result', hid=hid) }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+        مشاهده نتیجه و ثبت اعتراض
+      </a>
+      {% elif h.status == 'appeal_pending' %}
+      اعتراض شما ثبت شده و در انتظار بررسی مددکار خانواده است.
+      <a class="btn sm" style="margin-inline-start:8px" href="{{ url_for('emmpi_result', hid=hid) }}">مشاهده جزئیات</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 
   {% if h.claimed_by %}
   <div class="kvs">
@@ -40,13 +89,54 @@
       <span class="v mono">{{ h.claimed_by.claimed_at }}</span>
     </div>
   </div>
-  {% else %}
+  {% elif not h.emmpi or not h.emmpi.get('not_eligible') %}
   <div class="alert amber">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <div>درخواست شما در استخر درخواست‌ها قرار دارد و در انتظار پذیرش توسط همیاران است. این فرایند معمولاً ۲۴ تا ۴۸ ساعت طول می‌کشد.</div>
   </div>
   {% endif %}
 </div>
+
+{# ── Mini Honesty Card (وقتی EM-MPI انجام شده و غیرنیازمند نیست) ── #}
+{% if h.citizen_profile and h.emmpi and not h.emmpi.get('not_eligible') %}
+{% set cp = h.citizen_profile %}
+{% set lvl = cp.honesty_level %}
+<div class="cp-mini-card" style="--pct: {{ cp.honesty_score }}">
+  <div class="ring" style="--pct: {{ cp.honesty_score }}">
+    <div>
+      <div class="num">{{ cp.honesty_score }}</div>
+      <div class="lbl">از ۱۰۰</div>
+    </div>
+  </div>
+  <div class="cp-info">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      پروندهٔ شهروندی شما
+    </h3>
+    <div class="lvl">{{ lvl.name if lvl else 'نامشخص' }} — امتیاز صداقت</div>
+    <div class="desc">بر اساس مقایسهٔ پاسخ‌های خوداظهاری شما با ارزیابی همیار در ۵ بُعد محرومیت (سلامت، آموزش، مسکن، معیشت، آسیب‌پذیری).</div>
+    <div class="stats">
+      <span class="stat-chip green">✓ {{ cp.summary.matched }} انطباق</span>
+      <span class="stat-chip amber">ⓘ {{ cp.summary.partial }} جزئی</span>
+      <span class="stat-chip red">✗ {{ cp.summary.mismatched }} مغایرت</span>
+    </div>
+  </div>
+  <div style="margin-inline-start:auto">
+    <a class="btn sec sm" href="{{ url_for('citizen_profile_view', hid=hid) }}">
+      مشاهدهٔ پروندهٔ کامل
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+  </div>
+</div>
+{% elif h.emmpi %}
+<div class="alert blue">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  <div>
+    ارزیابی EM-MPI تکمیل شده است. پروندهٔ شهروندی در حال تهیه است.
+    <a href="{{ url_for('citizen_profile_view', hid=hid) }}" style="color:var(--blue);font-weight:700;text-decoration:underline">مشاهدهٔ پروندهٔ شهروندی</a>
+  </div>
+</div>
+{% endif %}
 
 {# ── Self declaration summary ─────────────────────────── #}
 <div class="card">

@@ -1,180 +1,1610 @@
-{% extends "base.html" %}
-{% block crumb %}غربالگری EM-MPI{% endblock %}
-{% block body %}
-{% set by_dim = indicators_by_dim %}
-
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پرسشنامه غربالگری خانوار — EM-MPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <style>
-.dim-section{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:18px;box-shadow:var(--sh-sm);overflow:hidden}
-.dim-section > h2{background:linear-gradient(135deg,var(--p-ll),#fff);padding:14px 18px;margin:0;font-size:15px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
-.dim-section > h2 .dim-ic{width:32px;height:32px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;flex-shrink:0}
-.dim-section > h2 .dim-ic svg{width:18px;height:18px}
-.dim-section > h2 .dim-max{margin-inline-start:auto;font-size:11px;color:var(--mut);font-weight:500}
-.dim-section > h2 .dim-score-live{font-family:ui-monospace,monospace;font-weight:700;color:var(--p-d);font-size:14px;background:#fff;padding:3px 10px;border-radius:6px;border:1px solid var(--line)}
+:root {
+  --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --text: #1e293b;
+  --primary: #0284c7; --primary-dark: #0369a1; --accent: #f59e0b;
+  --danger: #dc2626; --success: #16a34a; --warn: #f97316;
+  --muted: #64748b; --soft: #f1f5f9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Vazirmatn', system-ui, sans-serif; background: var(--bg);
+       color: var(--text); line-height: 1.7; font-size: 15px; }
+.container { max-width: 1000px; margin: 0 auto; padding: 16px; }
 
-.indicator-row{padding:14px 18px;border-bottom:1px solid var(--line-2)}
-.indicator-row:last-child{border-bottom:none}
-.indicator-row .ir-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
-.indicator-row .ir-code{font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:var(--p-d);background:var(--p-ll);padding:2px 7px;border-radius:4px;flex-shrink:0}
-.indicator-row .ir-title{font-size:13.5px;font-weight:700;color:var(--ink);flex:1;line-height:1.5}
-.indicator-row .ir-weight{font-size:11px;color:var(--mut);flex-shrink:0;background:var(--bg-2);padding:2px 8px;border-radius:4px}
-.indicator-row .ir-def{font-size:11.5px;color:var(--mut);line-height:1.7;margin-bottom:10px;padding:8px 10px;background:var(--bg-2);border-radius:6px;border-inline-start:3px solid var(--p-l)}
-.indicator-row .ir-rf{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:4px;border:1px solid var(--red-line);margin-inline-start:6px}
+/* نوار پیشرفت */
+.progress-bar { display: flex; gap: 4px; margin-bottom: 24px; background: var(--card);
+                border-radius: 12px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; }
+.progress-step { flex: 1; min-width: 60px; text-align: center; padding: 10px 4px;
+                 border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s;
+                 color: var(--muted); border: 2px solid transparent; white-space: nowrap; }
+.progress-step .step-num { display: block; font-weight: 700; font-size: 16px; }
+.progress-step.active { background: var(--primary); color: white; }
+.progress-step.done { background: var(--soft); color: var(--primary-dark); }
+.progress-step.done .step-num::after { content: " ✓"; }
 
-.sev-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-@media(max-width:640px){.sev-options{grid-template-columns:1fr}}
-.sev-opt{position:relative;cursor:pointer}
-.sev-opt input{position:absolute;opacity:0;pointer-events:none}
-.sev-opt .sev-card{border:1.5px solid var(--line);border-radius:var(--r);padding:10px 12px;background:#fff;transition:all .15s var(--ease);text-align:center}
-.sev-opt .sev-card:hover{border-color:var(--mut-3);background:var(--bg-2)}
-.sev-opt input:checked + .sev-card{border-width:2px;font-weight:600}
-.sev-opt input[value="0"]:checked + .sev-card{border-color:var(--green);background:var(--green-bg);color:var(--green)}
-.sev-opt input[value="0.5"]:checked + .sev-card{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
-.sev-opt input[value="1"]:checked + .sev-card{border-color:var(--red);background:var(--red-bg);color:var(--red)}
-.sev-opt .sev-label{font-size:12.5px;font-weight:700;display:block}
-.sev-opt .sev-desc{font-size:10.5px;color:var(--mut);margin-top:3px;line-height:1.5}
-.sev-opt .sev-pts{font-size:10px;color:var(--mut-2);margin-top:4px;font-family:ui-monospace,monospace}
+/* گام‌ها */
+.step-section { display: none; background: var(--card); border-radius: 12px;
+                padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.step-section.active { display: block; }
+.step-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--primary-dark); }
+.step-subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
 
-.sticky-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 0;margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:20}
-.sticky-bar .sb-score{display:flex;align-items:center;gap:10px}
-.sticky-bar .sb-num{font-size:24px;font-weight:800;color:var(--p);line-height:1;font-variant-numeric:tabular-nums}
-.sticky-bar .sb-max{font-size:14px;color:var(--mut)}
-.sticky-bar .sb-level{font-size:12px;color:var(--mut);font-weight:600}
-.sticky-bar .sb-spacer{flex:1}
+/* کارت شاخص */
+.indicator-card { background: var(--soft); border-radius: 10px; padding: 20px;
+                  margin-bottom: 16px; border-right: 4px solid var(--primary); }
+.indicator-card[data-dim="A"] { border-right-color: #ef4444; }
+.indicator-card[data-dim="B"] { border-right-color: #3b82f6; }
+.indicator-card[data-dim="C"] { border-right-color: #10b981; }
+.indicator-card[data-dim="D"] { border-right-color: #f59e0b; }
+.indicator-card[data-dim="E"] { border-right-color: #8b5cf6; }
+.indicator-card.sensitive { background: #fef3c7; border-right-color: #dc2626; }
+
+.ind-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.ind-title { font-weight: 700; font-size: 16px; }
+.ind-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.ind-meta .weight-badge { background: var(--primary); color: white; padding: 2px 8px;
+                          border-radius: 10px; font-weight: 700; margin-inline-end: 6px; }
+.ind-meta .scale-badge { background: var(--accent); color: white; padding: 2px 8px;
+                         border-radius: 10px; margin-inline-end: 6px; }
+.ind-meta .pending-badge { background: var(--warn); color: white; padding: 2px 8px;
+                           border-radius: 10px; font-size: 11px; }
+.ind-help { background: var(--primary); color: white; border: none; width: 28px; height: 28px;
+            border-radius: 50%; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+
+/* فیلدها */
+.field-group { margin-bottom: 14px; }
+.field-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.field-hint { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+select, input[type="text"], input[type="number"], input[type="date"], textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 14px; background: white; }
+select:focus, input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+textarea { min-height: 60px; resize: vertical; }
+
+/* چک‌باکس و رادیو */
+.check-list { display: grid; gap: 8px; }
+.check-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+              background: white; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
+.check-item:hover { border-color: var(--primary); }
+.check-item input { width: 18px; height: 18px; }
+
+/* فالوآپ شرطی */
+.followup { display: none; margin-top: 12px; padding-inline-start: 16px;
+            border-inline-start: 3px solid var(--accent); }
+.followup.show { display: block; }
+
+/* جدول اعضا */
+.members-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 13px; }
+.members-table th, .members-table td { padding: 8px; border: 1px solid var(--border); text-align: center; }
+.members-table th { background: var(--soft); font-weight: 700; }
+.members-table input, .members-table select { padding: 6px; font-size: 12px; }
+.btn-add-member { background: var(--success); color: white; border: none; padding: 8px 16px;
+                  border-radius: 8px; cursor: pointer; font-family: inherit; }
+.btn-remove { background: var(--danger); color: white; border: none; padding: 4px 8px;
+              border-radius: 6px; cursor: pointer; font-size: 12px; }
+
+/* ویرایشگر درآمد */
+.income-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap: 8px;
+              margin-bottom: 8px; align-items: end; }
+.income-row input, .income-row select { padding: 8px; font-size: 13px; }
+
+/* دکمه‌ها */
+.btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer;
+       font-family: inherit; font-size: 15px; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--soft); color: var(--text); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-success { background: var(--success); color: white; }
+.nav-buttons { display: flex; justify-content: space-between; margin-top: 24px; }
+
+/* پرچم‌ها و هشدارها */
+.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+.alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.alert-warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+/* مودال */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+                 z-index: 1000; padding: 20px; overflow-y: auto; }
+.modal-overlay.show { display: flex; align-items: flex-start; justify-content: center; }
+.modal { background: white; border-radius: 12px; padding: 28px; max-width: 600px;
+         width: 100%; margin: 20px 0; }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--primary-dark); }
+.modal-close { float: left; background: var(--soft); border: none; width: 32px; height: 32px;
+               border-radius: 50%; cursor: pointer; font-size: 18px; }
+.modal-section { margin-bottom: 14px; }
+.modal-section h4 { font-size: 14px; color: var(--primary); margin-bottom: 4px; }
+.modal-section p { font-size: 13px; }
+
+/* سرویس‌ها */
+.service-status { display: grid; gap: 8px; }
+.service-item { display: flex; justify-content: space-between; align-items: center;
+                padding: 10px 14px; background: var(--soft); border-radius: 8px; }
+.service-name { font-weight: 600; }
+.service-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.service-badge.ok { background: var(--success); color: white; }
+.service-badge.error { background: var(--danger); color: white; }
+.service-badge.partial { background: var(--warn); color: white; }
+.service-badge.pending { background: var(--muted); color: white; }
+
+/* خط فقر */
+.poverty-line-box { background: #fef3c7; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.poverty-line-box .field-group { margin-bottom: 8px; }
+
+/* پاسخ خاص */
+.special-answers { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.special-answers label { font-size: 12px; padding: 4px 10px; background: #fef3c7;
+                         border-radius: 12px; cursor: pointer; border: 1px solid #fde68a; }
+
+@media (max-width: 768px) {
+  .income-row { grid-template-columns: 1fr; }
+  .progress-step { font-size: 10px; }
+}
 </style>
+</head>
+<body>
+<div class="container">
 
-<div class="page-head">
-  <div class="ph-text">
-    <h1>غربالگری EM-MPI</h1>
-    <p class="sub">
-      <b>{{ h.identity.name or hid }}</b> — مدل بومی غربالگری و سطح‌بندی اولیه فقر چندبعدی (سند Emdad_sanadHemayt0004).
-      ۵ بُعد، ۳۵ شاخص، سقف ۱۰۰۰. خروجی این مرحله پیش‌نیاز ورود به CDI است.
-    </p>
+<h1 style="text-align:center; margin-bottom: 4px; color: var(--primary-dark);">پرسشنامه غربالگری خانوار</h1>
+<p style="text-align:center; color: var(--muted); margin-bottom: 24px;">
+   سامانه شناسایی، احراز، توانمندسازی — EM-MPI (نسخه ۲٫۰)
+</p>
+
+<!-- نوار پیشرفت -->
+<div class="progress-bar" id="progressBar"></div>
+
+<form method="POST" action="{{ url_for('emmpi_submit') }}" id="emmpiForm">
+
+<!-- ═══════ گام ۱: هویت، محرمانگی، واکشی ═══════ -->
+<section class="step-section active" data-step="1">
+  <h2 class="step-title">گام ۱ — هویت، محرمانگی و واکشی از مراجع ثبتی</h2>
+  <p class="step-subtitle">ثبت کد ملی، کد پستی و تاریخ تولد سرپرست؛ واکشی از ۸ مرجع ثبتی به‌صورت قطعی از شناسه‌ها.</p>
+
+  <div class="field-group">
+    <label class="field-label">نوع ثبت‌نام *</label>
+    <select name="registrationKind" required>
+      <option value="need_service">اعلام نیازمندی و دریافت خدمات دارم</option>
+      <option value="provide_service">متقاضی ارائه خدمت به مددجویان هستم</option>
+    </select>
   </div>
-  <div class="ph-actions">
-    <a class="btn sec sm" href="{{ url_for('household_view', hid=hid) }}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      بازگشت
-    </a>
+
+  <div class="field-group">
+    <label class="field-label">کد ملی سرپرست *</label>
+    <input type="text" name="headNationalId" maxlength="10" placeholder="۱۰ رقم" required
+           pattern="[0-9۰-۹٠-٩]{10}" oninput="normalizeDigits(this)">
+    <div class="field-hint">الگوریتم رقم کنترل ثبت احوال اعمال می‌شود.</div>
   </div>
-</div>
 
-{# بنر راهنما #}
-<div class="alert blue">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-  <div>
-    <b>راهنما:</b> برای هر شاخص، شدت محرومیت را در یکی از سه سطح انتخاب کنید:
-    <b style="color:var(--green)">فاقد محرومیت (۰)</b>،
-    <b style="color:var(--amber)">متوسط (۰٫۵)</b>، یا
-    <b style="color:var(--red)">شدید (۱)</b>.
-    امتیاز شاخص = وزن × ضریب شدت. پرچم‌های قرمز مستقل از امتیاز، مسیر ارجاع فوری ایجاد می‌کنند.
+  <div class="field-group">
+    <label class="field-label">کد پستی *</label>
+    <input type="text" name="postalCode" maxlength="10" placeholder="۱۰ رقم" required
+           pattern="[0-9۰-۹٠-٩]{10}" oninput="normalizeDigits(this)">
   </div>
-</div>
 
-<form method="post">
-{% for dim_key, dim_info in by_dim.items() %}
-<div class="dim-section">
-  <h2>
-    <span class="dim-ic">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ DIMENSIONS[dim_key].icon }}"/></svg>
-    </span>
-    <span>بُعد {{ dim_key }}: {{ dim_info[0].dim_label if dim_info[0].dim_label is defined else DIMENSIONS[dim_key].name }}</span>
-    <span class="dim-max">سقف امتیاز: {{ DIMENSIONS[dim_key].max }}</span>
-    <span class="dim-score-live" id="score-{{ dim_key }}">۰</span>
-  </h2>
+  <div class="field-group">
+    <label class="field-label">تاریخ تولد سرپرست (شمسی) *</label>
+    <input type="text" name="headBirthDate" placeholder="YYYY/MM/DD یا ۸ رقم پیوسته" required>
+    <div class="field-hint">سال ۱۳۰۰ تا ۱۴۲۰. الگوریتم کبیسه ۳۳ ساله اعمال می‌شود.</div>
+  </div>
 
-  {% for ind in dim_info %}
-  <div class="indicator-row">
-    <div class="ir-head">
-      <span class="ir-code">{{ ind.code }}</span>
-      <span class="ir-title">{{ ind.title }}</span>
-      <span class="ir-weight">وزن: {{ ind.weight }}</span>
-      {% if ind.red_flags %}<span class="ir-rf">⚠ {{ ind.red_flags | join('، ') }}</span>{% endif %}
+  <div class="field-group">
+    <label class="field-label">شماره موبایل *</label>
+    <input type="text" name="headMobile" maxlength="11" placeholder="09XXXXXXXXX" required
+           pattern="09[0-9۰-۹٠-٩]{9}" oninput="normalizeDigits(this)">
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">رمز عبور *</label>
+    <input type="password" name="headPassword" minlength="6" required placeholder="۶ کاراکتر، حروف+اعداد">
+    <div class="field-hint">حداقل ۶ کاراکتر، ترکیبی از حروف انگلیسی و اعداد. کاراکترهای &<>"/*;= ممنوع.</div>
+  </div>
+
+  <!-- توافقنامه بانکی -->
+  <div class="indicator-card">
+    <h3 style="margin-bottom: 12px;">توافقنامه دسترسی به اطلاعات بانکی (شاپرک)</h3>
+    <div style="font-size: 13px; margin-bottom: 12px;">
+      <p><strong>۱. هدف:</strong> راستی‌آزمایی معیشت و تطبیق منابع اعلامی (فقط بُعد D).</p>
+      <p><strong>۲. دامنه:</strong> وضعیت حساب، گردش تجمیعی ۹۰ روز، تسهیلات، چک برگشتی — جزئیات خرید دریافت نمی‌شود.</p>
+      <p><strong>۳. محرمانگی:</strong> فقط در همین پرونده، بدون امتیاز مستقل، بدون واگذاری به ثالث.</p>
+      <p><strong>۴. مدت و لغو:</strong> تا بستن پرونده؛ لغو رضایت مانع ادامه سایر بخش‌ها نیست.</p>
     </div>
-    <div class="ir-def">{{ ind.definition }}</div>
+    <label class="check-item">
+      <input type="checkbox" name="consentBankAccess" value="true">
+      <span>با استعلام شاپرک موافقم</span>
+    </label>
+  </div>
 
-    <div class="sev-options" data-dim="{{ dim_key }}" data-weight="{{ ind.weight }}" data-code="{{ ind.code }}">
-      {% for opt in severity_options %}
-      <label class="sev-opt">
-        <input type="radio" name="ind_{{ ind.code }}" value="{{ opt.value }}"
-          {% if existing_data and existing_data.get(ind.code) == opt.value %}checked{% endif %}
-          onchange="updateScores()">
-        <div class="sev-card">
-          <span class="sev-label">{{ opt.label }}</span>
-          <span class="sev-desc">{{ opt.desc }}</span>
-          <span class="sev-pts">{{ (ind.weight * opt.value) | float }} از {{ ind.weight }} امتیاز</span>
-        </div>
+  <button type="button" class="btn btn-primary" onclick="fetchServices()">واکشی از ۸ مرجع ثبتی</button>
+  <div id="serviceStatus" class="service-status" style="margin-top: 16px;"></div>
+</section>
+
+<!-- ═══════ گام ۲: بررسی فوریت ═══════ -->
+<section class="step-section" data-step="2">
+  <h2 class="step-title">گام ۲ — بررسی اولیه نشانه‌های فوریت</h2>
+  <p class="step-subtitle">پرچم‌های سخت‌گیرانه R1, R2, R5 مستقل از تکمیل پرسشنامه ثبت می‌شوند.</p>
+
+  <div class="alert alert-danger">
+    اگر در خانوار نشانه فوری (خطر جانی، بی‌خانمانی قریب‌الوقوع، خشونت) وجود دارد، در اینجا ثبت کنید. رسیدگی فوری متوقف نمی‌شود.
+  </div>
+
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">آیا در خانوار فردی با خطر جانی یا نیاز درمانی فوری وجود دارد؟</div>
+      <div class="ind-meta">پرچم R1 — خطر جانی یا فوریت پزشکی</div></div>
+    </div>
+    <select name="urgent_medical" onchange="toggleFollowup(this, 'urgent_medical_detail')">
+      <option value="">— انتخاب —</option>
+      <option value="no">خیر</option>
+      <option value="yes">بله — خطر جانی/فوریت پزشکی</option>
+    </select>
+    <div class="followup" id="urgent_medical_detail">
+      <div class="field-group">
+        <label class="field-label">شرح فوریت</label>
+        <textarea name="urgent_medical_note" placeholder="نام عضو، نوع فوریت، اقدام لازم"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">آیا خانوار بی‌خانمان است یا اخطار تخلیه قریب‌الوقوع دارد؟</div>
+      <div class="ind-meta">پرچم R2 — بی‌خانمانی یا اخطار تخلیه</div></div>
+    </div>
+    <select name="urgent_eviction">
+      <option value="">— انتخاب —</option>
+      <option value="no">خیر</option>
+      <option value="homeless">بی‌خانمان / فضای غیرمسکونی</option>
+      <option value="imminent">اخطار تخلیه قریب‌الوقوع</option>
+    </select>
+  </div>
+
+  <div class="indicator-card sensitive">
+    <div class="ind-head">
+      <div><div class="ind-title">آیا نشانه خشونت یا خطر آسیب به خود/دیگران وجود دارد؟</div>
+      <div class="ind-meta">پرچم R5 — محرمانگی strict</div></div>
+    </div>
+    <select name="urgent_violence">
+      <option value="">— انتخاب —</option>
+      <option value="no">خیر</option>
+      <option value="selfharm">خطر آسیب به خود</option>
+      <option value="violence">خشونت یا خطر آسیب به دیگران</option>
+      <option value="child_risk">کودک در محیط ناامن</option>
+    </select>
+    <div class="field-hint" style="color: var(--danger);">این اطلاعات محرمانه است و فقط با دسترسی نقش‌محور قابل مشاهده.</div>
+  </div>
+</section>
+
+<!-- ═══════ گام ۳: اطلاعات پایه و اعضای خانوار ═══════ -->
+<section class="step-section" data-step="3">
+  <h2 class="step-title">گام ۳ — اطلاعات پایه و اعضای خانوار</h2>
+  <p class="step-subtitle">جدول اعضا با نوع عضو (ثبت احوالی/همسفره)، نقش‌ها، تحصیل، اشتغال.</p>
+
+  <div class="field-group">
+    <label class="field-label">نام پاسخگو</label>
+    <input type="text" name="responderName" placeholder="نام فردی که پاسخ می‌دهد">
+  </div>
+  <div class="field-group">
+    <label class="field-label">نسبت پاسخگو با سرپرست</label>
+    <select name="responderRelation">
+      <option value="سرپرست">سرپرست</option>
+      <option value="همسر">همسر</option>
+      <option value="فرزند">فرزند</option>
+      <option value="سایر">سایر</option>
+    </select>
+  </div>
+
+  <h3 style="margin: 20px 0 12px;">اعضای خانوار</h3>
+  <div class="alert alert-info">نوع عضو: «عضو خانواده — ثبت احوال» (از واکشی) یا «همسفره» (همراه ساکن، ثبت‌نشده در ثبتی).</div>
+
+  <table class="members-table" id="membersTable">
+    <thead>
+      <tr>
+        <th>نام</th><th>نام خانوادگی</th><th>سن</th><th>جنسیت</th>
+        <th>نسبت</th><th>نوع عضو</th><th>کد ملی</th>
+        <th>نقش‌ها</th><th>تحصیل</th><th>اشتغال</th>
+        <th>نیاز مراقبت</th><th>حذف</th>
+      </tr>
+    </thead>
+    <tbody id="membersBody"></tbody>
+  </table>
+  <button type="button" class="btn-add-member" onclick="addMember()">+ افزودن عضو</button>
+</section>
+
+<!-- ═══════ گام ۴: بُعد A — سلامت و امنیت زیستی ═══════ -->
+<section class="step-section" data-step="4">
+  <h2 class="step-title">گام ۴ — سلامت و امنیت زیستی (بُعد A)</h2>
+  <p class="step-subtitle">۷ شاخص، سقف ۲۵۰ امتیاز. شاخص‌های A1-A3, A5, A6 عضومحور (بیشینه اعضا).</p>
+
+  <!-- A1 -->
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A1 — بیماری مزمن یا جدی</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۵</span><span class="scale-badge">سه‌حالته</span> عضومحور × همه اعضا، بیشینه</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A1')">؟</button>
+    </div>
+    <div id="A1_members"></div>
+  </div>
+
+  <!-- A2 -->
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A2 — محدودیت عملکردی پایدار</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۵</span><span class="scale-badge">سه‌حالته</span> عضومحور × همه اعضا، بیشینه</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A2')">؟</button>
+    </div>
+    <div id="A2_members"></div>
+  </div>
+
+  <!-- A3 -->
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A3 — درمان ضروری انجام‌نشده</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۵۰</span><span class="scale-badge">سه‌حالته</span> عضومحور × همه اعضا، بیشینه — پرچم R1</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A3')">؟</button>
+    </div>
+    <div id="A3_members"></div>
+  </div>
+
+  <!-- A4 -->
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A4 — فشار هزینه‌های درمانی</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۵</span><span class="scale-badge">سه‌حالته</span> خانوار — سه ماه اخیر</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A4')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">فشار هزینه درمانی</label>
+      <select name="A4_burden">
+        <option value="">— انتخاب —</option>
+        <option value="low">فشار معنادار نداشته</option>
+        <option value="manageable">قابل مدیریت (کاهش پس‌انداز)</option>
+        <option value="severe">سنگین (بدهی، فروش دارایی)</option>
+        <option value="__dontknow__">نمی‌دانم</option>
+        <option value="__refuse__">مایل به پاسخ نیستم</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">کدام اثر واقعاً رخ داده؟ (چندانتخابی)</label>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" name="A4_effects" value="debt"> بدهی/قرض</label>
+        <label class="check-item"><input type="checkbox" name="A4_effects" value="asset"> فروش دارایی</label>
+        <label class="check-item"><input type="checkbox" name="A4_effects" value="food"> کاهش کیفیت/مقدار غذا</label>
+        <label class="check-item"><input type="checkbox" name="A4_effects" value="housing"> خطر در پرداخت اجاره/مسکن</label>
+        <label class="check-item"><input type="checkbox" name="A4_effects" value="education"> کاهش هزینه آموزش</label>
+        <label class="check-item"><input type="checkbox" name="A4_effects" value="none"> هیچ‌کدام</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- A5 -->
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A5 — پوشش بیمه‌ای مؤثر</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۰</span><span class="scale-badge">سه‌حالته</span> عضومحور × همه، بیشینه — پیش‌تکمیل از بیمه</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A5')">؟</button>
+    </div>
+    <div id="A5_members"></div>
+  </div>
+
+  <!-- A6 -->
+  <div class="indicator-card" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A6 — ناامنی غذایی ۳۰ روز اخیر</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۴۵</span><span class="scale-badge">پنج‌حالته ⚠</span> خانوار — نیازمند تصویب</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A6')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">تجربه‌های واقعی ۳۰ روز گذشته (چندانتخابی)</label>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" name="A6_exp" value="worry"> نگرانی از اتمام غذا</label>
+        <label class="check-item"><input type="checkbox" name="A6_exp" value="variety"> کاهش تنوع غذایی</label>
+        <label class="check-item"><input type="checkbox" name="A6_exp" value="quantity"> کاهش مقدار غذا</label>
+        <label class="check-item"><input type="checkbox" name="A6_exp" value="mealskip"> حذف وعده</label>
+        <label class="check-item"><input type="checkbox" name="A6_exp" value="hunger"> گرسنگی اما نخوردن</label>
+        <label class="check-item"><input type="checkbox" name="A6_exp" value="none"> هیچ‌کدام</label>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">اکنون غذای کافی برای وعده بعدی در دسترس است؟</label>
+      <select name="A6_now">
+        <option value="">— انتخاب —</option>
+        <option value="true">بله</option>
+        <option value="false">خیر — پرچم R7</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">سوءتغذیه کودک یا مادر باردار/شیرده (عضومحور، غیرامتیازی)</label>
+      <div id="A6_members_supplemental"></div>
+    </div>
+  </div>
+
+  <!-- A7 -->
+  <div class="indicator-card sensitive" data-dim="A">
+    <div class="ind-head">
+      <div><div class="ind-title">A7 — سلامت روان و ایمنی خانوار</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۰</span><span class="scale-badge">سه‌حالته</span> خانوار — حساس/محرمانه، پرچم R5</div></div>
+      <button type="button" class="ind-help" onclick="showModal('A7')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">مشکل روانی یا مصرف مواد، عملکرد و امنیت خانوار را مختل کرده است؟</label>
+      <select name="A7_disrupt">
+        <option value="">— انتخاب —</option>
+        <option value="none">خیر</option>
+        <option value="moderate">تا حدی</option>
+        <option value="severe">به‌شدت</option>
+        <option value="__dontknow__">نمی‌دانم</option>
+        <option value="__refuse__">مایل به پاسخ نیستم</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">نشانه خطر (چندانتخابی، محرمانه)</label>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" name="A7_danger" value="selfharm"> خطر آسیب به خود</label>
+        <label class="check-item"><input type="checkbox" name="A7_danger" value="violence"> خشونت یا خطر آسیب به دیگران</label>
+        <label class="check-item"><input type="checkbox" name="A7_danger" value="child_risk"> کودک در محیط ناامن</label>
+        <label class="check-item"><input type="checkbox" name="A7_danger" value="none"> هیچ‌کدام</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ گام ۵: بُعد B — آموزش و رشد انسانی ═══════ -->
+<section class="step-section" data-step="5">
+  <h2 class="step-title">گام ۵ — آموزش و رشد انسانی (بُعد B)</h2>
+  <p class="step-subtitle">۷ شاخص، سقف ۲۰۰ (جمع وزن‌ها ۲۱۰ ⚠ ناسازگاری مستند). B1, B2 عضومحور × ۶-۱۸ سال.</p>
+
+  <!-- B1 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B1 — ترک تحصیل و دسترسی به آموزش اجباری</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۶۰</span><span class="scale-badge">سه‌حالته ⚠</span> عضومحور × ۶-۱۸ سال، بیشینه — پرچم R4</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B1')">؟</button>
+    </div>
+    <div id="B1_members"></div>
+  </div>
+
+  <!-- B2 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B2 — خطر ترک تحصیل</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۵</span><span class="scale-badge">سه‌حالته</span> عضومحور × ۶-۱۸ سال، بیشینه — پرچم R4</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B2')">؟</button>
+    </div>
+    <div id="B2_members"></div>
+  </div>
+
+  <!-- B3 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B3 — سواد کارکردی مسئول امور</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۰</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B3')">؟</button>
+    </div>
+    <select name="B3_lit">
+      <option value="">— انتخاب —</option>
+      <option value="full">بله، مستقل</option>
+      <option value="with_help">فقط با کمک دیگران</option>
+      <option value="cannot">نمی‌تواند و کمک قابل اتکا ندارد</option>
+      <option value="__dontknow__">نمی‌دانم</option>
+    </select>
+  </div>
+
+  <!-- B4 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B4 — مانع واقعی دسترسی به آموزش</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۰</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B4')">؟</button>
+    </div>
+    <div class="field-group">
+      <select name="B4_barriers">
+        <option value="">— انتخاب —</option>
+        <option value="none">مانع واقعی وجود ندارد</option>
+        <option value="resolvable">یک مانع قابل حل</option>
+        <option value="serious">مانع جدی و حل‌نشده</option>
+        <option value="__needreview__">نیازمند بررسی</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <input type="text" name="B4_detail" placeholder="شرح مانع">
+    </div>
+  </div>
+
+  <!-- B5 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B5 — ابزار دیجیتال آموزشی</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۱۵</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B5')">؟</button>
+    </div>
+    <select name="B5_digital">
+      <option value="">— انتخاب —</option>
+      <option value="adequate">نیاز دارد و ابزار کافی دارد</option>
+      <option value="no_need">نیاز واقعی ندارد</option>
+      <option value="insufficient">ابزار ناکافی یا اشتراک</option>
+      <option value="missing">نیاز دارد ولی ابزار ندارد</option>
+      <option value="__dontknow__">نمی‌دانم</option>
+    </select>
+  </div>
+
+  <!-- B6 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B6 — نیاز آموزشی ویژه</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۰</span><span class="scale-badge">سه‌حالته</span> عضومحور × همه، بیشینه</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B6')">؟</button>
+    </div>
+    <div id="B6_members"></div>
+  </div>
+
+  <!-- B7 -->
+  <div class="indicator-card" data-dim="B">
+    <div class="ind-head">
+      <div><div class="ind-title">B7 — مهارت و مسیر توانمندسازی</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۴۰</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('B7')">؟</button>
+    </div>
+    <div class="field-group">
+      <select name="B7_path">
+        <option value="">— انتخاب —</option>
+        <option value="active">مسیر فعال آموزش/مهارت با ابزار اولیه</option>
+        <option value="interested_no_path">علاقه‌مند ولی مسیر/ابزار ندارد</option>
+        <option value="no_capability">واجد شرایط ولی هیچ امکان توانمندسازی نیست</option>
+        <option value="no_eligible">عضو واجد شرایط وجود ندارد</option>
+        <option value="__needreview__">نیازمند بررسی</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <input type="text" name="B7_skills" placeholder="مهارت موجود، سطح، علاقه (اختیاری)">
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ گام ۶: بُعد C — مسکن ═══════ -->
+<section class="step-section" data-step="6">
+  <h2 class="step-title">گام ۶ — استاندارد زندگی و مسکن (بُعد C)</h2>
+  <p class="step-subtitle">۹ شاخص، سقف ۳۰۰. C4, C8 محاسبه‌ای و پنج‌حالته ⚠.</p>
+
+  <!-- C1 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C1 — بی‌خانمانی و تهدید سکونت</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۶۰</span><span class="scale-badge">سه‌حالته</span> خانوار — پرچم R2</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C1')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">نوع محل سکونت</label>
+      <select name="C1_place">
+        <option value="">— انتخاب —</option>
+        <option value="stable">مسکن پایدار</option>
+        <option value="temporary">سکونت موقت یا مرکز نگهداری</option>
+        <option value="nonresidential">فضای غیرمسکونی/آلونک/خودرو/بی‌خانمان</option>
+        <option value="__dontknow__">نمی‌دانم</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">اخطار تخلیه</label>
+      <select name="C1_eviction">
+        <option value="">— انتخاب —</option>
+        <option value="no">خیر</option>
+        <option value="credible">اخطار یا خطر جدی در جریان</option>
+        <option value="imminent">قریب‌الوقوع — پرچم R2</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- C2 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C2 — ایمنی و قابلیت سکونت</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۴۵</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C2')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">چک‌لیست ایمنی (چندانتخابی)</label>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" name="C2_issues" value="structural"> خطر سقف/دیوار</label>
+        <label class="check-item"><input type="checkbox" name="C2_issues" value="wiring"> برق ناایمن</label>
+        <label class="check-item"><input type="checkbox" name="C2_issues" value="damp"> رطوبت شدید</label>
+        <label class="check-item"><input type="checkbox" name="C2_issues" value="temp"> سرما/گرمای شدید</label>
+        <label class="check-item"><input type="checkbox" name="C2_issues" value="uninhabitable"> اساساً غیرقابل سکونت</label>
+        <label class="check-item"><input type="checkbox" name="C2_issues" value="none"> هیچ‌کدام</label>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">سال پایان ساخت (اختیاری، غیرامتیازی)</label>
+      <input type="number" name="C2_constr" placeholder="مثلاً ۱۳۹۰">
+    </div>
+  </div>
+
+  <!-- C3 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C3 — پایداری حق سکونت</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۵</span><span class="scale-badge">سه‌حالته</span> خانوار — پیش‌تکمیل از اموال</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C3')">؟</button>
+    </div>
+    <div class="field-group">
+      <select name="C3_right">
+        <option value="">— انتخاب —</option>
+        <option value="clear">روشن و بدون اختلاف</option>
+        <option value="ambiguous">مبهم یا وابسته به فرد/نهاد</option>
+        <option value="risk">خطر جدی ازدست‌دادن</option>
+        <option value="__needreview__">نیازمند بررسی</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <input type="text" name="C3_lease_end" placeholder="تاریخ پایان قرارداد (اختیاری)">
+    </div>
+  </div>
+
+  <!-- C4 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C4 — تراکم سکونت و فضای خواب ایمن</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۵</span><span class="scale-badge">پنج‌حالته ⚠</span> خانوار، محاسبه‌ای</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C4')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">تعداد اتاق قابل سکونت (به‌جز آشپزخانه و سرویس)</label>
+      <input type="number" name="C4_rooms" min="0" placeholder="مثلاً ۲">
+    </div>
+    <div class="field-group">
+      <label class="field-label">زیربنای قابل استفاده (اختیاری)</label>
+      <input type="number" name="C4_area" min="0" placeholder="متر مربع">
+    </div>
+    <div class="field-group">
+      <label class="field-label">وضعیت فضای خواب ایمن</label>
+      <select name="C4_safesleep">
+        <option value="">— انتخاب —</option>
+        <option value="all">برای همه</option>
+        <option value="partial">جزئی — برخی اعضا مشکل دارند</option>
+        <option value="none">خیر</option>
+        <option value="__dontknow__">نمی‌دانم</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- C5 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C5 — آب، برق و انرژی پخت‌وپز</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۰</span><span class="scale-badge">سه‌حالته</span> خانوار، بیشینه سه زیرپرسش — پرچم R7</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C5')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">آب سالم</label>
+      <select name="C5_water">
+        <option value="">— انتخاب —</option>
+        <option value="stable">پایدار</option>
+        <option value="unstable">قطعی مکرر/محدودیت</option>
+        <option value="off">قطع یا ندارد</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">برق</label>
+      <select name="C5_elec">
+        <option value="">— انتخاب —</option>
+        <option value="stable">پایدار</option>
+        <option value="unstable">قطعی مکرر/کنتور مشترک</option>
+        <option value="off">قطع اداری</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">انرژی پخت‌وپز ایمن</label>
+      <select name="C5_cook">
+        <option value="">— انتخاب —</option>
+        <option value="stable">ایمن و پایدار</option>
+        <option value="unstable">محدود یا کم‌خطر</option>
+        <option value="off">ناایمن/قطع</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <input type="text" name="C5_effect" placeholder="اثر قطع بر زندگی خانوار">
+    </div>
+  </div>
+
+  <!-- C6 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C6 — بهداشت محیط مسکن</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۰</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C6')">؟</button>
+    </div>
+    <select name="C6_san">
+      <option value="">— انتخاب —</option>
+      <option value="good">اختصاصی، قابل استفاده، بهداشتی</option>
+      <option value="shared_minor">مشترک یا نقص جزئی اما قابل استفاده</option>
+      <option value="unsafe_missing">ناسالم، غیرقابل استفاده یا مفقود</option>
+      <option value="__dontknow__">نمی‌دانم</option>
+    </select>
+  </div>
+
+  <!-- C7 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C7 — وسایل ضروری زندگی</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۵</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C7')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">وسایل مفقود (چندانتخابی)</label>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" name="C7_missing" value="fridge"> یخچال</label>
+        <label class="check-item"><input type="checkbox" name="C7_missing" value="cooker"> اجاق/وسیله پخت</label>
+        <label class="check-item"><input type="checkbox" name="C7_missing" value="heater"> وسیله گرمایش</label>
+        <label class="check-item"><input type="checkbox" name="C7_missing" value="bed"> تخت/رختخواب کافی</label>
+        <label class="check-item"><input type="checkbox" name="C7_missing" value="washer"> وسیله شست‌وشو</label>
+        <label class="check-item"><input type="checkbox" name="C7_missing" value="none"> همه موجود</label>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">اثر فقدان</label>
+      <select name="C7_impact">
+        <option value="">— انتخاب —</option>
+        <option value="none">اثر معنادار ندارد</option>
+        <option value="minor">اثر جزئی</option>
+        <option value="disruptive">اختلال جدی</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- C8 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C8 — فشار هزینه مسکن</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۵</span><span class="scale-badge">پنج‌حالته ⚠</span> خانوار، محاسبه‌ای — ودیعه جدا</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C8')">؟</button>
+    </div>
+    <div class="alert alert-info">ودیعه هرگز در هزینه ماهانه لحاظ نمی‌شود. معوقه فقط یک‌بار در همین شاخص.</div>
+    <div class="field-group">
+      <label class="field-label">اجاره ماهانه (تومان)</label>
+      <input type="number" name="monthlyRent" min="0" placeholder="مثلاً ۴۰۰۰۰۰۰">
+    </div>
+    <div class="field-group">
+      <label class="field-label">شارژ ماهانه</label>
+      <input type="number" name="monthlyCharge" min="0">
+    </div>
+    <div class="field-group">
+      <label class="field-label">قبوض ماهانه</label>
+      <input type="number" name="monthlyBills" min="0">
+    </div>
+    <div class="field-group">
+      <label class="field-label">ودیعه (جدا، هرگز در هزینه ماهانه لحاظ نمی‌شود)</label>
+      <input type="number" name="deposit" min="0">
+    </div>
+    <div class="field-group">
+      <label class="field-label">معوقه</label>
+      <select name="C8_arrears_severity">
+        <option value="">— انتخاب —</option>
+        <option value="none">معوقه نداریم</option>
+        <option value="minor">جزئی (کمتر از یک ماه)</option>
+        <option value="significant">معنادار یا اخطار پرداخت</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">اقساط ضروری ماهانه (بدون ودیعه)</label>
+      <input type="number" name="C8_installments" min="0">
+    </div>
+  </div>
+
+  <!-- C9 -->
+  <div class="indicator-card" data-dim="C">
+    <div class="ind-head">
+      <div><div class="ind-title">C9 — دسترسی به خدمات پایه</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۵</span><span class="scale-badge">سه‌حالته</span> خانوار، شاخص کنترلی</div></div>
+      <button type="button" class="ind-help" onclick="showModal('C9')">؟</button>
+    </div>
+    <select name="C9_access">
+      <option value="">— انتخاب —</option>
+      <option value="adequate">مناسب</option>
+      <option value="manageable">با بار زمان/هزینه قابل مدیریت</option>
+      <option value="serious">مانع پایدار و جدی</option>
+      <option value="__dontknow__">نمی‌دانم</option>
+    </select>
+  </div>
+</section>
+
+<!-- ═══════ گام ۷: بُعد D — معیشت ═══════ -->
+<section class="step-section" data-step="7">
+  <h2 class="step-title">گام ۷ — معیشت، اشتغال و درآمد (بُعد D)</h2>
+  <p class="step-subtitle">۳ شاخص، سقف ۱۵۰. D2, D3 محاسبه‌ای. خط فقر منطقه‌ای الزامی.</p>
+
+  <!-- D1 -->
+  <div class="indicator-card" data-dim="D">
+    <div class="ind-head">
+      <div><div class="ind-title">D1 — اشتغال و استمرار درآمد تأمین‌کننده اصلی</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۴۵</span><span class="scale-badge">سه‌حالته ⚠</span> تأمین‌کننده اصلی</div></div>
+      <button type="button" class="ind-help" onclick="showModal('D1')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="check-item">
+        <input type="checkbox" name="D1_no_provider" value="true">
+        <span>خانوار هیچ تأمین‌کننده‌ای با درآمد فعال ندارد</span>
       </label>
-      {% endfor %}
+    </div>
+    <div id="D1_provider" style="margin-top: 12px;">
+      <div class="field-hint">پرسش‌های زیر برای تأمین‌کننده اصلی در جدول اعضا (نقش: تأمین‌کننده اصلی) نمایش داده می‌شود.</div>
+      <div id="D1_provider_fields"></div>
     </div>
   </div>
-  {% endfor %}
-</div>
-{% endfor %}
 
-<div class="sticky-bar">
-  <div class="sb-score">
-    <span class="sb-num" id="total-score">۰</span>
-    <span class="sb-max">/ ۱۰۰۰</span>
-    <span class="sb-level" id="level-display">— محرومیت محدود</span>
+  <!-- D2 -->
+  <div class="indicator-card" data-dim="D">
+    <div class="ind-head">
+      <div><div class="ind-title">D2 — بیکاری سایر اعضای توانمند</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۵</span><span class="scale-badge">سه‌حالته</span> محاسبه‌ای از اعضا</div></div>
+      <button type="button" class="ind-help" onclick="showModal('D2')">؟</button>
+    </div>
+    <div class="alert alert-info">این شاخص به‌صورت خودکار از وضعیت اشتغال اعضای جدول مرحله ۳ محاسبه می‌شود (تعداد جویای کار به‌جز تأمین‌کننده اصلی).</div>
   </div>
-  <div class="sb-spacer"></div>
-  <a class="btn sec" href="{{ url_for('household_view', hid=hid) }}">انصراف</a>
-  <button class="btn lg" type="submit">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    محاسبه و ثبت EM-MPI
-  </button>
+
+  <!-- D3 -->
+  <div class="indicator-card" data-dim="D">
+    <div class="ind-head">
+      <div><div class="ind-title">D3 — کفایت منابع قابل اتکا</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۸۰</span><span class="scale-badge">پنج‌حالته ⚠</span> خانوار، محاسبه‌ای</div></div>
+      <button type="button" class="ind-help" onclick="showModal('D3')">؟</button>
+    </div>
+    <div class="alert alert-info">دریافت یک‌باره (ارث) هرگز در درآمد ماهانه قابل اتکا محاسبه نمی‌شود.</div>
+
+    <h4 style="margin: 16px 0 8px;">منابع درآمد</h4>
+    <div id="incomeSources"></div>
+    <button type="button" class="btn-add-member" onclick="addIncome()">+ افزودن منبع درآمد</button>
+
+    <div class="poverty-line-box" style="margin-top: 20px;">
+      <h4 style="margin-bottom: 12px;">خط فقر منطقه‌ای</h4>
+      <div class="field-group">
+        <label class="field-label">سرانه ماهانه (تومان) *</label>
+        <input type="number" name="pl_monthlyPerCapita" min="0" placeholder="مثلاً ۳۰۰۰۰۰۰">
+      </div>
+      <div class="field-group">
+        <label class="field-label">منبع *</label>
+        <input type="text" name="pl_source" placeholder="مرکز آمار، استان">
+      </div>
+      <div class="field-group">
+        <label class="field-label">وضعیت اعتبار</label>
+        <select name="pl_status">
+          <option value="unverified">تأییدنشده (ورود دستی)</option>
+          <option value="verified">تأییدشده</option>
+          <option value="invalid">نامعتبر</option>
+        </select>
+      </div>
+      <div class="field-hint">ورود دستی فعلاً «تأییدنشده» است. خط فقر نامعتبر ← D3 ناتمام.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ گام ۸: بُعد E — مراقبت ═══════ -->
+<section class="step-section" data-step="8">
+  <h2 class="step-title">گام ۸ — ظرفیت مراقبت و پشتوانه اجتماعی (بُعد E)</h2>
+  <p class="step-subtitle">۴ شاخص، سقف ۱۰۰. E2 نیازمند عضو با needsCare در جدول اعضا.</p>
+
+  <!-- E1 -->
+  <div class="indicator-card" data-dim="E">
+    <div class="ind-head">
+      <div><div class="ind-title">E1 — چشم‌انداز معیشت ۱۲ ماه آینده</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۳۵</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('E1')">؟</button>
+    </div>
+    <div class="field-group">
+      <select name="E1_outlook">
+        <option value="">— انتخاب —</option>
+        <option value="clear">روشن و محتمل</option>
+        <option value="uncertain">نامطمئن</option>
+        <option value="none">مسیر واقعی وجود ندارد</option>
+        <option value="__needreview__">نیازمند بررسی</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <input type="text" name="E1_evidence" placeholder="شواهد و توضیح">
+    </div>
+  </div>
+
+  <!-- E2 -->
+  <div class="indicator-card" data-dim="E">
+    <div class="ind-head">
+      <div><div class="ind-title">E2 — بار مراقبت و پشتیبانی آن</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۵</span><span class="scale-badge">سه‌حالته</span> خانوار — پرچم R6</div></div>
+      <button type="button" class="ind-help" onclick="showModal('E2')">؟</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">پشتیبانی مراقبت</label>
+      <select name="E2_support">
+        <option value="">— انتخاب —</option>
+        <option value="no_need">عضو نیازمند مراقبت مستمر نداریم</option>
+        <option value="adequate">مراقب موجود و پشتیبانی کافی</option>
+        <option value="partial">بار سنگین با پشتیبانی ناکافی</option>
+        <option value="none">نیاز مراقبتی تأمین‌نشده (بدون مراقب)</option>
+        <option value="__dontknow__">نمی‌دانم</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">ساعت نیاز مراقبت روزانه</label>
+      <input type="number" name="E2_hours" min="0" max="24">
+    </div>
+  </div>
+
+  <!-- E3 -->
+  <div class="indicator-card" data-dim="E">
+    <div class="ind-head">
+      <div><div class="ind-title">E3 — پشتوانه اجتماعی در بحران</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۰</span><span class="scale-badge">سه‌حالته</span> خانوار</div></div>
+      <button type="button" class="ind-help" onclick="showModal('E3')">؟</button>
+    </div>
+    <div class="field-group">
+      <select name="E3_support">
+        <option value="">— انتخاب —</option>
+        <option value="reliable">حمایت مستمر و قابل اتکا</option>
+        <option value="sporadic">حمایت موردی و ناپایدار</option>
+        <option value="none">هیچ حمایت عملی</option>
+        <option value="__dontknow__">نمی‌دانم</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <input type="text" name="E3_who" placeholder="چه فرد/نهادی و چه نوع کمکی">
+    </div>
+  </div>
+
+  <!-- E4 -->
+  <div class="indicator-card" data-dim="E">
+    <div class="ind-head">
+      <div><div class="ind-title">E4 — مانع هویتی، حقوقی یا اداری</div>
+      <div class="ind-meta"><span class="weight-badge">وزن ۲۰</span><span class="scale-badge">سه‌حالته</span> خانوار — پرچم R8</div></div>
+      <button type="button" class="ind-help" onclick="showModal('E4')">؟</button>
+    </div>
+    <div class="field-group">
+      <select name="E4_barrier">
+        <option value="">— انتخاب —</option>
+        <option value="none">مانع مؤثر نداریم</option>
+        <option value="in_progress">مانع وجود دارد ولی راه‌حل در جریان</option>
+        <option value="blocking">مانع، خدمت یا حق حیاتی را مسدود کرده — پرچم R8</option>
+        <option value="__needreview__">نیازمند بررسی</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">نوع مانع (چندانتخابی)</label>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" name="E4_types" value="identity"> هویتی</label>
+        <label class="check-item"><input type="checkbox" name="E4_types" value="legal"> حقوقی</label>
+        <label class="check-item"><input type="checkbox" name="E4_types" value="admin"> اداری</label>
+        <label class="check-item"><input type="checkbox" name="E4_types" value="other"> سایر</label>
+      </div>
+    </div>
+    <div class="field-group">
+      <input type="text" name="E4_service" placeholder="دقیقاً کدام حق یا خدمت مسدود شده">
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ گام ۹: مدارک، کیفیت داده ═══════ -->
+<section class="step-section" data-step="9">
+  <h2 class="step-title">گام ۹ — مدارک، کیفیت داده و موارد نیازمند بررسی</h2>
+  <p class="step-subtitle">بازبینی پاسخ‌های ناتمام، تناقض‌ها و منبع داده هر شاخص.</p>
+
+  <div class="alert alert-info">پاسخ‌های خاص (نمی‌دانم/مایل نیستم/نیازمند بررسی) به‌صورت خودکار به‌عنوان مسئله کیفیت داده ثبت می‌شوند. ۴ قاعده خودکار کشف تناقض نیز فعال است.</div>
+
+  <h3 style="margin: 20px 0 12px;">مدارک مثبت (اختیاری)</h3>
+  <div class="field-group">
+    <label class="field-label">مدرک پزشکی (A1, A2, A3, A6)</label>
+    <input type="text" name="doc_medical_ref" placeholder="شماره نامه/کد پیگیری">
+  </div>
+  <div class="field-group">
+    <label class="field-label">مدرک آموزشی (B1, B6)</label>
+    <input type="text" name="doc_education_ref" placeholder="گزارش مدرسه/گواهی">
+  </div>
+  <div class="field-group">
+    <label class="field-label">مدرک مسکن (C1, C3, C8)</label>
+    <input type="text" name="doc_housing_ref" placeholder="اخطار تخلیه/قرارداد/قبض">
+  </div>
+
+  <h3 style="margin: 20px 0 12px;">یادداشت مددکار</h3>
+  <div class="field-group">
+    <textarea name="worker_note" placeholder="مشاهدات میدانی، تناقض‌ها، توضیحات تکمیلی"></textarea>
+  </div>
+</section>
+
+<!-- ═══════ گام ۱۰: خلاصه و ارجاع ═══════ -->
+<section class="step-section" data-step="10">
+  <h2 class="step-title">گام ۱۰ — خلاصه غربالگری و ارجاع</h2>
+  <p class="step-subtitle">ثبت نهایی و دریافت نتیجه EM-MPI.</p>
+
+  <div class="alert alert-warn">با ثبت نهایی، موتور قطعی EM-MPI نتیجه را محاسبه می‌کند. خروجی الگوریتمی تصمیم‌یار است، نه تصمیم‌گیرنده. تصمیم نهایی با انسان است.</div>
+
+  <h3 style="margin: 20px 0 12px;">خط قرمزهای هوش مصنوعی</h3>
+  <ul style="margin-bottom: 20px; padding-inline-start: 20px; font-size: 13px;">
+    <li>هیچ خروجی الگوریتمی به‌تنهایی تصمیم نهایی نیست.</li>
+    <li>شدت محرومیت مستقیم پرسیده نمی‌شود؛ رخداد، تداوم، فراوانی و پیامد پرسیده می‌شود.</li>
+    <li>پاسخ‌های خاص هرگز به امتیاز تبدیل نمی‌شوند.</li>
+    <li>فقدان داده ≠ نبود محرومیت.</li>
+    <li>پرچم‌های R امتیاز اضافه نمی‌کنند.</li>
+    <li>ودیعه هرگز در هزینه ماهانه مسکن لحاظ نمی‌شود.</li>
+    <li>ارجاعات منسوخ D4, D5, D6, E6 تولید نمی‌شوند.</li>
+  </ul>
+
+  <div class="nav-buttons" style="justify-content: center;">
+    <button type="submit" class="btn btn-success" style="padding: 16px 48px; font-size: 17px;">
+      📋 ثبت نهایی و محاسبه EM-MPI
+    </button>
+  </div>
+</section>
+
+<!-- دکمه‌های ناوبری -->
+<div class="nav-buttons" id="navButtons">
+  <button type="button" class="btn btn-secondary" id="prevBtn" onclick="prevStep()" style="visibility: hidden;">→ قبلی</button>
+  <span style="align-self: center; color: var(--muted); font-size: 13px;" id="stepCounter">گام ۱ از ۱۰</span>
+  <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">بعدی ←</button>
 </div>
+
 </form>
+</div>
+
+<!-- مودال شناسنامه سنجش -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 class="modal-title" id="modalTitle"></h2>
+    <div id="modalBody"></div>
+  </div>
+</div>
 
 <script>
-const SEVERITY_OPTIONS = [
-  {value: 0, label: 'فاقد محرومیت', color: 'P3'},
-  {value: 0.5, label: 'محرومیت متوسط', color: 'P1'},
-  {value: 1, label: 'محرومیت شدید', color: 'P0'},
+// ═══════ نوار پیشرفت و ناوبری ═══════
+const STEP_TITLES = [
+  "هویت", "فوریت", "اعضا", "سلامت A", "آموزش B",
+  "مسکن C", "معیشت D", "مراقبت E", "مدارک", "خلاصه"
 ];
+let currentStep = 1;
+const TOTAL_STEPS = 10;
 
-function toFa(n) {
-  // تبدیل اعداد به فارسی
-  return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-}
-
-function updateScores() {
-  // محاسبهٔ امتیاز هر بُعد
-  const dimScores = {};
-  document.querySelectorAll('.sev-options').forEach(opt => {
-    const dim = opt.dataset.dim;
-    const weight = parseFloat(opt.dataset.weight);
-    const selected = opt.querySelector('input:checked');
-    const sev = selected ? parseFloat(selected.value) : 0;
-    if (!dimScores[dim]) dimScores[dim] = 0;
-    dimScores[dim] += weight * sev;
-  });
-
-  // به‌روزرسانی امتیاز هر بُعد
-  let total = 0;
-  Object.keys(dimScores).forEach(dim => {
-    const el = document.getElementById('score-' + dim);
-    if (el) el.textContent = toFa(Math.round(dimScores[dim]));
-    total += dimScores[dim];
-  });
-
-  // امتیاز کل
-  const totalEl = document.getElementById('total-score');
-  if (totalEl) totalEl.textContent = toFa(Math.round(total));
-
-  // سطح محرومیت
-  const levelEl = document.getElementById('level-display');
-  if (levelEl) {
-    let level = 'محرومیت محدود';
-    if (total >= 600) level = 'محرومیت بسیار زیاد';
-    else if (total >= 450) level = 'محرومیت زیاد';
-    else if (total >= 300) level = 'محرومیت متوسط';
-    else if (total >= 150) level = 'محرومیت خفیف';
-    levelEl.textContent = '— ' + level;
+function initProgress() {
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const s = document.createElement('div');
+    s.className = 'progress-step' + (i === 1 ? ' active' : '');
+    s.innerHTML = `<span class="step-num">${i}</span>${STEP_TITLES[i-1]}`;
+    s.onclick = () => goToStep(i);
+    bar.appendChild(s);
   }
 }
 
-// اجرای اولیه
-updateScores();
+function showStep(n) {
+  document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+  const sec = document.querySelector(`.step-section[data-step="${n}"]`);
+  if (sec) sec.classList.add('active');
+  document.querySelectorAll('.progress-step').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    if (i + 1 < n) s.classList.add('done');
+    else if (i + 1 === n) s.classList.add('active');
+  });
+  document.getElementById('prevBtn').style.visibility = n === 1 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').style.visibility = n === TOTAL_STEPS ? 'hidden' : 'visible';
+  document.getElementById('stepCounter').textContent = `گام ${n} از ${TOTAL_STEPS}`;
+  currentStep = n;
+  if (n === 4) renderMemberIndicators();
+  if (n === 7) renderD1Provider();
+  window.scrollTo(0, 0);
+}
+
+function nextStep() { if (currentStep < TOTAL_STEPS) showStep(currentStep + 1); }
+function prevStep() { if (currentStep > 1) showStep(currentStep - 1); }
+function goToStep(n) { if (n >= 1 && n <= TOTAL_STEPS) showStep(n); }
+
+// ═══════ نرمال‌سازی ارقام ═══════
+function normalizeDigits(input) {
+  const fa = '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩';
+  const en = '01234567890123456789';
+  let v = input.value;
+  let out = '';
+  for (let c of v) {
+    const idx = fa.indexOf(c);
+    out += idx >= 0 ? en[idx] : c;
+  }
+  input.value = out;
+}
+
+// ═══════ فالوآپ شرطی ═══════
+function toggleFollowup(select, targetId) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  if (select.value === 'yes' || select.value === 'true') target.classList.add('show');
+  else target.classList.remove('show');
+}
+
+// ═══════ مدیریت اعضا ═══════
+let members = [];
+let memberIdCounter = 1;
+
+const EDU_LABELS = {enrolled:'ثبت‌نام فعال',interrupted:'وقفه',dropped:'ترک',finished:'تکمیل',never:'هرگز',na:'نامرتبط'};
+const EMP_LABELS = {employed:'شاغل',irregular:'غیررسمی',unemployed_seeking:'جویای کار',unemployed_not_seeking:'غیرجویا',unable:'ناتوان',student:'دانش‌آموز',household_care:'نگهدار',na:'نامرتبط'};
+const RELATIONS = ['سرپرست','همسر','فرزند','مادر','پدر','خواهر','برادر','نوه','مادربزرگ/پدربزرگ','سایر'];
+
+function addMember(data = {}) {
+  const mid = data.id || `m${memberIdCounter++}`;
+  const tbody = document.getElementById('membersBody');
+  const tr = document.createElement('tr');
+  tr.dataset.mid = mid;
+  const eduOpts = ['enrolled','interrupted','dropped','finished','never','na']
+    .map(s => `<option value="${s}" ${data.educationStatus===s?'selected':''}>${EDU_LABELS[s]}</option>`).join('');
+  const empOpts = ['employed','irregular','unemployed_seeking','unemployed_not_seeking','unable','student','household_care','na']
+    .map(s => `<option value="${s}" ${data.employmentStatus===s?'selected':''}>${EMP_LABELS[s]}</option>`).join('');
+  const relOpts = RELATIONS.map(r => `<option ${data.relation===r?'selected':''}>${r}</option>`).join('');
+  tr.innerHTML = `
+    <td><input type="text" data-field="firstName" placeholder="نام" value="${data.firstName || ''}"></td>
+    <td><input type="text" data-field="lastName" placeholder="نام خانوادگی" value="${data.lastName || ''}"></td>
+    <td><input type="number" data-field="age" min="0" placeholder="سن" value="${data.age || ''}" style="width:60px"></td>
+    <td><select data-field="gender" style="width:80px">
+      <option value="male" ${data.gender==='male'?'selected':''}>مرد</option>
+      <option value="female" ${data.gender==='female'?'selected':''}>زن</option>
+    </select></td>
+    <td><select data-field="relation" style="width:90px">${relOpts}</select></td>
+    <td><select data-field="memberType" style="width:100px">
+      <option value="registry" ${data.memberType==='registry'?'selected':''}>ثبت احوال</option>
+      <option value="companion" ${data.memberType==='companion'?'selected':''}>همسفره</option>
+    </select></td>
+    <td><input type="text" data-field="nationalId" placeholder="کد ملی" value="${data.nationalId || ''}" style="width:100px" oninput="normalizeDigits(this)"></td>
+    <td>
+      <label style="font-size:11px; display:block;"><input type="checkbox" data-role="isHead" ${data.isHead?'checked':''}> سرپرست</label>
+      <label style="font-size:11px; display:block;"><input type="checkbox" data-role="isResponder" ${data.isResponder?'checked':''}> پاسخگو</label>
+      <label style="font-size:11px; display:block;"><input type="checkbox" data-role="isMainProvider" ${data.isMainProvider?'checked':''}> تأمین‌کننده</label>
+      <label style="font-size:11px; display:block;"><input type="checkbox" data-role="isMainCaregiver" ${data.isMainCaregiver?'checked':''}> مراقب</label>
+      <label style="font-size:11px; display:block;"><input type="checkbox" data-role="needsCare" ${data.needsCare?'checked':''}> نیاز مراقبت</label>
+    </td>
+    <td><select data-field="educationStatus" style="width:90px">${eduOpts}</select></td>
+    <td><select data-field="employmentStatus" style="width:90px">${empOpts}</select></td>
+    <td><input type="checkbox" data-field="needsCareFlag" ${data.needsCare?'checked':''}></td>
+    <td><button type="button" class="btn-remove" onclick="this.closest('tr').remove()">×</button></td>
+  `;
+  // همگام‌سازی needsCareFlag با needsCare
+  const ncFlag = tr.querySelector('[data-field="needsCareFlag"]');
+  const ncRole = tr.querySelector('[data-role="needsCare"]');
+  ncFlag.onchange = () => { ncRole.checked = ncFlag.checked; };
+  ncRole.onchange = () => { ncFlag.checked = ncRole.checked; };
+  tbody.appendChild(tr);
+}
+
+// ═══════ رندر شاخص‌های عضومحور ═══════
+function renderMemberIndicators() {
+  const rows = document.querySelectorAll('#membersBody tr');
+  if (!rows.length) return;
+
+  // شاخص‌های عضومحور که نیاز به رندر دارند
+  const memberIndicators = [
+    {id: 'A1', questions: [
+      {key: 'A1_disease', label: 'بیماری', type: 'select', options: [
+        {v:'none',l:'ندارد'},{v:'controlled',l:'دارد — تحت کنترل'},{v:'uncontrolled',l:'دارد — کنترل‌نشده'}
+      ]},
+      {key: 'A1_impact', label: 'اثر', type: 'select', options: [
+        {v:'none',l:'اثر معنادار ندارد'},{v:'moderate',l:'محدودکننده'},{v:'severe',l:'شدید'}
+      ]}
+    ]},
+    {id: 'A2', questions: [
+      {key: 'A2_limit', label: 'محدودیت', type: 'select', options: [
+        {v:'none',l:'ندارد'},{v:'supported',l:'دارد — تأمین شده'},{v:'unmet',l:'دارد — تأمین‌نشده'}
+      ]},
+      {key: 'A2_aid', label: 'نوع کمک', type: 'text', placeholder: 'ویلچر، گفتاردرمانی...'}
+    ]},
+    {id: 'A3', questions: [
+      {key: 'A3_treatment', label: 'درمان', type: 'select', options: [
+        {v:'none',l:'ندارد'},{v:'scheduled',l:'در نوبت/با تأخیر'},{v:'no_access',l:'دسترسی ندارد'}
+      ]},
+      {key: 'A3_urgent', label: 'فوریت پزشکی؟', type: 'select', options: [
+        {v:'',l:'— انتخاب —'},{v:'true',l:'بله — پرچم R1'},{v:'false',l:'خیر'}
+      ]},
+      {key: 'A3_cause', label: 'علت تأخیر', type: 'text', placeholder: 'هزینه، نبود متخصص...'}
+    ]},
+    {id: 'A5', questions: [
+      {key: 'A5_cover', label: 'پوشش بیمه', type: 'select', options: [
+        {v:'effective',l:'مؤثر'},{v:'barriers',l:'با مانع'},{v:'none',l:'بدون پوشش'}
+      ]},
+      {key: 'A5_barrier', label: 'نوع مانع', type: 'text', placeholder: 'فرانشیز، فاصله...'}
+    ]},
+    {id: 'B1', eligible: 'school_age', questions: [
+      {key: 'B1_status', label: 'وضعیت تحصیل', type: 'select', options: [
+        {v:'attending',l:'حضور فعال'},{v:'interrupted',l:'وقفه'},{v:'dropped',l:'ترک تحصیل'},{v:'never',l:'هرگز ثبت‌نام نشده'}
+      ]},
+      {key: 'B1_months', label: 'مدت وقفه (ماه)', type: 'number'},
+      {key: 'B1_reason', label: 'علت', type: 'text'}
+    ]},
+    {id: 'B2', eligible: 'school_age', questions: [
+      {key: 'B2_risks', label: 'ریسک‌ها (چندانتخابی)', type: 'checks', options: [
+        {v:'absence',l:'غیبت مکرر'},{v:'decline',l:'افت شدید'},{v:'cost',l:'هزینه'},{v:'child_labor',l:'کار کودک — R4'},{v:'forced_care',l:'مراقبت اجباری'},{v:'none',l:'هیچ‌کدام'}
+      ]}
+    ]},
+    {id: 'B6', questions: [
+      {key: 'B6_need', label: 'نیاز ویژه', type: 'select', options: [
+        {v:'none',l:'ندارد'},{v:'served',l:'دریافت‌کرده'},{v:'needs_assessment',l:'نیازمند ارزیابی'},{v:'unmet',l:'تأییدشده بدون خدمت'}
+      ]}
+    ]},
+  ];
+
+  // گروه‌های پرسش A6 (مکمل)
+  const supplemental = [
+    {key: 'A_malnut', label: 'سوءتغذیه', type: 'select', options: [
+      {v:'',l:'— انتخاب —'},{v:'true',l:'بله — R3'},{v:'false',l:'خیر'}
+    ]},
+    {key: 'A_pregnant', label: 'مادر باردار/شیرده', type: 'select', options: [
+      {v:'',l:'— انتخاب —'},{v:'true',l:'بله'},{v:'false',l:'خیر'}
+    ]},
+  ];
+
+  memberIndicators.forEach(ind => {
+    const container = document.getElementById(ind.id + '_members');
+    if (!container) return;
+    container.innerHTML = '';
+    rows.forEach(tr => {
+      const mid = tr.dataset.mid;
+      const ageInput = tr.querySelector('[data-field="age"]');
+      const age = parseInt(ageInput?.value || 0);
+      const name = tr.querySelector('[data-field="firstName"]')?.value || mid;
+      // فیلتر سن آموزش اجباری
+      if (ind.eligible === 'school_age' && (age < 6 || age > 18)) return;
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background:white; padding:12px; border-radius:8px; margin-bottom:8px;';
+      let html = `<div style="font-weight:600; margin-bottom:8px; font-size:13px;">عضو: ${name} (${mid})</div>`;
+      ind.questions.forEach(q => {
+        const name = `${q.key}#${mid}`;
+        if (q.type === 'select') {
+          html += `<div class="field-group"><label class="field-label" style="font-size:12px">${q.label}</label>
+                   <select name="${name}">${q.options.map(o => `<option value="${o.v}">${o.l}</option>`).join('')}</select></div>`;
+        } else if (q.type === 'text') {
+          html += `<div class="field-group"><label class="field-label" style="font-size:12px">${q.label}</label>
+                   <input type="text" name="${name}" placeholder="${q.placeholder || ''}"></div>`;
+        } else if (q.type === 'number') {
+          html += `<div class="field-group"><label class="field-label" style="font-size:12px">${q.label}</label>
+                   <input type="number" name="${name}" min="0"></div>`;
+        } else if (q.type === 'checks') {
+          html += `<div class="field-group"><label class="field-label" style="font-size:12px">${q.label}</label>
+                   <div class="check-list">${q.options.map(o => 
+                     `<label class="check-item"><input type="checkbox" name="${name}" value="${o.v}"> ${o.l}</label>`).join('')}</div></div>`;
+        }
+      });
+      card.innerHTML = html;
+      container.appendChild(card);
+    });
+    if (!container.children.length) {
+      container.innerHTML = '<div class="alert alert-info">هیچ عضو مشمولی ثبت نشده — ضریب صفر صحیح است.</div>';
+    }
+  });
+
+  // گروه مکمل A6
+  const supCont = document.getElementById('A6_members_supplemental');
+  if (supCont && !supCont.children.length) {
+    supCont.innerHTML = '';
+    rows.forEach(tr => {
+      const mid = tr.dataset.mid;
+      const name = tr.querySelector('[data-field="firstName"]')?.value || mid;
+      const card = document.createElement('div');
+      card.style.cssText = 'background:white; padding:12px; border-radius:8px; margin-bottom:8px;';
+      let html = `<div style="font-weight:600; margin-bottom:8px; font-size:13px;">عضو: ${name} (${mid})</div>`;
+      supplemental.forEach(q => {
+        const n = `${q.key}#${mid}`;
+        html += `<div class="field-group"><label class="field-label" style="font-size:12px">${q.label}</label>
+                 <select name="${n}">${q.options.map(o => `<option value="${o.v}">${o.l}</option>`).join('')}</select></div>`;
+      });
+      card.innerHTML = html;
+      supCont.appendChild(card);
+    });
+  }
+}
+
+// ═══════ رندر فیلدهای D1 برای تأمین‌کننده ═══════
+function renderD1Provider() {
+  const container = document.getElementById('D1_provider_fields');
+  if (!container) return;
+  const providerRow = document.querySelector('#membersBody tr');
+  // پیدا کردن تأمین‌کننده اصلی
+  let providerTr = null;
+  document.querySelectorAll('#membersBody tr').forEach(tr => {
+    const cb = tr.querySelector('[data-role="isMainProvider"]');
+    if (cb?.checked) providerTr = tr;
+  });
+  if (!providerTr) {
+    container.innerHTML = '<div class="alert alert-warn">تأمین‌کننده اصلی در جدول اعضا مشخص نشده. در گام ۳، نقش «تأمین‌کننده» را برای یک عضو فعال کنید.</div>';
+    return;
+  }
+  const mid = providerTr.dataset.mid;
+  const name = providerTr.querySelector('[data-field="firstName"]')?.value || mid;
+  container.innerHTML = `
+    <div style="background:white; padding:12px; border-radius:8px;">
+      <div style="font-weight:600; margin-bottom:8px;">عضو: ${name} (${mid})</div>
+      <div class="field-group"><label class="field-label">توان و امکان کار</label>
+        <select name="D1_ability#${mid}">
+          <option value="">— انتخاب —</option>
+          <option value="able">توان و امکان کار دارد</option>
+          <option value="limited">توان محدود یا مانع موقت</option>
+          <option value="unable">ناتوان از کار</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">استمرار درآمد</label>
+        <select name="D1_continuity#${mid}">
+          <option value="">— انتخاب —</option>
+          <option value="stable">مستمر</option>
+          <option value="irregular">قطع‌ووصل</option>
+          <option value="none">بدون درآمد فعال</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">فعالیت فصلی/روزمزدی</label>
+        <select name="D1_seasonal#${mid}">
+          <option value="false">خیر</option>
+          <option value="true">بله</option>
+        </select>
+      </div>
+    </div>`;
+}
+
+// ═══════ ویرایشگر منابع درآمد ═══════
+function addIncome(data = {}) {
+  const container = document.getElementById('incomeSources');
+  const div = document.createElement('div');
+  div.className = 'income-row';
+  div.innerHTML = `
+    <input type="text" data-field="kind" placeholder="نوع (حقوق، یارانه...)" value="${data.kind || ''}">
+    <input type="number" data-field="monthlyAmount" placeholder="مبلغ ماهانه" value="${data.monthlyAmount || ''}" style="width:120px">
+    <select data-field="continuity" style="width:110px">
+      <option value="regular">مستمر</option>
+      <option value="occasional">موردی</option>
+      <option value="one_off">یک‌باره</option>
+    </select>
+    <select data-field="reliability" style="width:110px">
+      <option value="reliable">قابل اتکا</option>
+      <option value="uncertain">نامطمئن</option>
+      <option value="disputed">مورد اختلاف</option>
+    </select>
+    <input type="text" data-field="receiverMemberId" placeholder="عضو دریافت‌کننده" value="${data.receiverMemberId || ''}" style="width:100px">
+    <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+  `;
+  container.appendChild(div);
+}
+
+// ═══════ واکشی سرویس‌ها (شبیه‌سازی سمت کلاینت) ═══════
+function fetchServices() {
+  const nid = document.querySelector('[name="headNationalId"]').value;
+  const pc = document.querySelector('[name="postalCode"]').value;
+  const bd = document.querySelector('[name="headBirthDate"]').value;
+  const consent = document.querySelector('[name="consentBankAccess"]').checked;
+  if (!nid || !pc) {
+    alert('کد ملی و کد پستی الزامی است.');
+    return;
+  }
+  // در نسخه نمایشی، وضعیت به‌صورت قطعی نمایش داده می‌شود
+  const services = [
+    {id:'civil_registry', name:'ثبت احوال'},
+    {id:'post', name:'پست ایران'},
+    {id:'insurance', name:'تأمین اجتماعی'},
+    {id:'property', name:'اموال و املاک'},
+    {id:'education_school', name:'آموزش‌وپرورش'},
+    {id:'higher_edu', name:'وزارت علوم'},
+    {id:'shaparak_bank', name:'شاپرک' + (consent ? '' : ' (بدون رضایت)')},
+    {id:'samaneh_bank', name:'بانک سامانه'},
+  ];
+  const statusDiv = document.getElementById('serviceStatus');
+  statusDiv.innerHTML = '';
+  services.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'service-item';
+    let badge = 'pending';
+    if (s.id === 'shaparak_bank' && !consent) badge = 'error';
+    else badge = 'ok';
+    div.innerHTML = `<span class="service-name">${s.name}</span><span class="service-badge ${badge}">${badge === 'ok' ? 'آماده' : badge === 'error' ? 'نیازمند رضایت' : 'در انتظار'}</span>`;
+    statusDiv.appendChild(div);
+  });
+}
+
+// ═══════ مودال شناسنامه سنجش ═══════
+const MODAL_CONTENT = {
+  'A1': {title: 'A1 — بیماری مزمن یا جدی', sections: [
+    {h:'مفهوم', p:'بیماری‌های بیش از ۳ ماه با پیگیری درمانی مستمر. اثر بر کار، تحصیل، هزینه و زندگی روزمره سنجیده می‌شود.'},
+    {h:'واحد سنجش', p:'عضو × همه اعضا، تجمیع با بیشینه.'},
+    {h:'قاعده ضریب', p:'controlled ← severe=۱، moderate=۰٫۵، none=۰؛ uncontrolled ← severe=۱، else ۰٫۵؛ بیشینه اعضا.'},
+    {h:'فالوآپ', p:'ثبت نوع/نام بیماری (اختیاری، غیرامتیازی) + مدرک پزشکی.'},
+  ]},
+  'A2': {title: 'A2 — محدودیت عملکردی پایدار', sections: [
+    {h:'تعریف', p:'محدودیت حرکت، مراقبت شخصی، ارتباط یا یادگیری با تداوم حداقل ۶ ماه.'},
+    {h:'قاعده ضریب', p:'unmet=۱، supported=۰٫۵، none=۰؛ بیشینه اعضا.'},
+  ]},
+  'A3': {title: 'A3 — درمان ضروری انجام‌نشده', sections: [
+    {h:'تعریف', p:'نیاز به درمان تأییدشده اما به علت هزینه، دسترسی یا تأخیر انجام نشده.'},
+    {h:'قاعده ضریب', p:'no_access=۱، scheduled=۰٫۵، none=۰؛ بیشینه اعضا.'},
+    {h:'پرچم R1', p:'A3_treatment=no_access همراه A3_urgent=true ← پرچم R1 (خطر جانی).'},
+  ]},
+  'A4': {title: 'A4 — فشار هزینه‌های درمانی', sections: [
+    {h:'دوره', p:'سه ماه اخیر، شامل دارو، مراقبت و رفت‌وآمد درمانی.'},
+    {h:'قاعده ضریب', p:'severe یا تعداد اثرها ≥ ۲ ← ۱؛ manageable یا دقیقاً ۱ اثر ← ۰٫۵؛ low ← ۰.'},
+  ]},
+  'A5': {title: 'A5 — پوشش بیمه‌ای مؤثر', sections: [
+    {h:'تعریف', p:'پوشش معتبر و استفاده مؤثر (با لحاظ فرانشیز، فاصله، نوبت).'},
+    {h:'پیش‌تکمیل', p:'از سرویس بیمه با کد ملی.'},
+    {h:'قاعده ضریب', p:'none=۱، barriers=۰٫۵، effective=۰؛ بیشینه اعضا.'},
+  ]},
+  'A6': {title: 'A6 — ناامنی غذایی ۳۰ روز اخیر ⚠', sections: [
+    {h:'مقیاس', p:'پنج‌حالته (آستانه‌ها نیازمند تصویب مرجع).'},
+    {h:'قاعده ضریب', p:'coeff = min(0.25 × تعداد تجربه‌ها، ۱)؛ اگر hunger انتخاب شده حداقل ۰٫۷۵.'},
+    {h:'پرچم R7', p:'A6_now=false (غذای کافی برای وعده بعدی نیست).'},
+    {h:'مکمل', p:'A_malnut=true ← پرچم R3 (سوءتغذیه کودک/مادر باردار).'},
+  ]},
+  'A7': {title: 'A7 — سلامت روان و ایمنی خانوار (حساس)', sections: [
+    {h:'محرمانگی', p:'strict — در نمای خانوار جزئیات نمایش داده نمی‌شود.'},
+    {h:'قاعده ضریب', p:'severe=۱؛ moderate=۰٫۵؛ none بدون نشانه=۰؛ none همراه نشانه=۰٫۵.'},
+    {h:'پرچم R5', p:'A7_danger شامل هر مورد غیر none ← R5 (خشونت/خودآسیبی).'},
+  ]},
+  'B1': {title: 'B1 — ترک تحصیل ⚠', sections: [
+    {h:'مشمول', p:'اعضای ۶-۱۸ سال.'},
+    {h:'قاعده ضریب', p:'dropped یا never=۱؛ interrupted=۰٫۵ (حداقل مدت نیازمند تصویب)؛ attending=۰.'},
+    {h:'پیش‌تکمیل', p:'از سرویس آموزش‌وپرورش.'},
+  ]},
+  'B2': {title: 'B2 — خطر ترک تحصیل', sections: [
+    {h:'قاعده ضریب', p:'child_labor یا forced_care با ۲+ عامل ← ۱، با ۱ عامل ← ۰٫۵؛ در غیر این‌صورت ≥۳←۱، ۱-۲←۰٫۵.'},
+    {h:'پرچم R4', p:'child_labor در ریسک‌ها.'},
+  ]},
+  'B3': {title: 'B3 — سواد کارکردی', sections: [
+    {h:'قاعده ضریب', p:'cannot=۱، with_help=۰٫۵، full=۰. مدرک تحصیلی به‌تنهایی ملاک نیست.'},
+  ]},
+  'B4': {title: 'B4 — مانع دسترسی به آموزش', sections: [
+    {h:'قاعده ضریب', p:'serious=۱، resolvable=۰٫۵، none=۰.'},
+  ]},
+  'B5': {title: 'B5 — ابزار دیجیتال آموزشی', sections: [
+    {h:'قاعده ضریب', p:'missing=۱، insufficient=۰٫۵، adequate و no_need=۰.'},
+  ]},
+  'B6': {title: 'B6 — نیاز آموزشی ویژه', sections: [
+    {h:'قاعده ضریب', p:'unmet=۱، served و needs_assessment=۰٫۵، none=۰؛ بیشینه اعضا.'},
+  ]},
+  'B7': {title: 'B7 — مهارت و مسیر توانمندسازی', sections: [
+    {h:'قاعده ضریب', p:'no_capability=۱، interested_no_path=۰٫۵، active و no_eligible=۰.'},
+  ]},
+  'C1': {title: 'C1 — بی‌خانمانی و تهدید سکونت', sections: [
+    {h:'قاعده ضریب', p:'nonresidential=۱؛ temporary=۰٫۵؛ stable با eviction قریب‌الوقوع=۰٫۵؛ stable بدون=۰.'},
+    {h:'پرچم R2', p:'C1_place=nonresidential یا C1_eviction=imminent.'},
+  ]},
+  'C2': {title: 'C2 — ایمنی و قابلیت سکونت', sections: [
+    {h:'قاعده ضریب', p:'structural یا uninhabitable=۱؛ یک نقص یا بیشتر=۰٫۵؛ هیچ=۰. قدمت بنا امتیاز ندارد.'},
+  ]},
+  'C3': {title: 'C3 — پایداری حق سکونت', sections: [
+    {h:'قاعده ضریب', p:'risk=۱، ambiguous=۰٫۵، clear=۰. مستأجربودن به‌تنهایی امتیاز ندارد.'},
+    {h:'پیش‌تکمیل', p:'نوع تصرف از سرویس اموال.'},
+  ]},
+  'C4': {title: 'C4 — تراکم سکونت ⚠ (محاسبه‌ای)', sections: [
+    {h:'فرمول', p:'نفر بر اتاق = تعداد اعضا ÷ max(اتاق‌ها، ۱). برش‌ها: ≤۱٫۵←۰؛ ≤۲٫۵←۰٫۲۵؛ ≤۳٫۵←۰٫۵؛ ≤۵←۰٫۷۵؛ >۵←۱.'},
+    {h:'فضای خواب', p:'safesleep=none ← ۱؛ partial ← max(پایه، ۰٫۵). تقسیم بر صفر ممنوع.'},
+  ]},
+  'C5': {title: 'C5 — آب، برق، انرژی پخت‌وپز', sections: [
+    {h:'قاعده ضریب', p:'بیشینه سه زیرپرسش: off=۱، unstable=۰٫۵، stable=۰.'},
+    {h:'پرچم R7', p:'هر یک از water/elec/cook=off.'},
+  ]},
+  'C6': {title: 'C6 — بهداشت محیط مسکن', sections: [
+    {h:'قاعده ضریب', p:'unsafe_missing=۱، shared_minor=۰٫۵، good=۰.'},
+  ]},
+  'C7': {title: 'C7 — وسایل ضروری', sections: [
+    {h:'قاعده ضریب', p:'disruptive یا فقدان ≥۳=۱؛ minor یا ≥۱=۰٫۵؛ none+۰=۰.'},
+  ]},
+  'C8': {title: 'C8 — فشار هزینه مسکن ⚠ (محاسبه‌ای)', sections: [
+    {h:'فرمول', p:'نسبت = (اجاره+شارژ+قبوض) ÷ مخرج. ودیعه جدا. معوقه فقط اینجا.'},
+    {h:'برش‌ها', p:'<۰٫۲۵←۰؛ <۰٫۴←۰٫۲۵؛ <۰٫۵۵←۰٫۵؛ <۰٫۷←۰٫۷۵؛ ≥۰٫۷←۱.'},
+    {h:'معوقه', p:'significant ← حداقل ۰٫۷۵؛ minor ← حداقل ۰٫۵.'},
+  ]},
+  'C9': {title: 'C9 — دسترسی به خدمات پایه (کنترلی)', sections: [
+    {h:'قاعده ضریب', p:'serious=۱، manageable=۰٫۵، adequate=۰. شهر/روستا امتیاز مستقیم ندارد.'},
+  ]},
+  'D1': {title: 'D1 — اشتغال تأمین‌کننده اصلی ⚠', sections: [
+    {h:'قاعده ضریب', p:'stable=۰؛ irregular=۰٫۵؛ none با unable=۱، none با فصلی=۰٫۵، none دیگر=۱.'},
+  ]},
+  'D2': {title: 'D2 — بیکاری سایر اعضای توانمند (محاسبه‌ای)', sections: [
+    {h:'فرمول', p:'تعداد اعضای unemployed_seeking (به‌جز تأمین‌کننده): ۰←۰، ۱←۰٫۵، ۲+←۱.'},
+  ]},
+  'D3': {title: 'D3 — کفایت منابع قابل اتکا ⚠ (محاسبه‌ای)', sections: [
+    {h:'فرمول', p:'درآمد قابل اتکا = جمع منابع regular+reliable. سرانه = درآمد ÷ تعداد اعضا. نسبت = سرانه ÷ خط فقر.'},
+    {h:'برش‌ها', p:'≥۱٫۲←۰؛ ≥۰٫۸←۰٫۲۵؛ ≥۰٫۶←۰٫۵؛ ≥۰٫۳←۰٫۷۵؛ <۰٫۳←۱.'},
+    {h:'خط فقر', p:'نامعتبر ← شاخص ناتمام. دریافت یک‌باره هرگز محاسبه نمی‌شود.'},
+  ]},
+  'E1': {title: 'E1 — چشم‌انداز معیشت', sections: [
+    {h:'قاعده ضریب', p:'none=۱، uncertain=۰٫۵، clear=۰. رویداد زندگی به‌تنهایی محرومیت نیست.'},
+  ]},
+  'E2': {title: 'E2 — بار مراقبت', sections: [
+    {h:'قاعده ضریب', p:'اگر عضو needsCare ثبت نشده ← ۰؛ none=۱، partial=۰٫۵، adequate=۰.'},
+    {h:'پرچم R6', p:'عضو needsCare بدون مراقب اصلی.'},
+  ]},
+  'E3': {title: 'E3 — پشتوانه اجتماعی', sections: [
+    {h:'قاعده ضریب', p:'none=۱، sporadic=۰٫۵، reliable=۰. کمک مالی صرف معیار نیست.'},
+  ]},
+  'E4': {title: 'E4 — مانع هویتی/حقوقی/اداری', sections: [
+    {h:'قاعده ضریب', p:'blocking=۱، in_progress=۰٫۵، none=۰. نبود کد ملی به‌تنهایی امتیاز ندارد.'},
+    {h:'پرچم R8', p:'E4_barrier=blocking.'},
+  ]},
+};
+
+function showModal(indId) {
+  const content = MODAL_CONTENT[indId];
+  if (!content) return;
+  document.getElementById('modalTitle').textContent = content.title;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = content.sections.map(s => 
+    `<div class="modal-section"><h4>${s.h}</h4><p>${s.p}</p></div>`).join('');
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+document.getElementById('modalOverlay')?.addEventListener('click', (e) => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+// ═══════ راه‌اندازی ═══════
+initProgress();
+// افزودن عضو نمونه سرپرست
+addMember({firstName: '', lastName: '', age: '', relation: 'سرپرست', memberType: 'registry', isHead: true, isResponder: true, isMainProvider: true});
+
+// ═══════ سریال‌سازی فرم قبل از submit ═══════
+document.getElementById('emmpiForm').addEventListener('submit', function(e) {
+  // جمع‌آوری اعضا
+  const rows = document.querySelectorAll('#membersBody tr');
+  const memberIds = [];
+  rows.forEach(tr => {
+    const mid = tr.dataset.mid;
+    const get = (field) => tr.querySelector(`[data-field="${field}"]`)?.value || '';
+    const getRole = (role) => tr.querySelector(`[data-role="${role}"]`)?.checked ? 'true' : 'false';
+    const getSelect = (field) => tr.querySelector(`select[data-field="${field}"]`)?.value || '';
+    const age = parseInt(get('age') || 0);
+    memberIds.push(mid);
+    // افزودن فیلدهای مخفی برای هر عضو
+    const fields = {
+      firstName: get('firstName'), lastName: get('lastName'), age: age,
+      gender: getSelect('gender'), relation: getSelect('relation'),
+      memberType: getSelect('memberType'), nationalId: get('nationalId'),
+      isHead: getRole('isHead'), isResponder: getRole('isResponder'),
+      isMainProvider: getRole('isMainProvider'), isMainCaregiver: getRole('isMainCaregiver'),
+      needsCare: getRole('needsCare'),
+      educationStatus: getSelect('educationStatus'),
+      employmentStatus: getSelect('employmentStatus'),
+    };
+    for (const [k, v] of Object.entries(fields)) {
+      let input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = `member_${mid}_${k}`;
+      input.value = v;
+      this.appendChild(input);
+    }
+  });
+  // فیلد member_ids
+  let idsInput = document.createElement('input');
+  idsInput.type = 'hidden';
+  idsInput.name = 'member_ids';
+  idsInput.value = memberIds.join(',');
+  this.appendChild(idsInput);
+
+  // جمع‌آوری منابع درآمد
+  const incomeRows = document.querySelectorAll('#incomeSources .income-row');
+  let incInput = document.createElement('input');
+  incInput.type = 'hidden';
+  incInput.name = 'income_count';
+  incInput.value = incomeRows.length;
+  this.appendChild(incInput);
+  incomeRows.forEach((row, i) => {
+    const get = (field) => row.querySelector(`[data-field="${field}"]`)?.value || '';
+    const fields = {kind: get('kind'), amount: get('monthlyAmount'),
+                    continuity: get('continuity'), reliability: get('reliability'),
+                    receiver: get('receiverMemberId')};
+    for (const [k, v] of Object.entries(fields)) {
+      let input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = `income_${i}_${k}`;
+      input.value = v;
+      this.appendChild(input);
+    }
+  });
+});
 </script>
-{% endblock %}
+</body>
+</html>

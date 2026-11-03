@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block crumb %}کاتالوگ خدمات شناسه‌دار{% endblock %}
+{% block body %}
+
+<style>
+.svc-hero{background:linear-gradient(135deg,var(--p-ll) 0%,#fff 100%);border:1px solid var(--p-l);border-radius:var(--r-lg);padding:24px 28px;margin-bottom:20px}
+.svc-hero h1{font-size:var(--t-2xl);color:var(--p-dd);margin:0 0 8px;display:flex;align-items:center;gap:10px}
+.svc-hero h1 svg{width:32px;height:32px}
+.svc-hero .sub{color:var(--mut);font-size:var(--t-sm);margin:0;line-height:1.7}
+
+.svc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+
+.svc-cat-card{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:18px;overflow:hidden;box-shadow:var(--sh-sm)}
+.svc-cat-card > h3{background:linear-gradient(135deg,var(--p-ll),#fff);padding:14px 18px;margin:0;font-size:14px;font-weight:700;color:var(--p-dd);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.svc-cat-card > h3 .cat-badge{width:32px;height:32px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0}
+.svc-cat-card > h3 .cat-count{margin-inline-start:auto;font-size:11px;color:var(--mut)}
+
+.svc-item{padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.svc-item:last-child{border-bottom:none}
+.svc-item:hover{background:var(--bg-2)}
+.svc-item .si-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.svc-item .si-code{font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:var(--p-d);background:var(--p-ll);padding:2px 7px;border-radius:4px;flex-shrink:0}
+.svc-item .si-name{font-size:13.5px;font-weight:700;color:var(--ink);flex:1;min-width:200px}
+.svc-item .si-ranks{display:flex;gap:4px;flex-shrink:0}
+.svc-item .si-rank-chip{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid}
+.svc-rank-A{background:var(--red-bg);color:var(--red);border-color:var(--red-line)}
+.svc-rank-B{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line)}
+.svc-rank-C{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-line)}
+.svc-rank-D{background:var(--green-bg);color:var(--green);border-color:var(--green-line)}
+.svc-rank-E{background:var(--bg-2);color:var(--mut);border-color:var(--line)}
+.svc-item .si-condition{font-size:12px;color:var(--ink-2);line-height:1.7;margin-bottom:8px;padding:8px 10px;background:var(--bg-2);border-radius:6px;border-inline-start:3px solid var(--p-l)}
+.svc-item .si-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--mut)}
+.svc-item .si-meta .chip{padding:2px 8px;border-radius:4px;background:var(--bg-2);border:1px solid var(--line)}
+.svc-item .si-meta .chip.requires-prereq{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line);font-weight:700}
+
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px}
+.status-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.status-card .ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-size:18px}
+.status-card.P0 .ic{background:var(--red-bg);color:var(--red)}
+.status-card.P1 .ic{background:var(--amber-bg);color:var(--amber)}
+.status-card.P2 .ic{background:var(--blue-bg);color:var(--blue)}
+.status-card.P3 .ic{background:var(--green-bg);color:var(--green)}
+.status-card.P4 .ic{background:var(--bg-2);color:var(--mut)}
+.status-card .s-name{font-weight:700;color:var(--ink);font-size:13px}
+.status-card .s-desc{font-size:10.5px;color:var(--mut);margin-top:2px;line-height:1.5}
+
+.prereq-card{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:10px;overflow:hidden}
+.prereq-card > h4{background:linear-gradient(135deg,var(--amber-bg),#fff);padding:12px 16px;margin:0;font-size:13px;font-weight:700;color:var(--amber-d,#d97706);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.prereq-card > h4 .p-num{width:26px;height:26px;border-radius:6px;background:var(--amber);color:#fff;display:grid;place-items:center;font-weight:800;font-size:11px;flex-shrink:0}
+.prereq-card .p-body{padding:12px 16px;font-size:12px;color:var(--ink-2);line-height:1.7}
+.prereq-card .p-q{margin-top:6px;padding:8px 10px;background:var(--bg-2);border-radius:6px;font-size:11.5px;color:var(--ink);font-weight:600}
+.prereq-card .p-axes{margin-top:6px;display:flex;gap:4px;flex-wrap:wrap}
+.prereq-card .p-axes .axis-chip{padding:1px 6px;border-radius:3px;background:var(--p-ll);color:var(--p-d);font-size:10px;font-family:ui-monospace,monospace;border:1px solid var(--p-l)}
+</style>
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>کاتالوگ خدمات شناسه‌دار</h1>
+    <p class="sub">۲۶ خدمت شناسه‌دار کمیتهٔ امداد در ۵ دسته با شرایط ورود و رتبه‌های پیشنهادی (بند ۲ـ۱۴ سند)</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
+  </div>
+</div>
+
+{# ── Hero ── #}
+<div class="svc-hero">
+  <h1>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v9"/><path d="M2 13h20"/><path d="M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    کاتالوگ خدمات شناسه‌دار
+  </h1>
+  <p class="sub">این کاتالوگ بر اساس <b>بند ۲ـ۱۴ سند Emdad_sanadHemayt0005</b> تهیه شده و شامل تمام خدمات رسمی کمیتهٔ امداد با شرایط ورود و رتبه‌های پیشنهادی A تا E است. هر خدمت بر اساس وضعیت خانوار در یکی از ۹ خانوادهٔ صف خدمت (بند ۲ـ۱۳) قرار می‌گیرد.</p>
+</div>
+
+{# ── Stats ── #}
+<div class="svc-stats">
+  <div class="stat teal">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+    <div class="num">{{ service_catalog|length }}</div>
+    <div class="lbl">خدمت شناسه‌دار</div>
+  </div>
+  <div class="stat amber">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg></div>
+    <div class="num">{{ service_categories|length }}</div>
+    <div class="lbl">دستهٔ خدمت</div>
+  </div>
+  <div class="stat blue">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div>
+    <div class="num">{{ service_queues|length }}</div>
+    <div class="lbl">خانوادهٔ صف خدمت</div>
+  </div>
+  <div class="stat green">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="num">{{ service_statuses|length }}</div>
+    <div class="lbl">وضعیت خدمت</div>
+  </div>
+  <div class="stat red">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+    <div class="num">{{ economic_prerequisites|length }}</div>
+    <div class="lbl">پیش‌شرط مداخله اقتصادی</div>
+  </div>
+</div>
+
+{# ── Service categories ── #}
+{% for cat in service_categories %}
+<div class="svc-cat-card">
+  <h3>
+    <span class="cat-badge">{{ cat.code }}</span>
+    <span>{{ cat.name }}</span>
+    <span class="cat-count">{{ cat.count }} خدمت</span>
+  </h3>
+  {% for svc in service_catalog if svc.category == cat.code %}
+  <div class="svc-item">
+    <div class="si-head">
+      <span class="si-code">{{ svc.code }}</span>
+      <span class="si-name">{{ svc.name }}</span>
+      <div class="si-ranks">
+        {% for r in svc.ranks %}
+        <span class="si-rank-chip svc-rank-{{ r }}">{{ r }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="si-condition">
+      <b style="color:var(--ink)">شرط ورود:</b> {{ svc.condition }}
+    </div>
+    <div class="si-meta">
+      <span class="chip">📋 رتبه معمول: {{ svc.default_rank }}</span>
+      {% for q in service_queues if q.code == svc.queue %}
+      <span class="chip">🗂️ {{ q.name }}</span>
+      {% endfor %}
+      {% if svc.owner %}
+      {% set owner_labels = {"rose": "کلینیک رز", "employ": "کارشناس اشتغال", "swclinic": "کلینیک مددکاری"} %}
+      <span class="chip">👤 مسئول: {{ owner_labels.get(svc.owner, svc.owner) }}</span>
+      {% endif %}
+      {% if svc.requires_economic_prereq %}
+      <span class="chip requires-prereq">⚠ نیازمند پیش‌شرط مداخله اقتصادی (تبصره ۳)</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+{# ── ۶ وضعیت خدمت (بند ۲ـ۸) ── #}
+<div class="card" style="margin-top:20px">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      ۶ وضعیت خدمت (بند ۲ـ۸ — وضعیت در نقشه راه)
+    </h2>
+  </div>
+  <p class="card-desc">هر خدمت در سبد مدخله باید در یکی از این ۶ وضعیت قرار گیرد. تغییر وضعیت توسط مددکار خانواده یا مدیر ستاد انجام می‌شود.</p>
+  <div class="status-grid">
+    {% for s in service_statuses %}
+    <div class="status-card {{ s.color }}">
+      <div class="ic">{{ s.icon }}</div>
+      <div>
+        <div class="s-name">{{ s.name }}</div>
+        <div class="s-desc">{{ s.desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── ۷ پیش‌شرط مداخله اقتصادی (تبصره ۳) ── #}
+<div class="card" style="border:2px solid var(--amber);margin-top:20px">
+  <div class="head-row">
+    <h2 style="color:var(--amber-d,#d97706)">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      ۷ پیش‌شرط مداخله اقتصادی (تبصره ۳ — ممنوعیت ورود زودهنگام)
+    </h2>
+    <span class="badge P1">حریم حفاظتی</span>
+  </div>
+  <p class="card-desc">تسهیلات اشتغال، ابزار کار، سرمایه‌گذاری، کارآفرینی و توسعه کسب‌وکار پیش از تحقق ۷ شرط زیر قابل تخصیص نیست. این شروط برای خدمات دستهٔ <b>هـ) خدمات اشتغال و توانمندسازی اقتصادی</b> لازم است.</p>
+
+  {% for prereq in economic_prerequisites %}
+  <div class="prereq-card">
+    <h4>
+      <span class="p-num">{{ loop.index }}</span>
+      <span>{{ prereq.name }}</span>
+    </h4>
+    <div class="p-body">
+      <div>{{ prereq.desc }}</div>
+      <div class="p-q">{{ prereq.check_question }}</div>
+      {% if prereq.linked_axes %}
+      <div class="p-axes">
+        <span style="color:var(--mut);font-size:11px;align-self:center">محورهای مرتبط:</span>
+        {% for ax in prereq.linked_axes %}
+        <span class="axis-chip">{{ ax }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="alert amber" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>
+      <b>یادآوری خط قرمز:</b> تأیید مددکار خانواده و مقام مجاز در تسهیلات، ابزار یا سرمایهٔ پرهزینه لازم است. هوش مصنوعی حق تصمیم قطعی در خصوص وام، سرمایه‌گذاری، کارآفرینی و توسعهٔ کسب‌وکار را ندارد.
+    </div>
+  </div>
+</div>
+
+{# ── ۹ خانوادهٔ صف خدمت (بند ۲ـ۱۳) ── #}
+<div class="card" style="margin-top:20px">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      ۹ خانوادهٔ صف خدمت (بند ۲ـ۱۳)
+    </h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>کد</th><th>نام خانوادهٔ صف</th><th>خدمات اصلی</th><th>رنگ</th></tr></thead>
+      <tbody>
+        {% for q in service_queues %}
+        <tr>
+          <td><b class="mono">{{ q.code }}</b></td>
+          <td><b>{{ q.name }}</b></td>
+          <td class="small">{{ q.services }}</td>
+          <td><span class="badge {{ q.color }}"><span class="dot"></span>{{ q.color }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── ۵ رابطهٔ بین اقدامات (بند ۲ـ۱۱) ── #}
+<div class="card" style="margin-top:20px">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      ۵ رابطهٔ بین اقدامات (بند ۲ـ۱۱)
+    </h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>کد</th><th>نوع رابطه</th><th>تعریف</th><th>نمونه</th></tr></thead>
+      <tbody>
+        {% for r in action_relations %}
+        <tr>
+          <td><b class="mono">{{ r.code }}</b></td>
+          <td><b>{{ r.name }}</b></td>
+          <td class="small">{{ r.desc }}</td>
+          <td class="small">{{ r.example }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── ۵ رتبهٔ عملیاتی A تا E (بند ۲ـ۹) ─ـ #}
+<div class="card" style="margin-top:20px">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      ۵ رتبهٔ عملیاتی A تا E (بند ۲ـ۹)
+    </h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>رتبه</th><th>عنوان</th><th>تعریف</th><th>زمان شروع</th></tr></thead>
+      <tbody>
+        {% for code, info in action_ranks.items() %}
+        <tr>
+          <td><span class="si-rank-chip svc-rank-{{ code }}">{{ code }}</span></td>
+          <td><b>{{ info.name }}</b></td>
+          <td class="small">{{ info.desc }}</td>
+          <td class="small">{{ info.deadline }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block crumb %}نظرسنجی رضایت{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>نظرسنجی رضایت نیازمند</h1>
+    <p class="sub">خانوار: <b>{{ h.identity.name or hid }}</b> — نظر شما درباره عملکرد بازیگران و کیفیت خدمت</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('beneficiary_status', hid=hid) }}">بازگشت</a>
+  </div>
+</div>
+
+<form method="post">
+<div class="card">
+  <div class="head-row">
+    <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>امتیاز کلی رضایت</h2>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    {% for i in range(1,6) %}
+    <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 12px;border:2px solid var(--line);border-radius:var(--r)">
+      <input type="radio" name="overall_rating" value="{{ i }}" {% if i == 4 %}checked{% endif %} style="accent-color:var(--p);width:20px;height:20px" required>
+      <span style="font-size:20px;font-weight:800;color:var(--ink)">{{ i }}</span>
+      <span style="font-size:10px;color:var(--mut)">{% if i == 1 %}ناراضی{% elif i == 5 %}کاملاً راضی{% endif %}</span>
+    </label>
+    {% endfor %}
+  </div>
+
+  {# سؤالات #}
+  {% for q in questions %}
+  <div style="padding:12px 0;border-bottom:1px solid var(--line-2)">
+    <div style="margin-bottom:6px">
+      <span style="width:24px;height:24px;border-radius:6px;background:var(--p-ll);color:var(--p-d);display:inline-grid;place-items:center;font-weight:800;font-size:10px;vertical-align:middle;margin-inline-end:6px">{{ loop.index }}</span>
+      <b style="font-size:13px;color:var(--ink);vertical-align:middle">{{ q.q }}</b>
+    </div>
+    <div style="display:flex;gap:4px;margin-inline-start:30px">
+      {% if q.scale == 2 %}
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:1px solid var(--line);border-radius:6px">
+        <input type="radio" name="sat_{{ q.code }}" value="1" style="accent-color:var(--green)" required>
+        <span style="font-size:11px">بله</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:1px solid var(--line);border-radius:6px">
+        <input type="radio" name="sat_{{ q.code }}" value="0" style="accent-color:var(--red)" required>
+        <span style="font-size:11px">خیر</span>
+      </label>
+      {% else %}
+      {% for i in range(1,6) %}
+      <label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">
+        <input type="radio" name="sat_{{ q.code }}" value="{{ i }}" {% if i == 4 %}checked{% endif %} style="accent-color:var(--p);width:16px;height:16px" required>
+        <span style="font-size:10px;color:var(--mut)">{{ i }}</span>
+      </label>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# بازیگران #}
+{% if actors_involved %}
+<div class="card">
+  <div class="head-row"><h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg>بازیگران در ارتباط با شما</h2></div>
+  <div class="grid">
+    <div>
+      <label>بهترین بازیگر (در صورت وجود)</label>
+      <select name="best_actor">
+        <option value="">— انتخاب —</option>
+        {% for a in actors_involved %}
+        <option value="{{ a.role }}">{{ a.label }} — {{ a.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>نیازمند به بهبود</label>
+      <select name="worst_actor">
+        <option value="">— انتخاب —</option>
+        {% for a in actors_involved %}
+        <option value="{{ a.role }}">{{ a.label }} — {{ a.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <label>توضیحات و بازخورد</label>
+  <textarea name="feedback_text" placeholder="هر نظر یا پیشنهادی دارید اینجا بنویسید..." style="min-height:80px"></textarea>
+  <label class="chk" style="margin-top:10px">
+    <label><input type="checkbox" name="would_recommend" value="yes" style="width:18px;height:18px"> در صورت نیاز، این سامانه را به دیگران پیشنهاد می‌دهم</label>
+  </label>
+</div>
+
+<div style="margin-top:14px;display:flex;gap:8px">
+  <button class="btn lg" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>ثبت نظرسنجی</button>
+  <a class="btn sec" href="{{ url_for('beneficiary_status', hid=hid) }}">انصراف</a>
+</div>
+</form>
+
+{% endblock %}

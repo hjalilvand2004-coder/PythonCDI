@@ -3,153 +3,199 @@
 {% block body %}
 
 <style>
-/* ─── Schematic Workflow ─── */
-.workflow-banner{
-  background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);
-  color:#fff; border-radius:var(--r-lg); padding:22px 26px; margin-bottom:22px;
+/* ─── Roadmap Journey ─── */
+.roadmap-journey{
+  background:linear-gradient(135deg,#0f766e 0%,#134e4a 100%);
+  border-radius:var(--r-lg); padding:20px 24px; margin-bottom:18px;
   box-shadow:var(--sh-lg); position:relative; overflow:hidden;
 }
-.workflow-banner::before{
-  content:""; position:absolute; top:-50px; inset-inline-end:-30px;
-  width:240px; height:240px; border-radius:50%;
-  background:radial-gradient(circle, rgba(94,234,212,.25), transparent 65%);
+.roadmap-journey::before{
+  content:""; position:absolute; top:-40px; inset-inline-end:-20px;
+  width:200px; height:200px; border-radius:50%;
+  background:radial-gradient(circle, rgba(94,234,212,.2), transparent 70%);
 }
-.workflow-banner > *{position:relative; z-index:1}
-.workflow-banner h1{font-size:18px; font-weight:700; margin:0 0 4px}
-.workflow-banner .wb-sub{font-size:12px; color:rgba(255,255,255,.7); margin-bottom:18px}
+.rj-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:relative;z-index:1}
+.rj-head h2{margin:0;font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.rj-head h2 svg{width:18px;height:18px;color:#5eead4}
+.rj-head .rj-total{font-size:13px;color:rgba(255,255,255,.85);font-weight:600}
+.rj-head .rj-total b{font-size:18px;color:#5eead4}
 
-.workflow-steps{
-  display:flex; align-items:flex-start; justify-content:space-between;
-  position:relative; padding:8px 0 4px; gap:4px;
+.rj-track{display:flex;align-items:flex-start;position:relative;z-index:1;gap:0}
+.rj-track::before{
+  content:""; position:absolute; top:22px; inset-inline-start:30px; inset-inline-end:30px;
+  height:3px; background:rgba(255,255,255,.1); border-radius:2px; z-index:0;
 }
-.workflow-steps::before{
-  content:""; position:absolute; top:24px; inset-inline-start:30px; inset-inline-end:30px;
-  height:3px; background:rgba(255,255,255,.15); border-radius:2px; z-index:0;
+
+.rj-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;text-align:center;max-width:130px;min-width:80px}
+.rj-step .rj-circle{
+  width:44px; height:44px; border-radius:50%;
+  display:grid; place-items:center; font-weight:800; font-size:14px;
+  transition:all .3s var(--ease); position:relative; flex-shrink:0;
 }
-.workflow-steps::after{
-  content:""; position:absolute; top:24px; inset-inline-start:30px;
-  height:3px; background:linear-gradient(90deg, #5eead4, var(--p-l)); border-radius:2px;
-  z-index:1; width:calc((100% - 60px) * var(--progress, 0)); transition:width 1s ease;
+.rj-step svg.rj-icon{width:22px;height:22px}
+
+.rj-step.done .rj-circle{
+  background:linear-gradient(135deg,#22c55e,#15803d); color:#fff;
+  box-shadow:0 0 0 4px rgba(34,197,94,.2);
 }
-.wf-step{
-  display:flex; flex-direction:column; align-items:center; gap:8px;
-  flex:1; position:relative; z-index:2; text-align:center; max-width:140px;
+.rj-step.active .rj-circle{
+  background:linear-gradient(135deg,#fbbf24,#d97706); color:#fff;
+  box-shadow:0 0 0 6px rgba(251,191,36,.25); animation:rj-pulse 2s infinite;
 }
-.wf-step .ws-circle{
-  width:48px; height:48px; border-radius:50%;
-  background:#1e293b; border:2px solid rgba(255,255,255,.15); color:rgba(255,255,255,.4);
-  display:grid; place-items:center; font-weight:700; font-size:15px;
-  transition:all .3s var(--ease); position:relative;
-}
-.wf-step .ws-circle svg{width:22px; height:22px}
-.wf-step.done .ws-circle{
-  background:linear-gradient(135deg, #5eead4, var(--p)); border-color:#5eead4; color:#fff;
-  box-shadow:0 0 0 4px rgba(94,234,212,.15);
-}
-.wf-step.active .ws-circle{
-  background:linear-gradient(135deg, #fbbf24, #d97706); border-color:#fbbf24; color:#fff;
-  box-shadow:0 0 0 6px rgba(251,191,36,.2); animation:pulse-gold 2s infinite;
-}
-@keyframes pulse-gold{
-  0%,100%{box-shadow:0 0 0 6px rgba(251,191,36,.2)}
-  50%{box-shadow:0 0 0 10px rgba(251,191,36,.1)}
-}
-.wf-step.current .ws-circle{
-  background:linear-gradient(135deg, #5eead4, var(--p)); border-color:#5eead4; color:#fff;
-  box-shadow:0 0 0 6px rgba(94,234,212,.25);
-}
-.wf-step.locked .ws-circle{
+@keyframes rj-pulse{0%,100%{box-shadow:0 0 0 6px rgba(251,191,36,.25)}50%{box-shadow:0 0 0 10px rgba(251,191,36,.1)}}
+.rj-step.pending .rj-circle{
   background:rgba(255,255,255,.05); border:2px dashed rgba(255,255,255,.2); color:rgba(255,255,255,.3);
 }
-.wf-step .ws-title{font-size:11px; font-weight:700; color:#fff; line-height:1.3; margin-top:2px}
-.wf-step.locked .ws-title{color:rgba(255,255,255,.4)}
-.wf-step .ws-sub{font-size:9.5px; color:rgba(255,255,255,.6); line-height:1.4}
-.wf-step.locked .ws-sub{color:rgba(255,255,255,.3)}
 
-/* Household stage cards */
-.stage-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-bottom:18px}
-.stage-card{
-  background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:16px;
-  box-shadow:var(--sh-sm); transition:all .2s var(--ease); position:relative; overflow:hidden;
+.rj-step .rj-count{
+  font-size:22px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums;
 }
-.stage-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
-.stage-card::before{
-  content:""; position:absolute; top:0; inset-inline-start:0; bottom:0; width:4px;
-}
-.stage-card.s-registration::before{background:var(--mut)}
-.stage-card.s-emmpi::before{background:var(--amber)}
-.stage-card.s-cdi::before{background:var(--blue)}
-.stage-card.s-profile::before{background:var(--p)}
-.stage-card.s-complete::before{background:var(--green)}
-.stage-card .sc-head{display:flex; align-items:center; gap:10px; margin-bottom:10px}
-.stage-card .sc-ic{width:36px; height:36px; border-radius:9px; display:grid; place-items:center; flex-shrink:0}
-.stage-card .sc-ic svg{width:20px; height:20px}
-.stage-card.s-registration .sc-ic{background:var(--bg-2); color:var(--mut)}
-.stage-card.s-emmpi .sc-ic{background:var(--amber-bg); color:var(--amber)}
-.stage-card.s-cdi .sc-ic{background:var(--blue-bg); color:var(--blue)}
-.stage-card.s-profile .sc-ic{background:var(--p-ll); color:var(--p-d)}
-.stage-card.s-complete .sc-ic{background:var(--green-bg); color:var(--green)}
-.stage-card .sc-title{font-size:14px; font-weight:700; color:var(--ink); flex:1}
-.stage-card .sc-stage-num{font-size:11px; color:var(--mut); font-weight:600}
-.stage-card .sc-count{font-size:24px; font-weight:800; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums}
-.stage-card .sc-label{font-size:11px; color:var(--mut); margin-top:2px}
-.stage-card .sc-action{font-size:11px; color:var(--mut-2); margin-top:8px; line-height:1.5}
+.rj-step.done .rj-count{color:#4ade80}
+.rj-step.active .rj-count{color:#fbbf24}
+.rj-step.pending .rj-count{color:rgba(255,255,255,.4); font-size:16px}
 
-.workflow-guide{
-  background:linear-gradient(135deg, var(--p-ll), #fff);
+.rj-step .rj-name{font-size:11px; font-weight:700; color:#fff; line-height:1.3}
+.rj-step.pending .rj-name{color:rgba(255,255,255,.4)}
+.rj-step .rj-desc{font-size:9.5px; color:rgba(255,255,255,.6); line-height:1.4}
+.rj-step.pending .rj-desc{color:rgba(255,255,255,.3)}
+
+/* connecting line between steps — colored for done/active */
+.rj-step:not(:last-child)::after{
+  content:""; position:absolute; top:22px; left:50%; width:100%; height:3px;
+  z-index:-1; border-radius:2px;
+}
+.rj-step.done:not(:last-child)::after{background:linear-gradient(90deg,transparent,rgba(34,197,94,.4),transparent)}
+.rj-step.active:not(:last-child)::after{background:linear-gradient(90deg,rgba(251,191,36,.3),rgba(255,255,255,.08))}
+
+/* For beneficiary — compact progress */
+.ben-progress{
+  background:linear-gradient(135deg,var(--p-ll),#fff);
   border:1px solid var(--p-l); border-radius:var(--r-md);
   padding:16px 20px; margin-bottom:18px;
 }
-.workflow-guide h2{font-size:14px; font-weight:700; color:var(--p-dd); margin-bottom:8px; display:flex; align-items:center; gap:6px}
-.workflow-guide h2 svg{width:16px; height:16px}
-.workflow-guide ol{margin:0 18px; padding:0; line-height:2; font-size:12.5px; color:var(--ink-2)}
-.workflow-guide ol li{margin-bottom:4px}
-.workflow-guide ol li b{color:var(--p-d)}
+.ben-progress h3{margin:0 0 12px;font-size:14px;color:var(--p-dd);font-weight:700;display:flex;align-items:center;gap:6px}
+.ben-progress h3 svg{width:18px;height:18px;color:var(--p)}
+.ben-progress .bp-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.ben-progress .bp-pct{font-size:28px;font-weight:800;color:var(--p-d);line-height:1;min-width:60px}
+.ben-progress .bp-bar{flex:1;height:10px;background:var(--bg-2);border-radius:5px;overflow:hidden}
+.ben-progress .bp-bar-fill{height:100%;background:linear-gradient(90deg,var(--p-l),var(--p));border-radius:5px;transition:width 1s var(--ease)}
+.ben-progress .bp-next{font-size:12px;color:var(--ink-2)}
+.ben-progress .bp-next b{color:var(--p-d)}
 </style>
 
-{# ── Banner: Schematic Workflow ──────────────────────── #}
-<div class="workflow-banner" id="workflow-banner">
-  <h1>مسیر کامل رسیدگی به خانوار</h1>
-  <p class="wb-sub">از ثبت درخواست تا خروج پایدار — سامانه هوشمند EM-MPI و CDI کمیتهٔ امداد</p>
+{# ═══════ نقشه راه + آمار (یکپارچه) ═══════ #}
+{% set ns = namespace(reg=0, screen=0, l2=0, l3=0, prof=0, complete=0, total=0) %}
+{% for row in households %}
+  {% set ns.total = ns.total + 1 %}
+  {% if u.role == 'beneficiary' %}
+    {% set ns.reg = ns.reg + 1 %}
+  {% elif not row.h.emmpi %}
+    {% set ns.reg = ns.reg + 1 %}
+  {% elif row.h.emmpi and not row.h.state.answers %}
+    {% set ns.screen = ns.screen + 1 %}
+  {% elif row.h.state.answers and not row.h.layer2_done %}
+    {% set ns.l2 = ns.l2 + 1 %}
+  {% elif row.h.layer2_done and row.res and row.res.layer3_required and not row.h.layer3_done %}
+    {% set ns.l3 = ns.l3 + 1 %}
+  {% elif row.h.layer2_done or row.h.layer3_done %}
+    {% if row.h.status == 'completed' %}
+      {% set ns.complete = ns.complete + 1 %}
+    {% else %}
+      {% set ns.prof = ns.prof + 1 %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
 
-  <div class="workflow-steps" id="wf-steps" style="--progress: 0">
-    <div class="wf-step current">
-      <div class="ws-circle">۱</div>
-      <div class="ws-title">ثبت درخواست</div>
-      <div class="ws-sub">پروندهٔ اولیه</div>
+{# ── برای نیازمند: نقشه راه شخصی ── #}
+{% if u.role == 'beneficiary' %}
+{% for row in households %}
+{% set h = row.h %}
+<div class="ben-progress">
+  <h3>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+    نقشهٔ راه پروندهٔ شما
+  </h3>
+  {% set total_steps = 6 %}
+  {% set my_step = 1 %}
+  {% set my_step_name = 'ثبت درخواست' %}
+  {% set my_next = 'در انتظار تخصیص همیار' %}
+  {% if h.emmpi and h.emmpi.get('not_eligible') %}
+    {% set my_step = 2 %}
+    {% set my_step_name = 'غیرنیازمند — خارج از چرخه' %}
+    {% set my_next = 'پرونده شما خارج از چرخه توانمندسازی شد — حق اعتراض دارید' %}
+  {% elif h.emmpi and not h.state.answers %}
+    {% set my_step = 2 %}{% set my_step_name = 'غربالگری و فعال‌سازی' %}{% set my_next = 'در انتظار شروع CDI هدفمند' %}
+  {% elif h.state.answers and not h.layer2_done %}
+    {% set my_step = 3 %}{% set my_step_name = 'CDI هدفمند' %}{% set my_next = 'در حال ارزیابی محورهای فعال' %}
+  {% elif h.layer2_done and row.res and row.res.layer3_required and not h.layer3_done %}
+    {% set my_step = 4 %}{% set my_step_name = 'CDI عمیق' %}{% set my_next = 'در انتظار تحلیل تخصصی' %}
+  {% elif h.layer2_done or h.layer3_done %}
+    {% if h.status == 'completed' %}
+      {% set my_step = 6 %}{% set my_step_name = 'تکمیل شد' %}{% set my_next = 'پرونده شما تکمیل شده است' %}
+    {% else %}
+      {% set my_step = 5 %}{% set my_step_name = 'پروفایل و سبد مداخله' %}{% set my_next = 'در حال طراحی برنامهٔ مداخله' %}
+    {% endif %}
+  {% endif %}
+  {% set my_pct = (my_step * 100 / total_steps)|round(0) %}
+  <div class="bp-row">
+    <div class="bp-pct">{{ my_pct }}٪</div>
+    <div class="bp-bar"><div class="bp-bar-fill" style="width:{{ my_pct }}%"></div></div>
+  </div>
+  <div class="bp-next">مرحلهٔ فعلی: <b>{{ my_step }}. {{ my_step_name }}</b> — {{ my_next }}</div>
+</div>
+{% endfor %}
+
+{# ── برای سایر نقش‌ها: نقشه راه + آمار یکپارچه ── #}
+{% else %}
+<div class="roadmap-journey">
+  <div class="rj-head">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      نقشه راه رسیدگی به پرونده‌ها
+    </h2>
+    <span class="rj-total">مجموع: <b>{{ ns.total }}</b> پرونده</span>
+  </div>
+
+  <div class="rj-track">
+    <div class="rj-step {% if ns.reg > 0 %}active{% else %}pending{% endif %}">
+      <div class="rj-circle">{% if ns.reg > 0 %}<svg class="rj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>{% else %}۱{% endif %}</div>
+      <div class="rj-count">{{ ns.reg }}</div>
+      <div class="rj-name">ثبت درخواست</div>
+      <div class="rj-desc">در انتظار غربالگری</div>
     </div>
-    <div class="wf-step locked">
-      <div class="ws-circle">۲</div>
-      <div class="ws-title">EM-MPI</div>
-      <div class="ws-sub">غربالگری ۳۵ شاخص</div>
+    <div class="rj-step {% if ns.screen > 0 %}active{% else %}pending{% endif %}">
+      <div class="rj-circle">{% if ns.screen > 0 %}<svg class="rj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>{% else %}۲{% endif %}</div>
+      <div class="rj-count">{{ ns.screen }}</div>
+      <div class="rj-name">غربالگری شد</div>
+      <div class="rj-desc">آمادهٔ CDI هدفمند</div>
     </div>
-    <div class="wf-step locked">
-      <div class="ws-circle">۳</div>
-      <div class="ws-title">CDI سریع</div>
-      <div class="ws-sub">لایهٔ ۱ — فعال‌سازی</div>
+    <div class="rj-step {% if ns.l2 > 0 %}active{% else %}pending{% endif %}">
+      <div class="rj-circle">{% if ns.l2 > 0 %}<svg class="rj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>{% else %}۳{% endif %}</div>
+      <div class="rj-count">{{ ns.l2 }}</div>
+      <div class="rj-name">CDI هدفمند</div>
+      <div class="rj-desc">لایه ۲ در جریان</div>
     </div>
-    <div class="wf-step locked">
-      <div class="ws-circle">۴</div>
-      <div class="ws-title">CDI هدفمند</div>
-      <div class="ws-sub">لایهٔ ۲ — ارزیابی</div>
+    <div class="rj-step {% if ns.l3 > 0 %}active{% else %}pending{% endif %}">
+      <div class="rj-circle">{% if ns.l3 > 0 %}<svg class="rj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>{% else %}۴{% endif %}</div>
+      <div class="rj-count">{{ ns.l3 }}</div>
+      <div class="rj-name">CDI عمیق</div>
+      <div class="rj-desc">لایه ۳ در جریان</div>
     </div>
-    <div class="wf-step locked">
-      <div class="ws-circle">۵</div>
-      <div class="ws-title">پروفایل</div>
-      <div class="ws-sub">توانمندسازی</div>
+    <div class="rj-step {% if ns.prof > 0 %}active{% else %}pending{% endif %}">
+      <div class="rj-circle">{% if ns.prof > 0 %}<svg class="rj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>{% else %}۵{% endif %}</div>
+      <div class="rj-count">{{ ns.prof }}</div>
+      <div class="rj-name">پروفایل</div>
+      <div class="rj-desc">آمادهٔ سبد مداخله</div>
     </div>
-    <div class="wf-step locked">
-      <div class="ws-circle">۶</div>
-      <div class="ws-title">سبد مداخله</div>
-      <div class="ws-sub">اقدامات A-E</div>
-    </div>
-    <div class="wf-step locked">
-      <div class="ws-circle">۷</div>
-      <div class="ws-title">پایش و خروج</div>
-      <div class="ws-sub">کاهش تدریجی حمایت</div>
+    <div class="rj-step {% if ns.complete > 0 %}done{% else %}pending{% endif %}">
+      <div class="rj-circle">{% if ns.complete > 0 %}<svg class="rj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% else %}۶{% endif %}</div>
+      <div class="rj-count">{{ ns.complete }}</div>
+      <div class="rj-name">تکمیل شد</div>
+      <div class="rj-desc">خروج پایدار</div>
     </div>
   </div>
 </div>
+{% endif %}
 
 {# ── Page head ─────────────────────────────────────── #}
 <div class="page-head">
@@ -186,124 +232,76 @@
   </div>
 </div>
 
-{# ── آمار بر اساس مرحله ────────────────────────────── #}
-{% set ns = namespace(reg=0, emmpi=0, cdi=0, profile=0, complete=0) %}
+{# ── فهرست پرونده‌ها با صفحه‌بندی ──────────────────────── #}
+<h2 style="font-size:16px; font-weight:700; color:var(--ink); margin:18px 0 12px; display:flex; align-items:center; gap:8px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--p)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  پرونده‌های فعال ({{ households|length }})
+</h2>
+
+{% set page_size = 10 %}
+{% set total_hhs = households|length %}
+{% set total_pages = (total_hhs + page_size - 1) // page_size %}
+{% set current_page = request.args.get('page', '1')|int %}
+{% if current_page < 1 %}{% set current_page = 1 %}{% endif %}
+{% if current_page > total_pages and total_pages > 0 %}{% set current_page = total_pages %}{% endif %}
+{% set start_idx = (current_page - 1) * page_size %}
+{% set end_idx = start_idx + page_size %}
+{% if end_idx > total_hhs %}{% set end_idx = total_hhs %}{% endif %}
+
+{# فیلتر: فقط پرونده‌های فعال (نه not_eligible یا appeal_pending که رد شده) #}
+{% set active_hhs = [] %}
 {% for row in households %}
-  {% if not row.h.emmpi %}
-    {% set ns.reg = ns.reg + 1 %}
-  {% elif row.h.emmpi and not row.h.state.answers %}
-    {% set ns.emmpi = ns.emmpi + 1 %}
-  {% elif row.h.state.answers and not row.h.layer3_done and row.res and row.res.layer3_required %}
-    {% set ns.cdi = ns.cdi + 1 %}
-  {% elif row.h.state.answers %}
-    {% set ns.profile = ns.profile + 1 %}
+  {% if row.h.status not in ('not_eligible',) %}
+    {# appeal_pending را هم نشان بده ولی با نشان متفاوت #}
+    {% set _ = active_hhs.append(row) %}
   {% endif %}
 {% endfor %}
 
-<div class="stage-grid">
-  <div class="stage-card s-registration">
-    <div class="sc-head">
-      <div class="sc-ic">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-      </div>
-      <div>
-        <div class="sc-title">ثبت درخواست</div>
-        <div class="sc-stage-num">مرحلهٔ ۱</div>
-      </div>
-    </div>
-    <div class="sc-count">{{ ns.reg }}</div>
-    <div class="sc-label">پروندهٔ منتظر EM-MPI</div>
-    <div class="sc-action">آمادهٔ غربالگری اولیه</div>
-  </div>
+{% set paged_hhs = active_hhs[start_idx:end_idx] if active_hhs|length > end_idx else active_hhs[start_idx:] %}
+{% if active_hhs|length <= end_idx %}
+  {% set paged_hhs = active_hhs[start_idx:] %}
+{% endif %}
 
-  <div class="stage-card s-emmpi">
-    <div class="sc-head">
-      <div class="sc-ic">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <div>
-        <div class="sc-title">EM-MPI</div>
-        <div class="sc-stage-num">مرحلهٔ ۲</div>
-      </div>
-    </div>
-    <div class="sc-count">{{ ns.emmpi }}</div>
-    <div class="sc-label">غربالگری انجام‌شده</div>
-    <div class="sc-action">آمادهٔ ارزیابی CDI</div>
-  </div>
-
-  <div class="stage-card s-cdi">
-    <div class="sc-head">
-      <div class="sc-ic">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </div>
-      <div>
-        <div class="sc-title">CDI</div>
-        <div class="sc-stage-num">مرحلهٔ ۳</div>
-      </div>
-    </div>
-    <div class="sc-count">{{ ns.cdi }}</div>
-    <div class="sc-label">در حال ارزیابی جامع</div>
-    <div class="sc-action">لایه ۲ یا ۳ در جریان</div>
-  </div>
-
-  <div class="stage-card s-profile">
-    <div class="sc-head">
-      <div class="sc-ic">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div>
-        <div class="sc-title">پروفایل</div>
-        <div class="sc-stage-num">مرحلهٔ ۵</div>
-      </div>
-    </div>
-    <div class="sc-count">{{ ns.profile }}</div>
-    <div class="sc-label">پروفایل تکمیل‌شده</div>
-    <div class="sc-action">آمادهٔ سبد مداخله</div>
-  </div>
+{% if active_hhs|length == 0 and u.role != 'beneficiary' %}
+<div class="empty" style="padding:40px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--mut-3)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+  <div class="e-title">هیچ پروندهٔ فعالی موجود نیست</div>
+  <div class="e-sub">پرونده‌های جدید پس از ثبت در اینجا نمایش داده می‌شوند.</div>
 </div>
+{% endif %}
 
-{# ── راهنمای مسیر ──────────────────────────────────── #}
-<div class="workflow-guide">
-  <h2>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    راهنمای مسیر رسیدگی
-  </h2>
-  <ol>
-    <li><b>ثبت درخواست:</b> مشخصات اولیهٔ خانوار (هویت، محل، اعضا) ثبت می‌شود.</li>
-    <li><b>EM-MPI (غربالگری اولیه):</b> ۳۵ شاخص در ۵ بُعد ارزیابی می‌شود؛ امتیاز ۰-۱۰۰۰ محاسبه می‌شود. در صورت امتیاز ≥ ۳۰۰ یا وجود پرچم قرمز، ارجاع به CDI.</li>
-    <li><b>CDI سریع (لایه ۱):</b> فعال‌سازی شاخه‌ای محورهای CDI بر اساس پرچم‌های قرمز EM-MPI.</li>
-    <li><b>CDI هدفمند (لایه ۲):</b> ارزیابی محورهای فعال با پرسشنامهٔ پویا.</li>
-    <li><b>پروفایل توانمندسازی:</b> خروجی رسمی CDI با ۱۶ بخش الزامی.</li>
-    <li><b>سبد مداخله:</b> رتبه‌بندی اقدامات A-E با اولویت PIM.</li>
-    <li><b>پایش و خروج پایدار:</b> کاهش تدریجی حمایت پس از ثبات.</li>
-  </ol>
-</div>
-
-{# ── فهرست پرونده‌ها ─────────────────────────────────── #}
-<h2 style="font-size:16px; font-weight:700; color:var(--ink); margin:18px 0 12px; display:flex; align-items:center; gap:8px">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--p)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-  پرونده‌های فعال
-</h2>
-
-{% for row in households %}
+{% for row in paged_hhs %}
 {% set h = row.h %}{% set res = row.res %}
 {# تعیین مرحلهٔ فعلی #}
 {% if u.role == 'beneficiary' %}
-  {# نیازمند: همیشه به صفحهٔ وضعیت خودش می‌رود — نه EM-MPI یا CDI #}
   {% set stage = 'registration' %}
   {% set stage_label = 'در انتظار تخصیص همیار' %}
   {% set stage_color = 'amber' %}
   {% set next_action = url_for('beneficiary_status', hid=row.hid) %}
   {% set next_label = 'مشاهدهٔ وضعیت درخواست' %}
+{% elif h.status == 'appeal_pending' %}
+  {# اعتراض در انتظار بررسی #}
+  {% set stage = 'appeal' %}
+  {% set stage_label = 'اعتراض ثبت شده — در انتظار بررسی' %}
+  {% set stage_color = 'amber' %}
+  {% set next_action = url_for('household_view', hid=row.hid) %}
+  {% set next_label = 'بررسی اعتراض' %}
+{% elif h.status == 'not_eligible' %}
+  {# رد شده — نباید در پرونده‌های فعال باشد، ولی اگر بود #}
+  {% set stage = 'rejected' %}
+  {% set stage_label = 'غیرنیازمند — خارج از چرخه' %}
+  {% set stage_color = 'mut' %}
+  {% set next_action = url_for('household_view', hid=row.hid) %}
+  {% set next_label = 'مشاهده پرونده' %}
 {% elif not h.emmpi %}
   {% set stage = 'registration' %}
-  {% set stage_label = 'ثبت اولیه — آمادهٔ EM-MPI' %}
+  {% set stage_label = 'ثبت اولیه — آمادهٔ غربالگری' %}
   {% set stage_color = 'amber' %}
   {% set next_action = url_for('emmpi_form', hid=row.hid) %}
-  {% set next_label = 'شروع EM-MPI' %}
+  {% set next_label = 'شروع غربالگری' %}
 {% elif h.emmpi and not h.state.answers %}
   {% set stage = 'emmpi' %}
-  {% set stage_label = 'EM-MPI تکمیل شد — آمادهٔ CDI' %}
+  {% set stage_label = 'غربالگری شد — آمادهٔ CDI' %}
   {% set stage_color = 'blue' %}
   {% set next_action = url_for('assess', hid=row.hid) %}
   {% set next_label = 'شروع CDI' %}
@@ -338,6 +336,10 @@
         {# نشان مرحله #}
         {% if stage == 'registration' %}
         <span class="badge P1"><span class="dot"></span>مرحله ۱ — ثبت</span>
+        {% elif stage == 'appeal' %}
+        <span class="badge P0"><span class="dot"></span>اعتراض در انتظار</span>
+        {% elif stage == 'rejected' %}
+        <span class="badge P4"><span class="dot"></span>غیرنیازمند</span>
         {% elif stage == 'emmpi' %}
         <span class="badge {{ h.emmpi.result.level.color }}"><span class="dot"></span>EM-MPI: {{ h.emmpi.result.score }}</span>
         {% if h.emmpi.result.red_flags %}<span class="badge P0"><span class="dot"></span>{{ h.emmpi.result.red_flags|length }} پرچم قرمز</span>{% endif %}
@@ -391,14 +393,30 @@
 </div>
 {% endfor %}
 
-<script>
-// محاسبهٔ پیشرفت کلی مسیر بر اساس تعداد پرونده‌ها
-(function(){
-  const banner = document.getElementById('workflow-banner');
-  const steps = document.getElementById('wf-steps');
-  if (!banner || !steps) return;
-  // پیشرفت پیش‌فرض: مرحله ۲ (EM-MPI) فعال است
-  // می‌توان این را بر اساس تعداد پرونده‌ها در هر مرحله به‌روزرسانی کرد
-})();
-</script>
+{# ── صفحه‌بندی ──────────────────────────────────────── #}
+{% set active_count = active_hhs|length %}
+{% set total_pages = (active_count + page_size - 1) // page_size %}
+{% if total_pages > 1 %}
+<div style="display:flex;justify-content:center;align-items:center;gap:6px;margin:20px 0 10px;flex-wrap:wrap">
+  {% if current_page > 1 %}
+  <a href="?page={{ current_page - 1 }}" class="btn sec sm">‹ قبلی</a>
+  {% endif %}
+  {% for p in range(1, total_pages + 1) %}
+    {% if p == current_page %}
+    <span style="background:var(--p);color:#fff;padding:4px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:700">{{ p }}</span>
+    {% elif p <= 3 or p > total_pages - 2 or (p >= current_page - 1 and p <= current_page + 1) %}
+    <a href="?page={{ p }}" style="background:var(--bg-2);color:var(--ink-2);padding:4px 12px;border-radius:var(--r-sm);font-size:12px;text-decoration:none;border:1px solid var(--line)">{{ p }}</a>
+    {% elif p == 4 or p == total_pages - 2 %}
+    <span style="color:var(--mut);padding:4px 6px">...</span>
+    {% endif %}
+  {% endfor %}
+  {% if current_page < total_pages %}
+  <a href="?page={{ current_page + 1 }}" class="btn sec sm">بعدی ›</a>
+  {% endif %}
+</div>
+<div style="text-align:center;font-size:11px;color:var(--mut);margin-bottom:10px">
+  صفحهٔ {{ current_page }} از {{ total_pages }} — نمایش {{ start_idx + 1 }} تا {{ start_idx + paged_hhs|length }} از {{ active_count }} پرونده
+</div>
+{% endif %}
+
 {% endblock %}

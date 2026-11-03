@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block crumb %}منابع توانمندسازی{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>گزارش منابع مورد نیاز برای توانمندسازی</h1>
+    <p class="sub">بر اساس پروفایل توانمندسازی، مسیر و اولویت‌های تنظیم‌شده — تخمین منابع و هزینه</p>
+  </div>
+</div>
+
+{# ── آمار خلاصه ──────────────────────────────────────── #}
+<div class="stat-grid">
+  <div class="stat teal">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg></div>
+    <div class="num">{{ total_services }}</div>
+    <div class="lbl">جمع خدمات مورد نیاز</div>
+  </div>
+  <div class="stat red">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+    <div class="num">{% if total_estimated_cost > 0 %}{{ total_estimated_cost }}{% else %}۰{% endif %}</div>
+    <div class="lbl">هزینه تخمینی کل (تومان)</div>
+  </div>
+  <div class="stat blue">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div>
+    <div class="num">{{ resources_by_type|length }}</div>
+    <div class="lbl">انواع خدمات مورد نیاز</div>
+  </div>
+  <div class="stat green">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+    <div class="num">{{ resources_by_province|length }}</div>
+    <div class="lbl">استان نیازمند</div>
+  </div>
+</div>
+
+{# ── فراوانی خدمات ────────────────────────────────────── #}
+<div class="chart-card">
+  <h3>فراوانی و هزینه خدمات مورد نیاز (کشور)</h3>
+  {% if resources_by_type %}
+  {% set max_count = resources_by_type[0][1].count if resources_by_type else 1 %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>نوع خدمت</th><th>تعداد مورد نیاز</th><th>هزینه تخمینی کل</th><th>هزینه میانگین</th><th>نمودار</th></tr></thead>
+      <tbody>
+        {% for svc, data in resources_by_type %}
+        <tr>
+          <td><b>{{ data.label }}</b><br><span class="small mono">{{ svc }}</span></td>
+          <td><b>{{ data.count }}</b></td>
+          <td><b style="color:var(--red)">{{ "{:,}".format(data.cost_total) }}</b> تومان</td>
+          <td>{{ "{:,}".format(data.cost_total // data.count if data.count > 0 else 0) }}</td>
+          <td>
+            <div style="width:120px;height:8px;background:var(--bg-2);border-radius:4px;overflow:hidden">
+              <div style="height:100%;background:var(--p);border-radius:4px;width:{{ (data.count / max_count * 100)|round }}%"></div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--bg-2);font-weight:700">
+          <td>جمع کل</td>
+          <td>{{ total_services }}</td>
+          <td style="color:var(--red)">{{ "{:,}".format(total_estimated_cost) }} تومان</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">هنوز پرونده‌ای برای تحلیل ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ── منابع به تفکیک استان ──────────────────────────────── #}
+<div class="chart-card">
+  <h3>منابع مورد نیاز به تفکیک استان</h3>
+  {% if resources_by_province %}
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>استان</th><th>خدمات مورد نیاز</th><th>تعداد کل</th></tr></thead>
+      <tbody>
+        {% for pk, services in resources_by_province | dictsort %}
+        <tr>
+          <td><b>{{ PROVINCES.get(pk, {}).get("name", pk) }}</b></td>
+          <td>
+            {% for svc, count in services | dictsort %}
+            <span class="tag" style="margin:2px;font-size:10px">
+              <b>{{ SERVICE_COSTS.get(svc, {}).get("label", svc) }}</b>: {{ count }}
+            </span>
+            {% endfor %}
+          </td>
+          <td><b>{{ services | length }}</b></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">داده‌ای موجود نیست.</div></div>
+  {% endif %}
+</div>
+
+{# ── تعرفه خدمات ──────────────────────────────────────── #}
+<div class="chart-card">
+  <h3>تعرفه پایهٔ خدمات</h3>
+  <p class="card-desc">هزینه نهایی = پایه × ضریب نقش × ضریب پیچیدگی (اولویت P0-P4)</p>
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>کد خدمت</th><th>عنوان</th><th>هزینه پایه (تومان)</th></tr></thead>
+      <tbody>
+        {% for code, info in SERVICE_COSTS.items() if info.cost > 0 %}
+        <tr>
+          <td><b class="mono">{{ code }}</b></td>
+          <td>{{ info.label }}</td>
+          <td>{{ "{:,}".format(info.cost) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:12px;padding:10px 12px;background:var(--bg-2);border-radius:8px;font-size:11px">
+    <b>ضرایب پیچیدگی:</b>
+    P0 (بحرانی): ۲.۰× | P1 (فوری): ۱.۵× | P2 (عادی): ۱.۰× | P3 (توانمندسازی): ۰.۸× | P4 (پایش): ۰.۵×
+    <br><b>ضرایب نقش:</b>
+    همیار: ۱.۰× | مشاور رز: ۱.۲× | کارشناس اشتغال: ۱.۳× | مددکار خانواده: ۱.۵× | کلینیک تخصصی: ۱.۸×
+  </div>
+</div>
+
+{# ══════ برآورد هزینه تشکیلاتی ══════ #}
+<h2 style="font-size:18px;font-weight:700;color:var(--ink);margin:24px 0 14px;display:flex;align-items:center;gap:8px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--red)"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+  برآورد هزینه تشکیلاتی طرح
+</h2>
+
+<div class="chart-card" style="border-inline-start:4px solid var(--red)">
+  <h3>تفکیک هزینه‌های تشکیلاتی از بودجهٔ توانمندسازی</h3>
+  <p class="card-desc">این بخش هزینه‌های جاری و ثابت سامانه را جدا از بودجهٔ مستقیم توانمندسازی خانوار محاسبه می‌کند.</p>
+
+  {# جدول هزینه تشکیلاتی #}
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>ردیف</th><th>عنوان هزینه</th><th>محاسبه</th><th>مبلغ تخمینی (تومان)</th></tr></thead>
+      <tbody>
+        {% set org_costs = namespace(total=0) %}
+        {# حقوق کارکنان #}
+        {% set ns_staff = namespace(count=0) %}
+        {% for uid, udata in USERS.items() if udata.get("province") %}
+          {% set ns_staff.count = ns_staff.count + 1 %}
+        {% endfor %}
+        <tr>
+          <td>۱</td>
+          <td>حقوق و دستمزد همیاران و مددکاران</td>
+          <td>{{ ns_staff.count }} نفر × ۸,۰۰۰,۰۰۰ ت (ماهانه)</td>
+          <td><b>{{ "{:,}".format(ns_staff.count * 8000000) }}</b></td>
+          {% set org_costs.total = org_costs.total + ns_staff.count * 8000000 %}
+        </tr>
+        {# هزینه تشکیلات ثابت #}
+        <tr>
+          <td>۲</td>
+          <td>هزینه زیرساخت و نگهداری سامانه</td>
+          <td>سرانه ثابت</td>
+          <td><b>۵,۰۰۰,۰۰۰</b></td>
+          {% set org_costs.total = org_costs.total + 5000000 %}
+        </tr>
+        {# هزینه آموزش #}
+        <tr>
+          <td>۳</td>
+          <td>آموزش و ارتقای ظرفیت همیاران</td>
+          <td>{{ ns_staff.count }} نفر × ۵۰۰,۰۰۰ ت</td>
+          <td><b>{{ "{:,}".format(ns_staff.count * 500000) }}</b></td>
+          {% set org_costs.total = org_costs.total + ns_staff.count * 500000 %}
+        </tr>
+        {# هزینه پایش و نظارت #}
+        <tr>
+          <td>۴</td>
+          <td>پایش، نظارت و کنترل کیفیت</td>
+          <td>سرانه ثابت</td>
+          <td><b>۳,۰۰۰,۰۰۰</b></td>
+          {% set org_costs.total = org_costs.total + 3000000 %}
+        </tr>
+        {# هزینه حمل و نقل #}
+        <tr>
+          <td>۵</td>
+          <td>حمل و نقل و بازدید میدانی</td>
+          <td>{{ total_services }} خدمت × ۲۰,۰۰۰ ت</td>
+          <td><b>{{ "{:,}".format(total_services * 20000) }}</b></td>
+          {% set org_costs.total = org_costs.total + total_services * 20000 %}
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--red-bg);font-weight:700">
+          <td colspan="3">جمع هزینه تشکیلاتی (ماهانه)</td>
+          <td style="color:var(--red);font-size:14px">{{ "{:,}".format(org_costs.total) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  {# مقایسه هزینه تشکیلاتی با بودجه توانمندسازی #}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px">
+    <div style="padding:16px;background:var(--red-bg);border-radius:var(--r-md);border:1px solid var(--red-line);text-align:center">
+      <div style="font-size:11px;color:var(--red);font-weight:600">هزینه تشکیلاتی (ماهانه)</div>
+      <div style="font-size:24px;font-weight:800;color:var(--red);margin:6px 0">{{ "{:,}".format(org_costs.total) }}</div>
+      <div style="font-size:10px;color:var(--mut)">حقوق + زیرساخت + آموزش + پایش + حمل‌ونقل</div>
+    </div>
+    <div style="padding:16px;background:var(--p-ll);border-radius:var(--r-md);border:1px solid var(--p-l);text-align:center">
+      <div style="font-size:11px;color:var(--p-d);font-weight:600">بودجه توانمندسازی (مستقیم)</div>
+      <div style="font-size:24px;font-weight:800;color:var(--p-d);margin:6px 0">{{ "{:,}".format(total_estimated_cost) }}</div>
+      <div style="font-size:10px;color:var(--mut)">EM-MPI + CDI + مشاوره + اشتغال + پایش مستقیم</div>
+    </div>
+  </div>
+
+  {# جمع کل #}
+  <div class="alert amber" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div>
+      <b>جمع کل برآورد مالی طرح:</b>
+      <span style="font-size:16px;font-weight:800;color:var(--red)">{{ "{:,}".format(org_costs.total + total_estimated_cost) }}</span> تومان
+      <br><span style="font-size:11px;color:var(--mut)">شامل هزینه تشکیلاتی (ماهانه) + بودجه مستقیم توانمندسازی خانوارها</span>
+    </div>
+  </div>
+</div>
+
+{# ─ـ سرانه خدمات به تفکیک نوع ──────────────────────────── #}
+<div class="chart-card">
+  <h3>سرانه خدمات توانمندسازی به ازای هر خدمت</h3>
+  <p class="card-desc">برآورد ریالی هر نوع خدمت در سبد توانمندسازی — جدا از هزینه تشکیلاتی</p>
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>نوع خدمت</th><th>تعداد مورد نیاز</th><th>هزینه کل (تومان)</th><th>سرانه (تومان/خدمت)</th></tr></thead>
+      <tbody>
+        {% for svc, data in resources_by_type %}
+        <tr>
+          <td><b>{{ data.label }}</b><br><span class="small mono">{{ svc }}</span></td>
+          <td>{{ data.count }}</td>
+          <td><b style="color:var(--red)">{{ "{:,}".format(data.cost_total) }}</b></td>
+          <td>{{ "{:,}".format(data.cost_total // data.count if data.count > 0 else 0) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--bg-2);font-weight:700">
+          <td>جمع</td>
+          <td>{{ total_services }}</td>
+          <td style="color:var(--red)">{{ "{:,}".format(total_estimated_cost) }}</td>
+          <td>{% if total_services > 0 %}{{ "{:,}".format(total_estimated_cost // total_services) }}{% else %}۰{% endif %}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

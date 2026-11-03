@@ -201,4 +201,429 @@
   </div>
 </div>
 
+{# ══════ توزیع کانال‌های دریافت درخواست ══════ #}
+<h2 style="font-size:18px;font-weight:700;color:var(--ink);margin:24px 0 14px;display:flex;align-items:center;gap:8px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--p)"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+  توزیع کانال‌های دریافت درخواست
+</h2>
+
+<div class="chart-card">
+  <h3>درخواست‌ها بر اساس مسیر دریافت</h3>
+  {% if by_channel %}
+  {% set max_ch = by_channel.values() | max %}
+  {% set ch_names = {'website':'🌐 وب‌سایت سامانه','mobile_app':'📱 اپلیکیشن موبایل','phone':'📞 تماس تلفنی','sms':'💬 پیامک','email':'✉️ ایمیل','gov_window':'🏛️ پنجره واحد رفاه ایرانیان','in_person':'🏢 حضوری','referral':'🤝 ارجاع نهاد همکار','social_media':'📢 شبکه‌های اجتماعی','unknown':'❓ نامشخص'} %}
+  {% for ch_code, ch_count in by_channel | dictsort %}
+  <div class="bar-row">
+    <div class="bar-label">{{ ch_names.get(ch_code, ch_code) }}</div>
+    <div class="bar-track">
+      <div class="bar-fill" style="width:{{ (ch_count / max_ch * 100)|round }}%;background:linear-gradient(90deg,var(--p),var(--p-l))">
+        <span class="bar-val">{{ ch_count }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="small" style="margin-top:10px;color:var(--mut)">
+    جمع: <b>{{ by_channel.values() | sum }}</b> درخواست از <b>{{ by_channel | length }}</b> کانال مختلف
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">هنوز درخواستی ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ══════ تحلیل ابعاد MPI ══════ #}
+<h2 style="font-size:18px;font-weight:700;color:var(--ink);margin:24px 0 14px;display:flex;align-items:center;gap:8px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--p)"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  تحلیل ابعاد EM-MPI در کشور
+</h2>
+
+<div class="chart-card">
+  <h3>میانگین شدت محرومیت در هر بُعد (کشور)</h3>
+  {% if mpi_dims_country.A.count > 0 %}
+  <div style="display:grid;grid-template-columns:1fr;gap:12px">
+    {% for dk, dn in dim_names.items() %}
+    {% set d = mpi_dims_country[dk] %}
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;font-weight:600;color:var(--ink-2)">بُعد {{ dk }}: {{ dn }}</span>
+        <span style="font-size:11px;color:var(--mut)">{{ d.score }} از {{ d.max }} (میانگین {{ d.pct }}٪) — {{ d.count }} پرونده</span>
+      </div>
+      <div style="height:14px;background:var(--bg-2);border-radius:7px;overflow:hidden">
+        {% set bar_color = 'var(--red)' if d.pct >= 66 else ('var(--amber)' if d.pct >= 33 else 'var(--green)') %}
+        <div style="height:100%;background:{{ bar_color }};border-radius:7px;width:{{ d.pct }}%;transition:width .6s ease"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">هنوز EM-MPI انجام نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ── ابعاد MPI به تفکیک استان ── #}
+<div class="chart-card">
+  <h3>شدت ابعاد EM-MPI به تفکیک استان</h3>
+  {% if mpi_dims_by_province %}
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>استان</th>{% for dk in ['A','B','C','D','E'] %}<th>بُعد {{ dk }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for pk, dims in mpi_dims_by_province.items() %}
+        <tr>
+          <td><b>{{ PROVINCES.get(pk, {}).get("name", pk) }}</b></td>
+          {% for dk in ['A','B','C','D','E'] %}
+          {% set d = dims[dk] %}
+          {% set pct = d.pct %}
+          {% set bg = 'var(--red-bg)' if pct >= 66 else ('var(--amber-bg)' if pct >= 33 else 'var(--green-bg)') %}
+          {% set clr = 'var(--red)' if pct >= 66 else ('var(--amber)' if pct >= 33 else 'var(--green)') %}
+          <td style="background:{{ bg }};color:{{ clr }};font-weight:700;text-align:center">{% if d.count > 0 %}{{ pct }}٪{% else %}—{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">داده‌ای موجود نیست.</div></div>
+  {% endif %}
+</div>
+
+{# ══════ تحلیل محورهای CDI ══════ #}
+<h2 style="font-size:18px;font-weight:700;color:var(--ink);margin:24px 0 14px;display:flex;align-items:center;gap:8px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--p)"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  تحلیل محورهای CDI در کشور
+</h2>
+
+<div class="chart-card">
+  <h3>فراوانی محورهای فعال CDI (کشور)</h3>
+  {% if cdi_axes_country %}
+  {% set max_axis = cdi_axes_country[0][1] if cdi_axes_country else 1 %}
+  {% for code, count in cdi_axes_country %}
+  <div class="bar-row">
+    <div class="bar-label"><b class="mono">{{ code }}</b> <span style="font-size:10px;color:var(--mut)">{{ cdi_axis_names.get(code, '') }}</span></div>
+    <div class="bar-track">
+      <div class="bar-fill" style="width:{{ (count / max_axis * 100)|round }}%;background:var(--blue)">
+        <span class="bar-val">{{ count }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty"><div class="e-sub">هنوز محور CDI فعالی ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ── محورهای CDI به تفکیک استان ── #}
+<div class="chart-card">
+  <h3>محورهای فعال CDI به تفکیک استان</h3>
+  {% if cdi_axes_by_province %}
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>استان</th><th>محورهای فعال</th><th>تعداد کل</th></tr></thead>
+      <tbody>
+        {% for pk, axes in cdi_axes_by_province.items() %}
+        <tr>
+          <td><b>{{ PROVINCES.get(pk, {}).get("name", pk) }}</b></td>
+          <td>
+            {% for code, count in axes | dictsort %}
+            <span class="tag" style="margin:2px;background:var(--blue-bg);color:var(--blue);border-color:var(--blue-line);font-size:10px"><b>{{ code }}</b> {{ cdi_axis_names.get(code, '')[:20] }}: {{ count }}</span>
+            {% else %}<span class="small" style="color:var(--mut-2)">—</span>{% endfor %}
+          </td>
+          <td><b>{{ axes | length }}</b></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">داده‌ای موجود نیست.</div></div>
+  {% endif %}
+</div>
+
+{# ── پرچم‌های قرمز به تفکیک استان ── #}
+<div class="chart-card">
+  <h3>پرچم‌های قرمز به تفکیک استان</h3>
+  {% if red_flags_by_province %}
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead><tr><th>استان</th><th>پرچم‌های فعال</th><th>جمع</th></tr></thead>
+      <tbody>
+        {% for pk, rfs in red_flags_by_province.items() %}
+        <tr>
+          <td><b>{{ PROVINCES.get(pk, {}).get("name", pk) }}</b></td>
+          <td>
+            {% for code, count in rfs | dictsort %}
+            <span class="badge P0" style="margin:2px;font-size:9px;padding:2px 8px"><span class="dot"></span><b>{{ code }}</b> {{ red_flag_names.get(code, '')[:15] }}: {{ count }}</span>
+            {% else %}<span class="small" style="color:var(--green)">بدون پرچم</span>{% endfor %}
+          </td>
+          <td><b style="color:var(--red)">{{ rfs | length }}</b></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="e-sub">پرچم قرمز فعالی ثبت نشده است.</div></div>
+  {% endif %}
+</div>
+
+{# ═══════════════════════════════════════════════════════════
+   ═══════ تحلیل پروندهٔ شهروندی و صداقت در سطح کشور ═══════
+   ═══════════════════════════════════════════════════════════ #}
+
+{% if cp_country_stats and cp_country_stats.total_cp > 0 %}
+<div class="chart-card" style="border:2px solid var(--p-l);background:linear-gradient(135deg,var(--p-ll) 0%,#fff 70%)">
+  <h2 style="margin:0 0 14px;font-size:16px;color:var(--p-dd);display:flex;align-items:center;gap:8px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    تحلیل وضعیت شهروندی و امتیاز صداقت در سطح کشور
+  </h2>
+
+  <p class="card-desc" style="margin-bottom:14px">
+    این تحلیل بر اساس مقایسهٔ پاسخ‌های خوداظهاری نیازمندان با ارزیابی همیاران در EM-MPI تهیه شده است.
+    امتیاز صداقت نشان می‌دهد چه مقدار از اطلاعات اولیهٔ نیازمند با واقعیت میدانی هم‌سو بوده است.
+    استان‌های با میانگین صداقت پایین نیازمند بررسی و تقویت فرایند راستی‌آزمایی هستند.
+  </p>
+
+  {# ── آمار خلاصهٔ کشوری ─── #}
+  <div class="stat-grid" style="margin-bottom:14px">
+    <div class="stat-mini teal">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ cp_country_stats.total_cp }}</div>
+        <div class="sm-lbl">پروندهٔ شهروندی</div>
+      </div>
+    </div>
+    <div class="stat-mini green">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ cp_country_stats.avg_honesty }}<span style="font-size:11px;color:var(--mut)">/۱۰۰</span></div>
+        <div class="sm-lbl">میانگین صداقت کشور</div>
+      </div>
+    </div>
+    <div class="stat-mini green">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ cp_country_stats.total_matched }}</div>
+        <div class="sm-lbl">انطباق کامل</div>
+      </div>
+    </div>
+    <div class="stat-mini amber">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ cp_country_stats.total_partial }}</div>
+        <div class="sm-lbl">مغایرت جزئی</div>
+      </div>
+    </div>
+    <div class="stat-mini red">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ cp_country_stats.total_mismatched }}</div>
+        <div class="sm-lbl">مغایرت کامل</div>
+      </div>
+    </div>
+    <div class="stat-mini red">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ low_honesty_country | length }}</div>
+        <div class="sm-lbl">پروندهٔ نیازمند بررسی</div>
+      </div>
+    </div>
+  </div>
+
+  {# ── توزیع سطوح صداقت کشور ─── #}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      توزیع پرونده‌ها بر اساس سطح صداقت (کشور)
+    </h3>
+    {% set cp_levels = [('H4','صداقت بالا','var(--green)'), ('H3','صداقت متوسط','var(--blue)'), ('H2','قابل توجه','var(--amber)'), ('H1','پایین','var(--red)')] %}
+    {% set max_cp = cp_country_stats.by_honesty_level.values() | max if cp_country_stats.by_honesty_level else 1 %}
+    {% if max_cp and max_cp > 0 %}
+    {% for code, name, color in cp_levels %}
+    <div class="bar-row">
+      <div class="bar-label">{{ code }} — {{ name }}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:{{ (cp_country_stats.by_honesty_level.get(code, 0) / max_cp * 100)|round }}%;background:{{ color }}">
+          <span class="bar-val">{{ cp_country_stats.by_honesty_level.get(code, 0) }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty"><div class="e-sub">داده‌ای موجود نیست.</div></div>
+    {% endif %}
+  </div>
+
+  {# ── میانگین صداقت به تفکیک استان ─── #}
+  {% if cp_province_rows %}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      میانگین امتیاز صداقت به تفکیک استان
+    </h3>
+    <p class="card-desc">مرتب‌شده بر اساس کمترین میانگین صداقت (استان‌های نیازمند توجه).</p>
+    <div class="table-wrap">
+      <table style="font-size:11.5px">
+        <thead>
+          <tr>
+            <th>استان</th>
+            <th>تعداد پرونده</th>
+            <th>میانگین صداقت</th>
+            <th>سطح</th>
+            <th>پرونده‌های با صداقت پایین</th>
+            <th>تعداد مغایرت</th>
+            <th>توزیع سطوح</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in cp_province_rows %}
+          <tr style="{% if p.avg_honesty < 50 %}background:var(--red-bg){% elif p.avg_honesty < 70 %}background:var(--amber-bg){% else %}background:var(--green-bg){% endif %}">
+            <td><b>{{ p.province_name }}</b></td>
+            <td class="num">{{ p.count }}</td>
+            <td>
+              <b style="font-size:14px;color:{% if p.avg_honesty < 50 %}var(--red){% elif p.avg_honesty < 70 %}var(--amber){% else %}var(--green){% endif %}">{{ p.avg_honesty }}</b>
+              <span class="small">/۱۰۰</span>
+            </td>
+            <td>
+              {% if p.avg_honesty >= 85 %}<span class="badge P3"><span class="dot"></span>H4</span>
+              {% elif p.avg_honesty >= 70 %}<span class="badge P2"><span class="dot"></span>H3</span>
+              {% elif p.avg_honesty >= 50 %}<span class="badge P1"><span class="dot"></span>H2</span>
+              {% else %}<span class="badge P0"><span class="dot"></span>H1</span>{% endif %}
+            </td>
+            <td class="num" style="color:var(--red);font-weight:700">{{ p.low_honesty_count }}</td>
+            <td class="num">{{ p.mismatched_count }}</td>
+            <td style="font-size:10px">
+              <span style="color:var(--green)">H4: {{ p.by_level.H4 }}</span> ·
+              <span style="color:var(--blue)">H3: {{ p.by_level.H3 }}</span> ·
+              <span style="color:var(--amber)">H2: {{ p.by_level.H2 }}</span> ·
+              <span style="color:var(--red)">H1: {{ p.by_level.H1 }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── توزیع مغایرت در ابعاد ۵گانه کشور ─── #}
+  {% set total_dim_mm = cp_country_stats.dim_mismatch_country.values() | sum %}
+  {% if total_dim_mm and total_dim_mm > 0 %}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
+      توزیع مغایرت‌ها در ابعاد ۵گانه محرومیت (کشور)
+    </h3>
+    <div style="display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-bottom:10px">
+      {% set dim_names_cp = {"A": "سلامت و امنیت زیستی", "B": "آموزش و رشد انسانی",
+                              "C": "استاندارد زندگی و مسکن", "D": "معیشت و اشتغال",
+                              "E": "آسیب‌پذیری و شبکه"} %}
+      {% for dk in ['A','B','C','D','E'] %}
+        {% set val = cp_country_stats.dim_mismatch_country.get(dk, 0) %}
+        {% if val > 0 %}
+          {% set pct = (val * 100 / total_dim_mm) | round(1) %}
+          {% set color_options = ['var(--red)', '#ea580c', 'var(--amber)', 'var(--blue)', '#9333ea'] %}
+          {% set color = color_options[loop.index0] %}
+          <div style="width:{{ pct }}%;background:{{ color }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700" title="{{ dk }}. {{ dim_names_cp[dk] }}: {{ val }} مغایرت">
+            {{ dk }}: {{ val }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>بُعد</th><th>نام</th><th>تعداد مغایرت</th><th>سهم کشور</th></tr></thead>
+        <tbody>
+          {% for dk in ['A','B','C','D','E'] %}
+          {% set val = cp_country_stats.dim_mismatch_country.get(dk, 0) %}
+          <tr>
+            <td><b>{{ dk }}</b></td>
+            <td>{{ dim_names_cp[dk] }}</td>
+            <td class="num" style="color:var(--red);font-weight:700">{{ val }}</td>
+            <td class="num">{% if total_dim_mm > 0 %}{{ (val * 100 / total_dim_mm) | round(1) }}٪{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── پرونده‌های نیازمند راستی‌آزمایی فوری ─── #}
+  {% if low_honesty_country %}
+  <div class="chart-card" style="border-inline-start:4px solid var(--red)">
+    <h3 style="color:var(--red)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      پرونده‌های نیازمند راستی‌آزمایی فوری در کشور (صداقت کمتر از ۷۰)
+    </h3>
+    <p class="card-desc" style="color:var(--red)">این پرونده‌ها مغایرت قابل‌توجهی بین خوداظهاری و ارزیابی همیار دارند. اولویت بررسی فوری.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>شناسه</th><th>نام</th><th>استان</th><th>امتیاز صداقت</th><th>سطح</th><th>مغایرت</th><th>EM-MPI</th><th>عملیات</th></tr></thead>
+        <tbody>
+          {% for c in low_honesty_country %}
+          <tr style="background:var(--red-bg)">
+            <td class="mono">{{ c.hid }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.province }}</td>
+            <td><b style="color:var(--red);font-size:15px">{{ c.honesty_score }}</b> <span class="small">/۱۰۰</span></td>
+            <td><span class="badge P0"><span class="dot"></span>{{ c.honesty_level }}</span></td>
+            <td><b style="color:var(--red)">{{ c.mismatched }}</b></td>
+            <td>{{ c.emmpi_score }}</td>
+            <td>
+              <a class="btn sec sm" href="{{ url_for('household_view', hid=c.hid) }}">پرونده</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── راهنمای سطوح صداقت ─── #}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      راهنمای سطوح صداقت
+    </h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>کد</th><th>نام</th><th>دامنه</th><th>تفسیر</th></tr></thead>
+        <tbody>
+          {% for h_level in HONESTY_LEVELS %}
+          <tr>
+            <td><span class="badge {{ h_level.color }}"><span class="dot"></span>{{ h_level.code }}</span></td>
+            <td><b>{{ h_level.name }}</b></td>
+            <td class="mono">{{ h_level.min }}-{{ h_level.max }}</td>
+            <td class="small" style="color:var(--ink-2)">{{ h_level.interp }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ── هشدار خط قرمز ─── #}
+  <div class="alert amber" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>
+      <b>خط قرمز:</b> امتیاز صداقت صرفاً تصمیم‌یار است و به‌تنهایی مبنای پذیرش، رد یا لغو حمایت نیست.
+      تصمیم نهایی با مددکار خانواده است. مغایرت‌ها می‌تواند ناشی از پنهان‌کاری، اشتباه همیار یا تفاوت تفسیر سؤال باشد.
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="chart-card">
+  <h3>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    تحلیل وضعیت شهروندی
+  </h3>
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px;color:var(--mut-3)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+    <div class="e-title">هنوز پروندهٔ ارزیابی‌شده‌ای موجود نیست</div>
+    <div class="e-sub">پس از تکمیل EM-MPI برای پرونده‌ها، تحلیل صداقت به‌طور خودکار تولید می‌شود.</div>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

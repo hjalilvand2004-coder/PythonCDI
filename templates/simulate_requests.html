@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block crumb %}شبیه‌ساز درخواست{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>شبیه‌ساز درخواست‌های تستی</h1>
+    <p class="sub">ایجاد درخواست‌های آزمایشی از کانال‌های مختلف (پنجره واحد، تلفنی، پیامک و...) برای تست استخر درخواست‌ها</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('assistant_pool') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت به استخر
+    </a>
+  </div>
+</div>
+
+{% if created %}
+{# ── نتایج ایجاد ──────────────────────────────────────── #}
+<div class="alert green">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  <div>
+    <b>{{ created|length }}</b> درخواست تستی با موفقیت ایجاد شد!
+    همهٔ درخواست‌ها با داده‌های هویتی فرضی (ثبت‌احوال، بیمه، آموزش، اشتغال، مسکن) پر شده‌اند و در استخر درخواست‌ها قابل مشاهده هستند.
+  </div>
+</div>
+
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      درخواست‌های ایجادشده
+    </h2>
+    <span class="tag teal">{{ created|length }} مورد</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>شناسه</th><th>نام</th><th>استان</th><th>کانال</th><th>اقدام</th></tr></thead>
+      <tbody>
+        {% for c in created %}
+        <tr>
+          <td><b class="mono">{{ c.hid }}</b></td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.province }}</td>
+          <td>
+            {% set ch_names = {'website':'🌐 وب‌سایت','mobile_app':'📱 اپ','phone':'📞 تلفنی','sms':'💬 پیامک','email':'✉️ ایمیل','gov_window':'🏛️ پنجره واحد','in_person':'🏢 حضوری','referral':'🤝 ارجاع','social_media':'📢 شبکه اجتماعی'} %}
+            <span class="tag teal">{{ ch_names.get(c.channel, c.channel) }}</span>
+          </td>
+          <td><a class="btn sec sm" href="{{ url_for('household_view', hid=c.hid) }}">مشاهده</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <a class="btn" href="{{ url_for('assistant_pool') }}" style="margin-top:14px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    مشاهده در استخر درخواست‌ها
+  </a>
+</div>
+{% endif %}
+
+{# ── فرم ایجاد درخواست تستی ──────────────────────────────── #}
+<div class="card">
+  <div class="head-row">
+    <h2>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/><polyline points="21 4 12 14.01 9 11.01"/></svg>
+      ایجاد درخواست تستی
+    </h2>
+  </div>
+  <p class="card-desc">
+    این ابزار برای آزمایش سیستم طراحی شده — درخواست‌های فرضی با داده‌های هویتی واقع‌نما (از وب‌سرویس ثبت‌احوال) تولید می‌شود.
+    درخواست‌ها مستقیماً در استخر قرار می‌گیرند و همیاران می‌توانند آن‌ها را انتخاب کنند.
+  </p>
+
+  <form method="post">
+    <div class="grid-2">
+      <div>
+        <label>کانال دریافت درخواست *</label>
+        <select name="channel" required>
+          {% for ch in REQUEST_CHANNELS %}
+          <option value="{{ ch.code }}">{{ ch.icon }} {{ ch.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>تعداد درخواست *</label>
+        <select name="count" required>
+          <option value="1">۱ درخواست</option>
+          <option value="3" selected>۳ درخواست</option>
+          <option value="5">۵ درخواست</option>
+          <option value="10">۱۰ درخواست</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="alert blue" style="margin-top:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <div>
+        <b>راهنما:</b>
+        درخواست‌های تستی با داده‌های تصادفی اما واقع‌نما تولید می‌شوند:
+        نام، کدملی، استان، شهر، نیاز، افراد در معرض خطر — همگی از وب‌سرویس ثبت‌احوال فرضی واکشی می‌شوند.
+        کانال دریافت درخواست در پرونده ثبت می‌شود و در استخر قابل فیلتر است.
+      </div>
+    </div>
+
+    <button class="btn lg" type="submit" style="margin-top:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ایجاد درخواست تستی
+    </button>
+  </form>
+</div>
+
+{% endblock %}

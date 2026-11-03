@@ -2,255 +2,493 @@
 {% block crumb %}استخر درخواست‌ها{% endblock %}
 {% block body %}
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
-.pool-hero{
-  background:linear-gradient(135deg,#0f766e 0%,#0f5e57 45%,#134e4a 100%);
-  color:#fff; border-radius:var(--r-lg); padding:24px 28px; margin-bottom:18px;
-  box-shadow:var(--sh-lg); position:relative; overflow:hidden;
-}
-.pool-hero::before{
-  content:""; position:absolute; top:-40px; inset-inline-end:-30px;
-  width:220px; height:220px; border-radius:50%;
-  background:radial-gradient(circle,rgba(94,234,212,.25),transparent 65%);
-}
-.pool-hero > *{position:relative; z-index:1}
-.pool-hero h1{font-size:22px; font-weight:700; margin:0 0 6px}
-.pool-hero .hero-sub{font-size:12.5px; color:rgba(255,255,255,.8); line-height:1.7; margin-bottom:14px}
-.pool-hero .hero-stats{display:flex; gap:18px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,.15)}
-.pool-hero .hs-item{display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,.85)}
-.pool-hero .hs-item b{color:#5eead4}
+.pool-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.pool-tab{flex:1;min-width:200px;background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;transition:all .2s var(--ease);text-decoration:none;color:var(--ink)}
+.pool-tab:hover{border-color:var(--p-l);box-shadow:var(--sh-sm)}
+.pool-tab-screening.active{border-color:var(--p);background:linear-gradient(135deg,var(--p-ll),#fff)}
+.pool-tab-l2.active{border-color:var(--amber);background:linear-gradient(135deg,var(--amber-bg),#fff)}
+.pool-tab-l3.active{border-color:var(--red);background:linear-gradient(135deg,var(--red-bg),#fff)}
+.pool-tab .pt-icon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;margin-bottom:6px;color:#fff;flex-shrink:0}
+.pool-tab-screening .pt-icon{background:linear-gradient(135deg,var(--p),var(--p-d))}
+.pool-tab-l2 .pt-icon{background:linear-gradient(135deg,var(--amber),#b45309)}
+.pool-tab-l3 .pt-icon{background:linear-gradient(135deg,var(--red),#991b1b)}
+.pool-tab .pt-icon svg{width:18px;height:18px}
+.pool-tab .pt-name{font-size:12.5px;font-weight:700;color:var(--ink)}
+.pool-tab .pt-desc{font-size:10.5px;color:var(--mut);margin-top:2px}
+.pool-tab .pt-count{display:inline-flex;min-width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:800;margin-top:4px;padding:0 5px;align-items:center;justify-content:center}
+.pool-tab-screening .pt-count{background:var(--p);color:#fff}
+.pool-tab-l2 .pt-count{background:var(--amber);color:#fff}
+.pool-tab-l3 .pt-count{background:var(--red);color:#fff}
+.pool-tab .pt-roles{font-size:9.5px;color:var(--mut-2);margin-top:3px}
 
-.req-card{
-  background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
-  padding:16px 18px; margin-bottom:12px; box-shadow:var(--sh-sm);
-  transition:all .2s var(--ease); position:relative; overflow:hidden;
-  border-inline-start:4px solid var(--amber);
-}
-.req-card:hover{box-shadow:var(--sh-md); transform:translateY(-2px)}
-.req-card.match-high{border-inline-start-color:var(--green)}
-.req-card.match-med{border-inline-start-color:var(--amber)}
+.pool-section{margin-bottom:24px}
+.pool-section-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 16px;border-radius:var(--r-md);color:#fff}
+.pool-section-header svg{width:20px;height:20px}
+.pool-section-header h2{margin:0;font-size:14px;font-weight:700}
+.pool-section-header .ps-count{margin-inline-start:auto;font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:var(--r-full)}
+.pool-section-screening .pool-section-header{background:linear-gradient(135deg,var(--p),var(--p-d))}
+.pool-section-l2 .pool-section-header{background:linear-gradient(135deg,var(--amber),#b45309)}
+.pool-section-l3 .pool-section-header{background:linear-gradient(135deg,var(--red),#991b1b)}
 
-.rc-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:12px}
-.rc-avatar{
-  width:48px; height:48px; border-radius:12px; display:grid; place-items:center;
-  font-weight:700; font-size:18px; color:#fff; flex-shrink:0;
-  background:linear-gradient(135deg,var(--p),var(--p-d));
-}
-.rc-info{flex:1; min-width:180px}
-.rc-name{font-size:15px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; flex-wrap:wrap}
-.rc-meta{font-size:11.5px; color:var(--mut); margin-top:2px}
-.rc-match{text-align:center; min-width:80px}
-.rc-match .rm-num{font-size:24px; font-weight:800; color:var(--p); line-height:1}
-.rc-match .rm-lbl{font-size:10px; color:var(--mut); margin-top:2px}
-.rc-match .rm-bar{height:4px; background:var(--bg-2); border-radius:2px; margin-top:6px; overflow:hidden}
-.rc-match .rm-bar-fill{height:100%; border-radius:2px; background:linear-gradient(90deg,var(--green),var(--p))}
+/* Rich request table */
+.req-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md)}
+.req-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.req-table thead th{background:var(--bg-2);color:var(--ink-2);text-align:right;padding:8px 10px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;z-index:5}
+.req-table tbody td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle;color:var(--ink-2)}
+.req-table tbody tr:hover td{background:#fafbfc}
+.req-table tbody tr:last-child td{border-bottom:none}
+.req-table .td-name{font-weight:700;color:var(--ink)}
+.req-table .td-name .mono{font-size:10px;color:var(--mut-2);display:block;margin-top:1px}
+.req-table .chip{padding:1px 6px;border-radius:4px;background:var(--bg-2);border:1px solid var(--line);font-size:10px;white-space:nowrap}
+.req-table .chip.red{background:var(--red-bg);color:var(--red);border-color:var(--red-line)}
+.req-table .chip.amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line)}
+.req-table .chip.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-line)}
+.req-table .chip.green{background:var(--green-bg);color:var(--green);border-color:var(--green-line)}
+.req-table .chip.teal{background:var(--p-ll);color:var(--p-d);border-color:var(--p-l)}
+.req-table .chip.match{background:var(--p-ll);color:var(--p-d);border-color:var(--p-l);font-weight:700}
+.req-table .td-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.req-table .act-btn{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;cursor:pointer;border:none}
+.req-table .act-btn-go{background:var(--p);color:#fff}
+.req-table .act-btn-go:hover{background:var(--p-d)}
+.req-table .act-btn-l2{background:var(--amber);color:#fff}
+.req-table .act-btn-l2:hover{background:#b45309}
+.req-table .act-btn-l3{background:var(--red);color:#fff}
+.req-table .act-btn-l3:hover{background:#b91c1c}
+.req-table .act-btn-map{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-line)}
+.req-table .act-btn-map:hover{background:var(--blue);color:#fff}
+.req-table .act-btn-view{background:var(--bg-2);color:var(--ink-2);border:1px solid var(--line)}
+.req-table .act-btn-view:hover{background:var(--p-ll);color:var(--p-d)}
+.req-table .score-pill{font-size:10px;font-weight:700;background:var(--p-ll);color:var(--p-d);padding:2px 7px;border-radius:4px;border:1px solid var(--p-l)}
 
-.rc-body{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px; padding-top:10px; border-top:1px dashed var(--line-2)}
-.rc-field{display:flex; flex-direction:column; gap:1px}
-.rc-field .rf-k{font-size:10.5px; color:var(--mut); font-weight:600}
-.rc-field .rf-v{font-size:12px; color:var(--ink-2); font-weight:500}
+.pool-empty{text-align:center;padding:24px;color:var(--mut);font-size:12px}
+.pool-empty svg{width:36px;height:36px;color:var(--mut-3);margin-bottom:6px}
 
-.rc-need{font-size:12px; color:var(--ink-2); padding:8px 10px; background:var(--bg-2); border-radius:6px; margin-top:8px; line-height:1.6; border-inline-start:3px solid var(--p-l)}
-.rc-ws-tags{display:flex; flex-wrap:wrap; gap:4px; margin-top:8px}
-.rc-ws-tag{font-size:10px; padding:2px 6px; border-radius:4px; background:var(--blue-bg); color:var(--blue); border:1px solid var(--blue-line); font-weight:600}
-.rc-actions{display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line-2); flex-wrap:wrap}
+.channel-filter{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.channel-filter a{padding:3px 8px;border-radius:4px;font-size:10.5px;text-decoration:none;border:1px solid var(--line);background:#fff;color:var(--ink-2)}
+.channel-filter a:hover{border-color:var(--p-l);background:var(--p-ll)}
+.channel-filter a.active{background:var(--p);color:#fff;border-color:var(--p)}
 
-.my-claim-card{
-  background:linear-gradient(135deg,var(--p-ll) 0%,#fff 60%); border:1px solid var(--p-l);
-  border-radius:var(--r-md); padding:16px 18px; margin-bottom:12px;
-  border-inline-start:4px solid var(--p);
-}
+.my-claims{background:linear-gradient(135deg,var(--green-bg),#fff);border:1px solid var(--green-line);border-radius:var(--r-md);padding:14px 18px;margin-bottom:18px}
+.my-claims h3{margin:0 0 8px;font-size:13px;color:var(--green);display:flex;align-items:center;gap:6px}
+.my-claims h3 svg{width:16px;height:16px}
+.my-claims .mc-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--green-line)}
+.my-claims .mc-item:last-child{border-bottom:none}
+.my-claims .mc-name{font-weight:600;color:var(--ink);font-size:12px;flex:1}
+.my-claims .mc-stage{font-size:10px;color:var(--mut)}
+.my-claims .mc-link{font-size:11px;color:var(--p-d);font-weight:600}
+
+/* Map modal */
+.map-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.map-modal.show{display:flex}
+.map-modal-content{background:#fff;border-radius:var(--r-lg);width:100%;max-width:600px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh-lg)}
+.map-modal-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.map-modal-head h3{margin:0;font-size:14px;color:var(--ink);flex:1}
+.map-modal-head .close-btn{background:none;border:none;cursor:pointer;color:var(--mut);font-size:20px;padding:4px 8px;border-radius:var(--r)}
+.map-modal-head .close-btn:hover{background:var(--bg-2)}
+.map-modal-body{flex:1;overflow:hidden}
+#pool-map{width:100%;height:400px}
+.map-modal-info{padding:10px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-2)}
+.map-modal-info b{color:var(--ink)}
 </style>
 
-{# ── Hero ─────────────────────────────────────────────── #}
-<div class="pool-hero">
-  <h1>استخر درخواست‌های نیازمندان</h1>
-  <p class="hero-sub">
-    درخواست‌های ثبت‌شده توسط نیازمندان که در انتظار تخصیص همیار هستند.
-    بر اساس موقعیت و تخصص شما مرتب‌شده‌اند — مانند اسنپ: شما درخواست مناسب را انتخاب می‌کنید.
-  </p>
-  <div class="hero-stats">
-    <div class="hs-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-      در انتظار: <b>{{ pending_requests|length }}</b> درخواست
-    </div>
-    {% if my_claims %}
-    <div class="hs-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
-      تخصیص‌یافته به شما: <b>{{ my_claims|length }}</b> پرونده
-    </div>
-    {% endif %}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>استخر درخواست‌ها</h1>
+    <p class="sub">سه استخر تخصصی برای نقش شما ({{ u.label or u.role }})</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      بازگشت
+    </a>
   </div>
 </div>
 
-{# ── My claimed requests ──────────────────────────────── #}
+{# ── Channel filter ── #}
+<div class="channel-filter">
+  <a href="{{ url_for('assistant_pool') }}" class="{{ 'active' if not filter_channel else '' }}">همه</a>
+  {% for ch in REQUEST_CHANNELS %}
+  <a href="{{ url_for('assistant_pool', channel=ch.code) }}" class="{{ 'active' if filter_channel == ch.code else '' }}">{{ ch.icon }} {{ ch.name }}</a>
+  {% endfor %}
+</div>
+
+{# ── Three pool tabs ── #}
+<div class="pool-tabs">
+  <a href="#pool-1" class="pool-tab pool-tab-screening active">
+    <div class="pt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+    <div class="pt-name">استخر ۱ — غربالگری</div>
+    <div class="pt-desc">EM-MPI + CDI سریع</div>
+    <span class="pt-count">{{ pool_screening|length }}</span>
+    <div class="pt-roles">همیار، مددکار</div>
+  </a>
+  <a href="#pool-2" class="pool-tab pool-tab-l2 {% if pool_layer2 %}active{% endif %}">
+    <div class="pt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+    <div class="pt-name">استخر ۲ — CDI هدفمند</div>
+    <div class="pt-desc">لایه ۲ — تحلیل محورها</div>
+    <span class="pt-count">{{ pool_layer2|length }}</span>
+    <div class="pt-roles">همیار، رز، مددکاری، اشتغال</div>
+  </a>
+  <a href="#pool-3" class="pool-tab pool-tab-l3 {% if pool_layer3 %}active{% endif %}">
+    <div class="pt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+    <div class="pt-name">استخر ۳ — CDI عمیق</div>
+    <div class="pt-desc">لایه ۳ — تحلیل تخصصی</div>
+    <span class="pt-count">{{ pool_layer3|length }}</span>
+    <div class="pt-roles">رز، مددکاری، مددکار</div>
+  </a>
+</div>
+
+{# ── My claims ── #}
 {% if my_claims %}
-<div class="card">
-  <div class="head-row">
-    <h2>
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      پرونده‌های تخصیص‌یافته به شما
-    </h2>
-    <span class="tag teal">{{ my_claims|length }} مورد</span>
-  </div>
-  {% for item in my_claims %}
-  {% set h = item.h %}
-  <div class="my-claim-card">
-    <div class="rc-head">
-      <div class="rc-avatar" style="background:linear-gradient(135deg,var(--p),var(--p-d))">
-        {{ (h.identity.name or item.hid)[:1] }}
-      </div>
-      <div class="rc-info">
-        <div class="rc-name">
-          {{ h.identity.name or 'خانوار ' + item.hid }}
-          <span class="badge P3"><span class="dot"></span>تخصیص‌یافته</span>
-        </div>
-        <div class="rc-meta">شناسه: <span class="mono">{{ item.hid }}</span> · محل: {{ h.identity.location or '—' }}</div>
-      </div>
-      <div class="rc-actions" style="margin:0;padding:0;border:none">
-        {% if h.emmpi %}
-        <a class="btn sec sm" href="{{ url_for('emmpi_result', hid=item.hid) }}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          مشاهدهٔ EM-MPI
-        </a>
-        {% if h.emmpi.result.needs_cdi %}
-        <a class="btn sm" href="{{ url_for('assess', hid=item.hid) }}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg>
-          شروع CDI
-        </a>
-        {% endif %}
-        {% else %}
-        <a class="btn warn sm" href="{{ url_for('emmpi_form', hid=item.hid) }}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          انجام EM-MPI
-        </a>
-        {% endif %}
-      </div>
-    </div>
+<div class="my-claims">
+  <h3>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    تخصیص‌یافته‌ها ({{ my_claims|length }})
+  </h3>
+  {% for mc in my_claims %}
+  <div class="mc-item">
+    <span class="mc-name">{{ mc.h.identity.name or mc.hid }}</span>
+    <span class="mc-stage">{% if mc.h.status == 'pending' %}در انتظار غربالگری{% elif mc.h.status == 'claimed' %}در حال انجام{% elif mc.h.status == 'emmpi_done' %}غربالگری شد{% elif mc.h.status == 'completed' %}تکمیل شد{% endif %}</span>
+    <a class="mc-link" href="{{ url_for('household_view', hid=mc.hid) }}">مشاهده ←</a>
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
-{# ── Available requests ───────────────────────────────── #}
-<div class="page-head">
-  <div class="ph-text">
-    <h1>درخواست‌های در دسترس</h1>
-    <p class="sub">مرتب‌شده بر اساس میزان تطبیق با شما — بالاترین امتیاز، مناسب‌ترین گزینه</p>
+{# ═══════════ استخر ۱: غربالگری ═══════════ #}
+<div class="pool-section pool-section-screening" id="pool-1">
+  <div class="pool-section-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <h2>استخر ۱ — غربالگری و فعال‌سازی</h2>
+    <span class="ps-count">{{ pool_screening|length }}</span>
+  </div>
+
+  {% if pool_screening %}
+  <div class="req-table-wrap">
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>نام / شناسه</th>
+          <th>کدملی</th>
+          <th>موقعیت</th>
+          <th>تماس</th>
+          <th>اعضا</th>
+          <th>در معرض خطر</th>
+          <th>نیاز</th>
+          <th>کانال</th>
+          <th>تاریخ</th>
+          <th>تطابق</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in pool_screening %}
+        {% set h = req.h %}
+        {% set ch_info = REQUEST_CHANNELS | selectattr('code', 'equalto', h.request_channel|default('website')) | first %}
+        <tr>
+          <td class="td-name">
+            {{ h.identity.name or req.hid }}
+            <span class="mono">{{ req.hid }}</span>
+          </td>
+          <td><span class="mono">{{ h.national_id or h.identity.national_id or '—' }}</span></td>
+          <td>
+            {% if h.identity.geo_lat and h.identity.geo_lng %}
+            <span class="chip blue">📍 {{ h.identity.geo_lat[:6] }}, {{ h.identity.geo_lng[:6] }}</span>
+            {% elif h.identity.location %}
+            <span class="chip">📍 {{ h.identity.location }}</span>
+            {% else %}
+            <span class="small" style="color:var(--mut)">—</span>
+            {% endif %}
+          </td>
+          <td><span class="mono small">{{ h.identity.contact or '—' }}</span></td>
+          <td class="num">{{ h.identity.members or '?' }}</td>
+          <td>
+            {% if h.identity.at_risk_list and h.identity.at_risk_list|length > 0 %}
+            {% for r in h.identity.at_risk_list[:2] %}<span class="chip amber">{{ r }}</span>{% endfor %}
+            {% if h.identity.at_risk_list|length > 2 %}<span class="small">+{{ h.identity.at_risk_list|length - 2 }}</span>{% endif %}
+            {% else %}<span class="small" style="color:var(--mut)">—</span>{% endif %}
+          </td>
+          <td>
+            {% set nd = h.self_declaration.need_description if h.self_declaration and h.self_declaration.need_description else '' %}
+            {% if nd %}
+            <span class="small" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ nd }}">{{ nd[:40] }}{% if nd|length > 40 %}...{% endif %}</span>
+            {% else %}<span class="small" style="color:var(--mut)">—</span>{% endif %}
+          </td>
+          <td><span class="chip">{{ ch_info.icon|default('🌐') if ch_info else '🌐' }} {% set chn = ch_info.name if ch_info else (h.request_channel|default('وب')) %}{{ chn[:12] }}</span></td>
+          <td><span class="small mono">{{ h.state.created_at[:10] if h.state and h.state.created_at else '—' }}</span></td>
+          <td>
+            {% if req.match_score %}<span class="score-pill">{{ req.match_score }}</span>{% endif %}
+            {% if req.match_reasons %}<div class="tiny" style="color:var(--mut);margin-top:2px">{{ req.match_reasons|join('، ') }}</div>{% endif %}
+          </td>
+          <td class="td-actions">
+            {% if h.identity.geo_lat and h.identity.geo_lng %}
+            <button class="act-btn act-btn-map" onclick="showPoolMap('{{ h.identity.name or req.hid }}','{{ h.identity.geo_lat }}','{{ h.identity.geo_lng }}','{{ h.identity.location or '' }}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              نقشه
+            </button>
+            {% endif %}
+            <form method="post" action="{{ url_for('assistant_claim', hid=req.hid) }}" style="display:inline">
+              <button class="act-btn act-btn-go" type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>
+                تخصیص
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="pool-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <div>هیچ درخواستی در استخر غربالگری موجود نیست.</div>
+  </div>
+  {% endif %}
+</div>
+
+{# ═══════════ استخر ۲: CDI هدفمند ═══════════ #}
+<div class="pool-section pool-section-l2" id="pool-2">
+  <div class="pool-section-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <h2>استخر ۲ — CDI هدفمند (لایه ۲)</h2>
+    <span class="ps-count">{{ pool_layer2|length }}</span>
+  </div>
+
+  {% if pool_layer2 %}
+  <div class="req-table-wrap">
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>نام / شناسه</th>
+          <th>موقعیت</th>
+          <th>امتیاز</th>
+          <th>سطح</th>
+          <th>پرچم قرمز</th>
+          <th>محورهای فعال</th>
+          <th>مسیر ارجاع</th>
+          <th>تطابق</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in pool_layer2 %}
+        {% set h = req.h %}
+        {% set r = h.emmpi.result if h.emmpi else {} %}
+        <tr>
+          <td class="td-name">
+            {{ h.identity.name or req.hid }}
+            <span class="mono">{{ req.hid }}</span>
+          </td>
+          <td>
+            {% if h.identity.geo_lat and h.identity.geo_lng %}
+            <span class="chip blue">📍 {{ h.identity.geo_lat[:6] }},{{ h.identity.geo_lng[:6] }}</span>
+            {% elif h.identity.location %}
+            <span class="chip">📍 {{ h.identity.location }}</span>
+            {% else %}<span class="small" style="color:var(--mut)">—</span>{% endif %}
+          </td>
+          <td><b style="font-size:14px;color:var(--p-d)">{{ r.score|default('—') }}</b><span class="tiny">/۱۰۰۰</span></td>
+          <td>{% if r.level %}<span class="chip {{ r.level.color }}">{{ r.level.name }}</span>{% else %}—{% endif %}</td>
+          <td>
+            {% if r.red_flags and r.red_flags|length > 0 %}
+            {% for rf in r.red_flags[:3] %}<span class="chip red">{{ rf.code }}</span>{% endfor %}
+            {% if r.red_flags|length > 3 %}<span class="small">+{{ r.red_flags|length - 3 }}</span>{% endif %}
+            {% else %}<span class="chip green">ندارد</span>{% endif %}
+          </td>
+          <td>
+            {% set active = h.state.active_axes if h.state and h.state.active_axes else [] %}
+            {% if active|length > 0 %}<span class="chip teal">{{ active|length }} محور</span>{% else %}—{% endif %}
+          </td>
+          <td><span class="small">{% if r.referral_path %}{{ r.referral_path.name }}{% else %}—{% endif %}</span></td>
+          <td>
+            {% if req.match_score %}<span class="score-pill">{{ req.match_score }}</span>{% endif %}
+            {% if req.match_reasons %}<div class="tiny" style="color:var(--mut)">{{ req.match_reasons|join('، ') }}</div>{% endif %}
+          </td>
+          <td class="td-actions">
+            {% if h.identity.geo_lat and h.identity.geo_lng %}
+            <button class="act-btn act-btn-map" onclick="showPoolMap('{{ h.identity.name or req.hid }}','{{ h.identity.geo_lat }}','{{ h.identity.geo_lng }}','{{ h.identity.location or '' }}')">نقشه</button>
+            {% endif %}
+            <a class="act-btn act-btn-view" href="{{ url_for('household_view', hid=req.hid) }}">پرونده</a>
+            <a class="act-btn act-btn-l2" href="{{ url_for('assess', hid=req.hid) }}">شروع ارزیابی</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="pool-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <div>هیچ پرونده‌ای برای لایه ۲ موجود نیست.</div>
+    <div class="small">پرونده‌ها پس از غربالگری به این استخر می‌روند.</div>
+  </div>
+  {% endif %}
+</div>
+
+{# ═══════════ استخر ۳: CDI عمیق ═══════════ #}
+<div class="pool-section pool-section-l3" id="pool-3">
+  <div class="pool-section-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    <h2>استخر ۳ — CDI عمیق (لایه ۳)</h2>
+    <span class="ps-count">{{ pool_layer3|length }}</span>
+  </div>
+
+  {% if pool_layer3 %}
+  <div class="req-table-wrap">
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>نام / شناسه</th>
+          <th>موقعیت</th>
+          <th>امتیاز</th>
+          <th>پرچم قرمز</th>
+          <th>دلایل لایه ۳</th>
+          <th>تخصیص‌یافته به</th>
+          <th>تطابق</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in pool_layer3 %}
+        {% set h = req.h %}
+        {% set r = h.emmpi.result if h.emmpi else {} %}
+        <tr>
+          <td class="td-name">
+            {{ h.identity.name or req.hid }}
+            <span class="mono">{{ req.hid }}</span>
+          </td>
+          <td>
+            {% if h.identity.geo_lat and h.identity.geo_lng %}
+            <span class="chip blue">📍 {{ h.identity.geo_lat[:6] }},{{ h.identity.geo_lng[:6] }}</span>
+            {% elif h.identity.location %}
+            <span class="chip">📍 {{ h.identity.location }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td><b style="font-size:14px;color:var(--red)">{{ r.score|default('—') }}</b><span class="tiny">/۱۰۰۰</span></td>
+          <td>
+            {% if r.red_flags and r.red_flags|length > 0 %}
+            {% for rf in r.red_flags %}<span class="chip red">{{ rf.code }} {{ rf.title[:15] }}</span>{% endfor %}
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if h.layer3_history and h.layer3_history|length > 0 %}
+            <span class="chip amber">{{ h.layer3_history|length }} تحلیل ثبت‌شده</span>
+            {% else %}
+            <span class="small" style="color:var(--red)">بدون تحلیل قبلی</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if h.claimed_by %}<span class="chip">{{ h.claimed_by.name }} ({{ h.claimed_by.role_label }})</span>{% else %}—{% endif %}
+          </td>
+          <td>
+            {% if req.match_score %}<span class="score-pill">{{ req.match_score }}</span>{% endif %}
+            {% if req.match_reasons %}<div class="tiny" style="color:var(--mut)">{{ req.match_reasons|join('، ') }}</div>{% endif %}
+          </td>
+          <td class="td-actions">
+            {% if h.identity.geo_lat and h.identity.geo_lng %}
+            <button class="act-btn act-btn-map" onclick="showPoolMap('{{ h.identity.name or req.hid }}','{{ h.identity.geo_lat }}','{{ h.identity.geo_lng }}','{{ h.identity.location or '' }}')">نقشه</button>
+            {% endif %}
+            <a class="act-btn act-btn-view" href="{{ url_for('household_view', hid=req.hid) }}">پرونده</a>
+            <a class="act-btn act-btn-l3" href="{{ url_for('layer3', hid=req.hid) }}">تحلیل عمیق</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="pool-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <div>هیچ پرونده‌ای نیازمند لایه ۳ نیست.</div>
+    <div class="small">فقط با شرایط بند ۴ـ۱ فعال می‌شود.</div>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Map Modal ── #}
+<div class="map-modal" id="poolMapModal">
+  <div class="map-modal-content">
+    <div class="map-modal-head">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--blue);display:inline;vertical-align:middle"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="map-modal-title">موقعیت جغرافیایی</span>
+      </h3>
+      <button class="close-btn" onclick="closePoolMap()">✕</button>
+    </div>
+    <div class="map-modal-body">
+      <div id="pool-map"></div>
+    </div>
+    <div class="map-modal-info" id="map-modal-info"></div>
   </div>
 </div>
 
-{% for req in pending_requests %}
-{% set h = req.h %}
-{% set match_class = 'match-high' if req.match_score >= 60 else ('match-med' if req.match_score >= 40 else '') %}
-<div class="req-card {{ match_class }}">
-  <div class="rc-head">
-    <div class="rc-avatar">
-      {{ (h.identity.name or req.hid)[:1] }}
-    </div>
-    <div class="rc-info">
-      <div class="rc-name">
-        {{ h.identity.name or 'خانوار ' + req.hid }}
-        <span class="badge P1"><span class="dot"></span>در انتظار</span>
-      </div>
-      <div class="rc-meta">
-        شناسه: <span class="mono">{{ req.hid }}</span> · 
-        محل: {{ h.identity.location or '—' }} · 
-        اعضا: {{ h.identity.members or '—' }}
-      </div>
-    </div>
-    <div class="rc-match">
-      <div class="rm-num">{{ req.match_score }}</div>
-      <div class="rm-lbl">تطبیق</div>
-      <div class="rm-bar"><div class="rm-bar-fill" style="width:{{ req.match_score }}%"></div></div>
-    </div>
-  </div>
-
-  {# خلاصهٔ وب‌سرویس #}
-  {% set ws = h.web_service_data or {} %}
-  {% if ws %}
-  <div class="rc-ws-tags">
-    {% if ws.civil_registry %}<span class="rc-ws-tag">🏛️ ثبت‌احوال: {{ ws.civil_registry.data.family_size }} عضو</span>{% endif %}
-    {% if ws.insurance %}<span class="rc-ws-tag">🏥 بیمه: {{ ws.insurance.data.total_covered }}/{{ ws.insurance.data.total_covered + ws.insurance.data.total_uncovered }} پوشش</span>{% endif %}
-    {% if ws.employment %}<span class="rc-ws-tag">💼 درآمد: {{ ws.employment.data.total_monthly_income }} ریال</span>{% endif %}
-    {% if ws.housing %}<span class="rc-ws-tag">🏠 {{ ws.housing.data.tenure }}</span>{% endif %}
-  </div>
-  {% endif %}
-
-  {# افراد در معرض خطر #}
-  {% if h.identity.at_risk %}
-  <div class="rc-need">
-    <b style="color:var(--red)">⚠ افراد در معرض خطر:</b> {{ h.identity.at_risk }}
-  </div>
-  {% endif %}
-
-  {# توضیح نیاز #}
-  {% if h.self_declaration and h.self_declaration.need_description %}
-  <div class="rc-need">
-    <b>توضیح نیازمند:</b> {{ h.self_declaration.need_description[:200] }}{% if h.self_declaration.need_description|length > 200 %}...{% endif %}
-  </div>
-  {% endif %}
-
-  {# ترجیحات #}
-  {% if h.self_declaration %}
-  <div class="rc-body">
-    {% if h.self_declaration.preferred_language %}<div class="rc-field"><span class="rf-k">زبان ترجیحی</span><span class="rf-v">{{ h.self_declaration.preferred_language }}</span></div>{% endif %}
-    {% if h.self_declaration.preferred_gender %}<div class="rc-field"><span class="rf-k">جنسیت مددکار</span><span class="rf-v">{{ h.self_declaration.preferred_gender }}</span></div>{% endif %}
-    {% if h.self_declaration.preferred_contact %}<div class="rc-field"><span class="rf-k">راه ارتباطی</span><span class="rf-v">{{ h.self_declaration.preferred_contact }}</span></div>{% endif %}
-    <div class="rc-field"><span class="rf-k">تاریخ ثبت</span><span class="rf-v mono">{{ h.state.created_at[:10] if h.state.created_at else '—' }}</span></div>
-  </div>
-  {% endif %}
-
-  {# Reasons #}
-  {% if req.match_reasons %}
-  <div style="font-size:11px;color:var(--mut);margin-top:8px;padding:6px 8px;background:var(--bg-2);border-radius:6px">
-    <b>دلایل تطبیق:</b> {{ req.match_reasons|join('؛ ') }}
-  </div>
-  {% endif %}
-
-  {# Actions #}
-  <div class="rc-actions">
-    <form method="post" action="{{ url_for('assistant_claim', hid=req.hid) }}" style="display:inline">
-      <button class="btn lg" type="submit" onclick="return confirm('این درخواست به شما تخصیص داده می‌شود. ادامه می‌دهید؟')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        پذیرش و تخصیص به خودم
-      </button>
-    </form>
-    <a class="btn sec sm" href="{{ url_for('household_view', hid=req.hid) }}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/></svg>
-      جزئیات بیشتر
-    </a>
-  </div>
-</div>
-{% else %}
-<div class="card">
-  <div class="empty">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    <div class="e-title">در حال حاضر درخواستی در دسترس نیست</div>
-    <div class="e-sub">درخواست‌های جدید توسط نیازمندان ثبت شوند و در این صفحه نمایش داده می‌شوند.</div>
-  </div>
-</div>
-{% endfor %}
-
-{# ── ۹ معیار هوشمند ────────────────────────────────────── #}
-<div class="card" style="margin-top:20px">
+{# ── Match criteria ── #}
+<div class="card" style="margin-top:16px">
   <div class="head-row">
     <h2>
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      معیارهای هوشمند تطبیق (بند ۹ـ۲)
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      معیارهای تطبیق هوشمند
     </h2>
   </div>
-  <div class="grid" style="gap:8px">
-    {% for c in match_criteria %}
-    <div style="display:flex;gap:8px;align-items:center;padding:8px 10px;background:var(--bg-2);border-radius:8px">
-      <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--p-ll);color:var(--p-d);font-size:10px;font-weight:700;flex-shrink:0">{{ c.weight }}</span>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--ink)">{{ c.name }}</div>
-        <div style="font-size:10.5px;color:var(--mut)">{{ c.desc }}</div>
-      </div>
-    </div>
-    {% endfor %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>معیار</th><th>وزن</th><th>توضیح</th></tr></thead>
+      <tbody>
+        {% for mc in match_criteria %}
+        <tr><td><b>{{ mc.name }}</b></td><td class="num">{{ mc.weight }}٪</td><td class="small">{{ mc.desc }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
+
+<script>
+let poolMap = null;
+let poolMarker = null;
+
+function showPoolMap(name, lat, lng, location) {
+  const modal = document.getElementById('poolMapModal');
+  document.getElementById('map-modal-title').textContent = 'موقعیت: ' + name;
+
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(lng);
+
+  document.getElementById('map-modal-info').innerHTML =
+    '<b>نام:</b> ' + name + ' · <b>عرض جغرافیایی:</b> ' + lat + ' · <b>طول جغرافیایی:</b> ' + lng +
+    (location ? ' · <b>محل:</b> ' + location : '');
+
+  modal.classList.add('show');
+
+  setTimeout(function() {
+    if (poolMap) {
+      poolMap.remove();
+    }
+    poolMap = L.map('pool-map', { scrollWheelZoom: true }).setView([latNum, lngNum], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 18,
+    }).addTo(poolMap);
+
+    if (poolMarker) poolMap.removeLayer(poolMarker);
+    poolMarker = L.marker([latNum, lngNum], { draggable: false }).addTo(poolMap);
+    poolMarker.bindPopup('<b>' + name + '</b><br>' + (location || '')).openPopup();
+  }, 100);
+}
+
+function closePoolMap() {
+  document.getElementById('poolMapModal').classList.remove('show');
+  if (poolMap) {
+    setTimeout(function() { if (poolMap) { poolMap.remove(); poolMap = null; } }, 200);
+  }
+}
+
+document.getElementById('poolMapModal').addEventListener('click', function(e) {
+  if (e.target === this) closePoolMap();
+});
+</script>
 
 {% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block crumb %}ارزیابی عملکرد بازیگران{% endblock %}
+{% block body %}
+
+<div class="page-head">
+  <div class="ph-text">
+    <h1>ارزیابی و سطح‌بندی عملکرد بازیگران</h1>
+    <p class="sub">گزارش نتیجه‌محور عملکرد زیست‌بوم شناسایی، احراز و توانمندسازی</p>
+  </div>
+  <div class="ph-actions">
+    <a class="btn sec sm" href="{{ url_for('index') }}">بازگشت</a>
+  </div>
+</div>
+
+{# خلاصه آماری #}
+<div class="stat-grid" style="margin-bottom:18px">
+  <div class="stat teal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="num">{{ total_actors }}</div><div class="lbl">بازیگر فعال</div></div>
+  <div class="stat green"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="num">{{ avg_perf }}</div><div class="lbl">میانگین امتیاز</div></div>
+  <div class="stat blue"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="num">{{ by_level.get('عالی',0) }}</div><div class="lbl">عالی</div></div>
+  <div class="stat amber"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="num">{{ by_level.get('خوب',0) }}</div><div class="lbl">خوب</div></div>
+  <div class="stat red"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="num">{{ by_level.get('نیازمند بهبود',0) }}</div><div class="lbl">نیازمند بهبود</div></div>
+</div>
+
+{# جدول عملکرد #}
+<div class="card">
+  <div class="head-row">
+    <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>جدول عملکرد بازیگران</h2>
+  </div>
+  <div class="table-wrap">
+    <table style="font-size:11px">
+      <thead>
+        <tr>
+          <th>رتبه</th><th>نقش</th><th>نام</th>
+          <th>کل اقدام</th><th>EM-MPI</th><th>CDI ۲</th><th>CDI ۳</th><th>تصمیم</th>
+          <th>پرونده‌ها</th>
+          <th>اثربخشی</th><th>رضایت</th>
+          <th>حجم</th><th>اثر</th><th>رضا</th><th>تنوع</th>
+          <th>امتیاز کل</th><th>سطح</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in perf_rows %}
+        <tr>
+          <td class="num"><b>{{ loop.index }}</b></td>
+          <td><b>{{ r.label }}</b></td>
+          <td>{{ r.name }}</td>
+          <td class="num"><b>{{ r.total_actions }}</b></td>
+          <td class="num">{{ r.emmpi_count }}</td>
+          <td class="num">{{ r.cdi_l2_count }}</td>
+          <td class="num">{{ r.cdi_l3_count }}</td>
+          <td class="num">{{ r.decisions_count }}</td>
+          <td class="num">{{ r.households_touched }}</td>
+          <td class="num" style="color:var(--p-d)">{{ r.avg_effectiveness }}/۵</td>
+          <td class="num" style="color:var(--green)">{{ r.avg_satisfaction }}/۵</td>
+          <td class="num">{{ r.volume_score }}</td>
+          <td class="num">{{ r.eff_score }}</td>
+          <td class="num">{{ r.sat_score }}</td>
+          <td class="num">{{ r.diversity_score }}</td>
+          <td><b style="font-size:16px;color:var(--p-dd)">{{ r.performance_score }}</b></td>
+          <td><span class="badge {{ r.level_color }}"><span class="dot"></span>{{ r.level }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="small" style="margin-top:10px;color:var(--mut)">
+    <b>فرمول امتیاز:</b> ۴۰٪ حجم کار + ۳۰٪ اثربخشی + ۲۰٪ رضایت + ۱۰٪ تنوع پرونده
+  </div>
+</div>
+
+{% endblock %}

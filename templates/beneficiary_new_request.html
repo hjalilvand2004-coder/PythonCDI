@@ -1,484 +1,403 @@
-{% extends "base.html" %}
-{% block crumb %}ثبت درخواست{% endblock %}
-{% block body %}
-
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ثبت‌نام — پرسشنامه غربالگری خانوار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <style>
-.sd-section{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:14px;overflow:hidden;box-shadow:var(--sh-sm)}
-.sd-section > h3{background:linear-gradient(135deg,var(--p-ll),#fff);padding:12px 18px;margin:0;font-size:13.5px;font-weight:700;color:var(--p-dd);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
-.sd-section > h3 .sd-ic{width:28px;height:28px;border-radius:7px;background:var(--p);color:#fff;display:grid;place-items:center;flex-shrink:0}
-.sd-section > h3 .sd-ic svg{width:16px;height:16px}
-.sd-section > h3 .sd-count{margin-inline-start:auto;font-size:11px;color:var(--mut);font-weight:500}
+:root {
+  --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; --text: #1e293b;
+  --primary: #0284c7; --primary-dark: #0369a1; --accent: #f59e0b;
+  --danger: #dc2626; --success: #16a34a; --warn: #f97316; --muted: #64748b; --soft: #f8fafc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Vazirmatn', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+.container { max-width: 640px; margin: 0 auto; padding: 16px; }
 
-.sd-q{padding:12px 18px;border-bottom:1px solid var(--line-2)}
-.sd-q:last-child{border-bottom:none}
-.sd-q .sq-text{font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-bottom:8px}
-.sd-q .sq-hint{font-size:10.5px;color:var(--mut);margin-bottom:8px}
-.sd-q .sq-opts{display:flex;gap:6px;flex-wrap:wrap}
-.sd-q .sq-opt{position:relative;cursor:pointer}
-.sd-q .sq-opt input{position:absolute;opacity:0;pointer-events:none}
-.sd-q .sq-opt .sq-card{border:1.5px solid var(--line);border-radius:8px;padding:6px 12px;background:#fff;font-size:11.5px;transition:all .15s ease;cursor:pointer;text-align:center}
-.sd-q .sq-opt .sq-card:hover{border-color:var(--mut-3);background:var(--bg-2)}
-.sd-q .sq-opt input:checked + .sq-card{border-width:2px;font-weight:600}
-.sd-q .sq-opt input[value="yes"]:checked + .sq-card{border-color:var(--red);background:var(--red-bg);color:var(--red)}
-.sd-q .sq-opt input[value="partial"]:checked + .sq-card{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
-.sd-q .sq-opt input[value="no"]:checked + .sq-card{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.card { background: var(--card); border-radius: 16px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 16px; }
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 { color: var(--primary-dark); font-size: 24px; margin-bottom: 4px; }
+.header p { color: var(--muted); font-size: 14px; }
 
-.ws-banner{background:linear-gradient(135deg,var(--blue-bg),#fff);border:1px solid var(--blue-line);border-radius:var(--r-md);padding:14px 18px;margin-bottom:14px}
-.ws-banner h3{font-size:13px;font-weight:700;color:var(--blue);margin:0 0 6px;display:flex;align-items:center;gap:6px}
-.ws-banner h3 svg{width:18px;height:18px}
-.ws-banner p{font-size:11.5px;color:var(--mut);line-height:1.6;margin:0}
-.ws-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
-.ws-card{background:#fff;border:1px solid var(--blue-line);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:6px}
-.ws-card svg{width:16px;height:16px;color:var(--blue);flex-shrink:0}
-.ws-card .ws-name{font-size:11px;font-weight:600;color:var(--ink-2)}
-.ws-card .ws-desc{font-size:10px;color:var(--mut)}
+/* نوع ثبت‌نام */
+.kind-grid { display: grid; gap: 12px; margin-bottom: 24px; }
+.kind-card { border: 2px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+.kind-card:hover { border-color: var(--primary); }
+.kind-card.selected { border-color: var(--primary); background: #eff6ff; }
+.kind-card input { display: none; }
+.kind-card .kind-label { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.kind-card .kind-desc { font-size: 13px; color: var(--muted); }
 
-.sticky-submit{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 0;margin-top:20px;display:flex;gap:8px;justify-content:flex-end;z-index:20}
+/* فیلدها */
+.field-group { margin-bottom: 16px; }
+.field-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.field-label .req { color: var(--danger); }
+.field-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.field-error { font-size: 12px; color: var(--danger); margin-top: 4px; min-height: 16px; }
+input[type="text"], input[type="password"], input[type="tel"], input[type="date"], input[type="number"] {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 15px; background: white; transition: border-color 0.2s;
+}
+input:focus { outline: none; border-color: var(--primary); }
+input.invalid { border-color: var(--danger); }
+input.valid { border-color: var(--success); }
+
+/* توافقنامه */
+.agreement-box { background: var(--soft); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.agreement-box h3 { font-size: 15px; margin-bottom: 12px; color: var(--primary-dark); }
+.agreement-section { margin-bottom: 12px; }
+.agreement-section h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.agreement-section p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.consent-check { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 12px; background: white; border-radius: 8px; cursor: pointer; }
+.consent-check input { width: 20px; height: 20px; margin-top: 2px; }
+
+/* دکمه */
+.btn { width: 100%; padding: 14px; border-radius: 10px; border: none; cursor: pointer;
+       font-family: inherit; font-size: 16px; font-weight: 700; transition: all 0.2s; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+
+/* خطا */
+.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+.alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+/* فاز واکشی */
+.fetch-status { display: none; }
+.fetch-status.show { display: block; }
+.fetch-step { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--soft); border-radius: 8px; margin-bottom: 6px; }
+.fetch-step .icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.fetch-step.pending .icon { background: var(--muted); color: white; }
+.fetch-step.active .icon { background: var(--accent); color: white; animation: spin 1s linear infinite; }
+.fetch-step.ok .icon { background: var(--success); color: white; }
+.fetch-step.error .icon { background: var(--danger); color: white; }
+.fetch-step .name { font-size: 14px; }
+.fetch-step .badge { margin-right: auto; font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+@keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+
+/* خط قرمز */
+.disclaimer { font-size: 12px; color: var(--muted); margin-top: 16px; text-align: center; }
 </style>
+</head>
+<body>
+<div class="container">
 
-<div class="page-head">
-  <div class="ph-text">
-    <h1>ثبت درخواست حمایت</h1>
-    <p class="sub">اطلاعات هویتی و خوداظهاری را تکمیل کنید. سامانه به‌صورت خودکار داده‌های تکمیلی را از وب‌سرویس‌ها واکشی می‌کند. این اطلاعات به همیار مددکار برای انجام ارزیابی EM-MPI کمک می‌کند.</p>
-  </div>
-  <div class="ph-actions">
-    <a class="btn sec sm" href="{{ url_for('index') }}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      بازگشت
-    </a>
-  </div>
+<div class="header">
+  <h1>ثبت‌نام در سامانه</h1>
+  <p>شناسایی، احراز، توانمندسازی — کمیته امداد</p>
 </div>
 
 {% if error %}
-<div class="alert red">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-  <div>{{ error }}</div>
-</div>
+<div class="alert alert-error">⚠ {{ error }}</div>
 {% endif %}
 
-<form method="post">
-
-{# ══════ بخش ۱: اطلاعات هویتی ══════ #}
 <div class="card">
-  <div class="head-row">
-    <h2>
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      اطلاعات هویتی
-    </h2>
-    <span class="tag teal">بخش ۱</span>
-  </div>
-  <div class="grid">
-    <div><label>شناسهٔ ملی (کدملی) *</label><input type="text" name="national_id" required placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" value="{{ national_id or '' }}"></div>
-    <div><label>تاریخ تولد سرپرست *</label><input type="date" name="date_of_birth" required value="{{ date_of_birth or '' }}" style="font-family:inherit"></div>
-    <div><label>نام و نام خانوادگی</label><input type="text" name="name" placeholder="اگر خالی بگذارید، از ثبت‌احوال واکشی می‌شود"></div>
-    <div>
-      <label>استان محل سکونت *</label>
-      <select name="province" id="province-select" required onchange="updateCities()">
-        <option value="">— انتخاب استان —</option>
-        {% for pk, pn in provinces %}
-        <option value="{{ pk }}">{{ pn }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label>شهر محل سکونت *</label>
-      <select name="city" id="city-select" required onchange="showGeoPicker()">
-        <option value="">— ابتدا استان را انتخاب کنید —</option>
-      </select>
-    </div>
-    <div><label>تلفن تماس *</label><input type="text" name="contact" required placeholder="۰۹۱۲-***-****"></div>
-    <div><label>افراد در معرض خطر</label><input type="text" name="at_risk" placeholder="کودکان، سالمندان، بیماران..."></div>
-    <div><label>زبان ترجیحی</label>
-      <select name="preferred_language">
-        <option value="فارسی" selected>فارسی</option>
-        <option value="ترکی">ترکی آذربایجانی</option>
-        <option value="کردی">کردی</option>
-        <option value="عربی">عربی</option>
-        <option value="بلوچی">بلوچی</option>
-      </select>
-    </div>
-    <div><label>جنسیت مددکار ترجیحی</label>
-      <select name="preferred_gender">
-        <option value="">بدون ترجیح</option>
-        <option value="خانم">خانم</option>
-        <option value="آقا">آقا</option>
-      </select>
-    </div>
-    <div><label>راه ارتباطی ترجیحی</label>
-      <select name="preferred_contact">
-        <option value="تماس تلفنی">تماس تلفنی</option>
-        <option value="پیامک">پیامک</option>
-        <option value="حضوری">حضوری</option>
-      </select>
+<form method="POST" action="{{ url_for('beneficiary_new_request') }}" id="regForm" onsubmit="return onSubmit();">
+
+  <!-- نوع ثبت‌نام -->
+  <div class="field-group">
+    <label class="field-label">نوع ثبت‌نام <span class="req">*</span></label>
+    <div class="kind-grid">
+      <label class="kind-card selected" id="kindNeed">
+        <input type="radio" name="registrationKind" value="need_service" checked onchange="selectKind('need')">
+        <div class="kind-label">اعلام نیازمندی و دریافت خدمات دارم</div>
+        <div class="kind-desc">پرسشنامه غربالگری محرومیت خانوار (EM-MPI) برای شما آغاز می‌شود؛ اطلاعات هویتی و نشانی از مراجع ثبتی واکشی و ملاک می‌شود.</div>
+      </label>
+      <label class="kind-card" id="kindProvide">
+        <input type="radio" name="registrationKind" value="provide_service" onchange="selectKind('provide')">
+        <div class="kind-label">متقاضی ارائه خدمت به مددجویان هستم</div>
+        <div class="kind-desc">پرسشنامه محرومیت برای شما تکمیل نمی‌شود؛ به داشبورد حرفه‌ای هدایت می‌شوید.</div>
+      </label>
     </div>
   </div>
 
-  {# فیلد موقعیت جغرافیایی روی نقشه Leaflet ─────────────── #}
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- کد ملی -->
+  <div class="field-group">
+    <label class="field-label">کد ملی سرپرست <span class="req">*</span></label>
+    <input type="text" name="national_id" id="nid" maxlength="10" placeholder="۱۰ رقم"
+           value="{{ national_id or '' }}" oninput="validateNid()" autocomplete="off">
+    <div class="field-hint">کلید شناسایی خانوار و مبنای استعلام همه مراجع ثبتی. الگوریتم رقم کنترل ثبت احوال اعمال می‌شود.</div>
+    <div class="field-error" id="nidErr"></div>
+  </div>
 
-  <div id="geo-picker-container" style="display:none;margin-top:16px">
-    <label>موقعیت جغرافیایی محل سکونت *</label>
-    <p class="card-desc" style="margin-bottom:10px">روی نقشه در موقعیت شهر خود کلیک کنید. می‌توانید زوم کنید و نقشه را جابه‌جا کنید.</p>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
-      <div id="beneficiary-map" style="width:100%;max-width:500px;height:350px;border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--sh-sm);z-index:1"></div>
-      <div>
-        <input type="hidden" name="geo_lat" id="geo-lat-input" value="">
-        <input type="hidden" name="geo_lng" id="geo-lng-input" value="">
-        <div id="geo-info" style="font-size:12px;color:var(--mut);padding:8px 0">
-          <b>هنوز موقعیتی انتخاب نشده</b>
-          <br>روی نقشه کلیک کنید
-        </div>
-      </div>
+  <!-- موبایل -->
+  <div class="field-group">
+    <label class="field-label">شماره موبایل <span class="req">*</span></label>
+    <input type="tel" name="contact" id="mobile" maxlength="11" placeholder="09XXXXXXXXX"
+           value="{{ contact or '' }}" oninput="validateMobile()" autocomplete="off">
+    <div class="field-hint">کد تأیید و اطلاع‌رسانی پیگیری درخواست به همین شماره ارسال می‌شود.</div>
+    <div class="field-error" id="mobileErr"></div>
+  </div>
+
+  <!-- تاریخ تولد -->
+  <div class="field-group">
+    <label class="field-label">تاریخ تولد (شمسی) <span class="req">*</span></label>
+    <input type="text" name="date_of_birth" id="birth" placeholder="YYYY/MM/DD یا ۸ رقم پیوسته"
+           value="{{ date_of_birth or '' }}" oninput="validateBirth()" autocomplete="off">
+    <div class="field-hint">سال ۱۳۰۰ تا ۱۴۲۰. با کد ملی و تاریخ تولد، هویت از ثبت احوال تطبیق داده می‌شود.</div>
+    <div class="field-error" id="birthErr"></div>
+  </div>
+
+  <!-- کد پستی -->
+  <div class="field-group">
+    <label class="field-label">کد پستی <span class="req">*</span></label>
+    <input type="text" name="postal_code" id="postal" maxlength="10" placeholder="۱۰ رقم"
+           oninput="validatePostal()" autocomplete="off">
+    <div class="field-hint">کلید واکشی نشانی از سرویس پست.</div>
+    <div class="field-error" id="postalErr"></div>
+  </div>
+
+  <!-- رمز عبور -->
+  <div class="field-group">
+    <label class="field-label">رمز عبور <span class="req">*</span></label>
+    <input type="password" name="password" id="pw" maxlength="6" placeholder="۶ کاراکتر، حروف+اعداد"
+           oninput="validatePw()" autocomplete="new-password">
+    <div class="field-hint">دقیقاً ۶ کاراکتر، ترکیبی از حروف انگلیسی و اعداد. کاراکترهای &lt; &gt; " / ; , * | = % ممنوع.</div>
+    <div class="field-error" id="pwErr"></div>
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">تکرار رمز عبور <span class="req">*</span></label>
+    <input type="password" name="pw2" id="pw2" maxlength="6" placeholder="تکرار رمز"
+           oninput="validatePw2()" autocomplete="new-password">
+    <div class="field-error" id="pw2Err"></div>
+  </div>
+
+  <!-- توافقنامه بانکی -->
+  <div class="agreement-box">
+    <h3>توافقنامه دسترسی به اطلاعات بانکی</h3>
+    <div class="agreement-section">
+      <h4>۱) هدف دسترسی</h4>
+      <p>با رضایت شما، وضعیت حساب و گردش بانکی سرپرست فقط برای «راستی‌آزمایی معیشت و درآمد» (بُعد D) از طریق شاپرک استعلام می‌شود.</p>
     </div>
-  </div>
-
-  <script>
-  let beneficiaryMap = null;
-  let selectedMarker = null;
-  const PROVINCE_COORDS = {{ PROVINCES | tojson }};
-
-  function showGeoPicker() {
-    const city = document.getElementById('city-select').value;
-    const provKey = document.getElementById('province-select').value;
-    if (city && provKey) {
-      document.getElementById('geo-picker-container').style.display = 'block';
-
-      // مختصات استان انتخاب‌شده
-      const provData = PROVINCE_COORDS[provKey];
-      const lat = provData ? provData.lat : 32.4279;
-      const lng = provData ? provData.lng : 53.6880;
-
-      // اگر نقشه قبلاً ساخته شده فقط حرکتش بده
-      if (beneficiaryMap) {
-        beneficiaryMap.setView([lat, lng], 10);
-        setTimeout(function() { beneficiaryMap.invalidateSize(); }, 100);
-        return;
-      }
-
-      // ساخت نقشه
-      setTimeout(function() {
-        beneficiaryMap = L.map('beneficiary-map', { scrollWheelZoom: true }).setView([lat, lng], 10);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap',
-          maxZoom: 18,
-        }).addTo(beneficiaryMap);
-
-        // کلیک روی نقشه = انتخاب موقعیت
-        beneficiaryMap.on('click', function(e) {
-          const clickLat = e.latlng.lat.toFixed(6);
-          const clickLng = e.latlng.lng.toFixed(6);
-
-          // حذف مارکر قبلی
-          if (selectedMarker) {
-            beneficiaryMap.removeLayer(selectedMarker);
-          }
-
-          // افزودن مارکر جدید
-          selectedMarker = L.marker([parseFloat(clickLat), parseFloat(clickLng)], {
-            draggable: true
-          }).addTo(beneficiaryMap);
-
-          // popup
-          selectedMarker.bindPopup('📍 موقعیت انتخاب‌شده').openPopup();
-
-          // به‌روزرسانی هنگام درگ کردن مارکر
-          selectedMarker.on('dragend', function(ev) {
-            const newPos = ev.target.getLatLng();
-            updateGeoInfo(newPos.lat.toFixed(6), newPos.lng.toFixed(6));
-          });
-
-          updateGeoInfo(clickLat, clickLng);
-        });
-      }, 100);
-    }
-  }
-
-  function updateGeoInfo(lat, lng) {
-    document.getElementById('geo-lat-input').value = lat;
-    document.getElementById('geo-lng-input').value = lng;
-
-    const provSelect = document.getElementById('province-select');
-    const provName = provSelect.options[provSelect.selectedIndex].text;
-    const citySelect = document.getElementById('city-select');
-    const cityName = citySelect.options[citySelect.selectedIndex].text;
-
-    document.getElementById('geo-info').innerHTML =
-      '<b style="color:var(--green)">✓ موقعیت ثبت شد</b>' +
-      '<br>استان: ' + provName +
-      '<br>شهر: ' + cityName +
-      '<br>عرض جغرافیایی: ' + lat +
-      '<br>طول جغرافیایی: ' + lng;
-  }
-  </script>
-
-  <script>
-  // دیتای شهرها از سرور دریافت شد — در متغیر جاوااسکریپت ذخیره می‌کنیم
-  const PROVINCES_DATA = {{ PROVINCES | tojson }};
-  
-  function updateCities() {
-    const provKey = document.getElementById('province-select').value;
-    const citySelect = document.getElementById('city-select');
-    citySelect.innerHTML = '<option value="">— انتخاب شهر —</option>';
-    if (provKey && PROVINCES_DATA[provKey]) {
-      PROVINCES_DATA[provKey].cities.forEach(city => {
-        const opt = document.createElement('option');
-        opt.value = city;
-        opt.textContent = city;
-        citySelect.appendChild(opt);
-      });
-    }
-  }
-  </script>
-
-  <div class="alert blue" style="margin-top:12px">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-    <div>
-      <b>تست سیستم:</b> کدملی‌های زیر داده‌های هویتی آماده دارند:
-      <br><span class="mono">۱۲۳۴۵۶۷۸۹۰</span> — علی محمدی (تهران)
-      <br><span class="mono">۹۸۷۶۵۴۳۲۱۰</span> — حسن رضایی (کرج)
-      <br><span class="mono">۱۱۱۱۱۱۱۱۱۱</span> — محمد کریمی (اصفهان)
-      <br><span class="mono">۲۲۲۲۲۲۲۲۲۲</span> — سحر احمدی (شهرری)
+    <div class="agreement-section">
+      <h4>۲) دامنه دسترسی</h4>
+      <p>مانده حساب، گردش ۹۰ روز اخیر به‌صورت تجمیعی، وضعیت تسهیلات و چک برگشتی؛ جزئیات خرید مشاهده نمی‌شوند.</p>
     </div>
+    <div class="agreement-section">
+      <h4>۳) محرمانگی</h4>
+      <p>داده بانکی فقط در همین پرونده استفاده می‌شود، امتیاز مستقل ایجاد نمی‌کند، در اختیار ثالث قرار نمی‌گیرد.</p>
+    </div>
+    <div class="agreement-section">
+      <h4>۴) مدت و لغو</h4>
+      <p>این رضایت تا بستن پرونده معتبر است و هر زمان قابل لغو است؛ لغو مانع ادامه ارزیابی سایر بخش‌ها نیست.</p>
+    </div>
+    <label class="consent-check">
+      <input type="checkbox" name="consent_bank" id="consentBank">
+      <span>با استعلام شاپرک موافقم. (اختیاری — بدون رضایت، راستی‌آزمایی به مدارک مردمی منتقل می‌شود)</span>
+    </label>
   </div>
-  <label>توضیح مختصر از نیاز و شرایط</label>
-  <textarea name="need_description" placeholder="به‌اختصار وضعیت فعلی، مشکل اصلی و نیاز فوری خود را توضیح دهید..." style="min-height:80px"></textarea>
-</div>
 
-{# ══════ بخش ۲: خوداظهاری (پیش‌ارزیابی) ══════ #}
-<div class="card" style="margin-bottom:0">
-  <div class="head-row">
-    <h2>
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      خوداظهاری وضعیت خانوار
-    </h2>
-    <span class="tag teal">بخش ۲ — پیش‌ارزیابی</span>
+  <!-- وضعیت واکشی -->
+  <div class="fetch-status" id="fetchStatus">
+    <div class="alert alert-info">در حال واکشی خودکار از مراجع ثبتی...</div>
+    <div class="fetch-step pending" id="step_civil"><div class="icon">⏳</div><div class="name">ثبت احوال</div><div class="badge">در انتظار</div></div>
+    <div class="fetch-step pending" id="step_post"><div class="icon">⏳</div><div class="name">پست ایران</div><div class="badge">در انتظار</div></div>
+    <div class="fetch-step pending" id="step_insurance"><div class="icon">⏳</div><div class="name">تأمین اجتماعی</div><div class="badge">در انتظار</div></div>
+    <div class="fetch-step pending" id="step_property"><div class="icon">⏳</div><div class="name">اموال و املاک</div><div class="badge">در انتظار</div></div>
+    <div class="fetch-step pending" id="step_edu"><div class="icon">⏳</div><div class="name">آموزش‌وپرورش</div><div class="badge">در انتظار</div></div>
+    <div class="fetch-step pending" id="step_higher"><div class="icon">⏳</div><div class="name">وزارت علوم</div><div class="badge">در انتظار</div></div>
+    <div class="fetch-step pending" id="step_shaparak"><div class="icon">⏳</div><div class="name">شاپرک</div><div class="badge">در انتظار</div></div>
   </div>
-  <p class="card-desc">این اطلاعات به همیار مددکار کمک می‌کند تا ارزیابی EM-MPI را سریع‌تر و دقیق‌تر انجام دهد. پاسخ شما به تنهایی مبنای تصمیم نهایی نیست — همیار بررسی تخصصی را انجام خواهد داد.</p>
-</div>
 
-{# سلامت و امنیت زیستی (بُعد A) #}
-<div class="sd-section">
-  <h3>
-    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
-    سلامت و امنیت زیستی
-    <span class="sd-count">۵ پرسش</span>
-  </h3>
-  <div class="sd-q">
-    <div class="sq-text">آیا در خانوار فردی با بیماری مزمن، صعب‌العلاج یا نیاز درمانی فوری وجود دارد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_health_illness" value="yes"><div class="sq-card">بله، نیاز فوری</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_health_illness" value="partial"><div class="sq-card">بیماری مزمن کنترل‌شده</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_health_illness" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا فردی با معلولیت یا محدودیت عملکردی نیازمند مراقبت یا توان‌بخشی در خانوار وجود دارد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_disability" value="yes"><div class="sq-card">بله، نیاز مستمر</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_disability" value="partial"><div class="sq-card">محدودیت جزئی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_disability" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا در ۳۰ روز گذشته نگران تمام‌شدن غذا، حذف وعده یا گرسنگی بوده‌اید؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_food" value="yes"><div class="sq-card">بله، گرسنگی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_food" value="partial"><div class="sq-card">کاهش کیفیت</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_food" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا فشار روانی شدید، اختلال یا اعتیاد در خانوار وجود دارد که عملکرد را مختل کرده باشد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_mental" value="yes"><div class="sq-card">بله، مختل‌کننده</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_mental" value="partial"><div class="sq-card">فشار روانی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_mental" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا خشونت خانوادگی، خطر حفاظتی یا تهدید امنیتی در خانوار وجود دارد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_violence" value="yes"><div class="sq-card">⚠ بله</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_violence" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-</div>
+  <button type="submit" class="btn btn-primary" id="submitBtn">ثبت‌نام و شروع غربالگری</button>
 
-{# آموزش و رشد انسانی (بُعد B) #}
-<div class="sd-section">
-  <h3>
-    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z M6 12v5"/></svg></span>
-    آموزش و رشد انسانی
-    <span class="sd-count">۳ پرسش</span>
-  </h3>
-  <div class="sd-q">
-    <div class="sq-text">آیا کودک یا نوجوانی در خانوار وجود دارد که از مدرسه جا مانده یا ترک تحصیل کرده است؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_dropout" value="yes"><div class="sq-card">بله، ترک تحصیل</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_dropout" value="partial"><div class="sq-card">در خطر ترک</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_dropout" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
+  <div class="disclaimer">
+    کد ملی «کلید شناسایی» است. بدون کد ملی معتبر، واکشی مراجع انجام نمی‌شود ولی مسیر «فاقد مدرک» با پرچم R8 فعال می‌شود. رمز عبور هرگز به‌صورت متن ساده ذخیره نمی‌شود.
   </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا سرپرست خانوار در خواندن، نوشتن یا انجام امور اداری مشکل دارد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_literacy" value="yes"><div class="sq-card">بله، مشکلی جدی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_literacy" value="partial"><div class="sq-card">محدود</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_literacy" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا فرد آماده کار در خانوار فاقد مهارت یا مسیر مهارت‌آموزی است؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_skills" value="yes"><div class="sq-card">بله</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_skills" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-</div>
-
-{# استاندارد زندگی و مسکن (بُعد C) #}
-<div class="sd-section">
-  <h3>
-    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10"/></svg></span>
-    استاندارد زندگی و مسکن
-    <span class="sd-count">۴ پرسش</span>
-  </h3>
-  <div class="sd-q">
-    <div class="sq-text">آیا در خطر از دست‌دادن محل سکونت، تخلیه یا بی‌خانمانی هستید؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_housing" value="yes"><div class="sq-card">⚠ بله، خطر فوری</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_housing" value="partial"><div class="sq-card">ناامنی نسبی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_housing" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا آب، برق یا گاز قطع شده یا در خطر قطع است؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_utilities" value="yes"><div class="sq-card">بله، قطع</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_utilities" value="partial"><div class="sq-card">در خطر قطع</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_utilities" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا هزینه مسکن (اجاره/اقساط) بیش از ۵۰٪ درآمد شماست؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_rent" value="yes"><div class="sq-card">بله، بحرانی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_rent" value="partial"><div class="sq-card">۳۰-۵۰٪</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_rent" value="no" checked><div class="sq-card">کمتر از ۳۰٪</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا مسکن شما ناایمن، فرسوده یا غیرقابل سکونت است؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_housing_quality" value="yes"><div class="sq-card">بله، ناایمن</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_housing_quality" value="partial"><div class="sq-card">نیازمند تعمیر</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_housing_quality" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-</div>
-
-{# معیشت، اشتغال و درآمد (بُعد D) #}
-<div class="sd-section">
-  <h3>
-    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
-    معیشت، اشتغال و درآمد
-    <span class="sd-count">۳ پرسش</span>
-  </h3>
-  <div class="sd-q">
-    <div class="sq-text">آیا سرپرست خانوار بیکار است یا درآمد فعالی ندارد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_unemployment" value="yes"><div class="sq-card">بله، بیکار</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_unemployment" value="partial"><div class="sq-card">ناپایدار</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_unemployment" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا بدهی بحرانی یا شوک اقتصادی (از دست‌دادن درآمد، حادثه) دارید؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_debt" value="yes"><div class="sq-card">بله، بحرانی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_debt" value="partial"><div class="sq-card">بدهی قابل مدیریت</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_debt" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا درآمد خانوار برای تأمین نیازهای اساسی کافی نیست؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_income" value="yes"><div class="sq-card">بله، ناکافی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_income" value="partial"><div class="sq-card">به‌سختی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_income" value="no" checked><div class="sq-card">کافی</div></label>
-    </div>
-  </div>
-</div>
-
-{# آسیب‌پذیری و شبکه حمایت (بُعد E) #}
-<div class="sd-section">
-  <h3>
-    <span class="sd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-    آسیب‌پذیری و شبکه حمایت
-    <span class="sd-count">۳ پرسش</span>
-  </h3>
-  <div class="sd-q">
-    <div class="sq-text">آیا بار مراقبتی سنگین (کودک، سالمند، بیمار) بدون پشتیبانی دارید؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_caregiving" value="yes"><div class="sq-card">بله، سنگین</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_caregiving" value="partial"><div class="sq-card">جزئی</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_caregiving" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا در مواقع بحران فرد یا نهاد قابل اتکایی برای کمک دارید؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_network" value="yes"><div class="sq-card">بله</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_network" value="partial"><div class="sq-card">محدود</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_network" value="no" checked><div class="sq-card">خیر، فاقد شبکه</div></label>
-    </div>
-  </div>
-  <div class="sd-q">
-    <div class="sq-text">آیا مانع حقوقی، هویتی یا اداری دارید که دسترسی به خدمات را مسدود کرده باشد؟</div>
-    <div class="sq-opts">
-      <label class="sq-opt"><input type="radio" name="sd_legal" value="yes"><div class="sq-card">بله</div></label>
-      <label class="sq-opt"><input type="radio" name="sd_legal" value="no" checked><div class="sq-card">خیر</div></label>
-    </div>
-  </div>
-</div>
-
-{# ══════ بخش ۳: وب‌سرویس‌ها ══════ #}
-<div class="ws-banner">
-  <h3>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
-    واکشی خودکار داده‌های تکمیلی
-  </h3>
-  <p>پس از ثبت درخواست، سامانه به‌صورت خودکار از سامانه‌های رسمی زیر داده‌های تکمیلی را واکشی می‌کند:</p>
-  <div class="ws-grid">
-    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div><div class="ws-name">ثبت‌احوال</div><div class="ws-desc">اعضای خانوار</div></div></div>
-    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><div><div class="ws-name">بیمه</div><div class="ws-desc">پوشش درمان</div></div></div>
-    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z M6 12v5"/></svg><div><div class="ws-name">آموزش</div><div class="ws-desc">وضعیت تحصیلی</div></div></div>
-    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v9"/></svg><div><div class="ws-name">تأمین‌اجتماعی</div><div class="ws-desc">اشتغال و درآمد</div></div></div>
-    <div class="ws-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><div><div class="ws-name">مسکن</div><div class="ws-desc">وضعیت سکونت</div></div></div>
-  </div>
-</div>
-
-<div class="sticky-submit">
-  <a class="btn sec" href="{{ url_for('index') }}">انصراف</a>
-  <button class="btn lg" type="submit">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    ثبت درخواست و واکشی داده‌ها
-  </button>
-</div>
 </form>
+</div>
+
+</div>
 
 <script>
-// شمارش زندهٔ پاسخ‌های «بله» برای هشدار فوریت
-document.querySelectorAll('.sd-q input[type=radio]').forEach(r => {
-  r.addEventListener('change', function() {
-    let urgent = 0;
-    document.querySelectorAll('.sd-q input[value="yes"]:checked').forEach(c => {
-      let name = c.name;
-      if (['sd_violence','sd_health_illness','sd_housing','sd_food','sd_mental'].includes(name)) urgent++;
-    });
-  });
-});
+// ═══════ نرمال‌سازی ارقام ═══════
+function normalizeDigits(s) {
+  const fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩', en = '0123456789';
+  return (s || '').split('').map(c => {
+    const fi = fa.indexOf(c); if (fi >= 0) return en[fi];
+    const ai = ar.indexOf(c); if (ai >= 0) return en[ai];
+    return c;
+  }).join('').replace(/[\s\-_]/g, '');
+}
+
+// ═══════ اعتبارسنجی کد ملی ═══════
+function isValidNid(input) {
+  const nid = normalizeDigits(input);
+  if (!/^\d{10}$/.test(nid)) return false;
+  if (/^(\d)\1{9}$/.test(nid)) return false;
+  const d = nid.split('').map(Number);
+  const check = d[9];
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += d[i] * (10 - i);
+  const rem = sum % 11;
+  return rem < 2 ? check === rem : check === 11 - rem;
+}
+
+function validateNid() {
+  const inp = document.getElementById('nid');
+  const err = document.getElementById('nidErr');
+  const v = normalizeDigits(inp.value);
+  inp.value = v;
+  if (!v) { err.textContent = 'کد ملی سرپرست اجباری است.'; inp.className = 'invalid'; return false; }
+  if (v.length !== 10) { err.textContent = `کد ملی باید ۱۰ رقم باشد (${v.length} رقم).`; inp.className = 'invalid'; return false; }
+  if (!isValidNid(v)) { err.textContent = 'کد ملی با الگوریتم ثبت احوال تطبیق ندارد.'; inp.className = 'invalid'; return false; }
+  err.textContent = '✓ معتبر'; err.style.color = 'var(--success)';
+  inp.className = 'valid';
+  return true;
+}
+
+// ═══════ موبایل ═══════
+function validateMobile() {
+  const inp = document.getElementById('mobile');
+  const err = document.getElementById('mobileErr');
+  const v = normalizeDigits(inp.value);
+  inp.value = v;
+  if (!v) { err.textContent = 'شماره موبایل اجباری است.'; inp.className = 'invalid'; return false; }
+  if (!v.startsWith('09')) { err.textContent = 'باید با ۰۹ شروع شود.'; inp.className = 'invalid'; return false; }
+  if (v.length !== 11) { err.textContent = `باید ۱۱ رقم باشد (${v.length} رقم).`; inp.className = 'invalid'; return false; }
+  if (!/^09\d{9}$/.test(v)) { err.textContent = 'معتبر نیست.'; inp.className = 'invalid'; return false; }
+  err.textContent = '✓ معتبر'; err.style.color = 'var(--success)';
+  inp.className = 'valid';
+  return true;
+}
+
+// ═══════ تاریخ تولد شمسی ═══════
+function jalaliMonthLength(year, month) {
+  if (month <= 6) return 31;
+  if (month <= 11) return 30;
+  const rem = year % 33;
+  const leap = [1,5,9,13,17,22,26,30].includes(rem);
+  return leap ? 30 : 29;
+}
+function validateBirth() {
+  const inp = document.getElementById('birth');
+  const err = document.getElementById('birthErr');
+  let s = normalizeDigits(inp.value).replace(/[.\-]/g, '/');
+  const parts = s.split('/').filter(Boolean);
+  let y, m, d;
+  if (parts.length === 3) [y, m, d] = parts;
+  else if (s.length === 8 && /^\d{8}$/.test(s)) { y = s.slice(0,4); m = s.slice(4,6); d = s.slice(6,8); }
+  else { err.textContent = 'قالب مثال: ۱۳۶۲/۰۵/۱۲.'; inp.className = 'invalid'; return false; }
+  if (!/^\d{4}$/.test(y) || !/^\d{1,2}$/.test(m) || !/^\d{1,2}$/.test(d)) {
+    err.textContent = 'قالب نامعتبر.'; inp.className = 'invalid'; return false;
+  }
+  const yy = +y, mm = +m, dd = +d;
+  if (yy < 1300 || yy > 1420) { err.textContent = 'سال باید ۱۳۰۰-۱۴۲۰.'; inp.className = 'invalid'; return false; }
+  if (mm < 1 || mm > 12) { err.textContent = 'ماه ۱-۱۲.'; inp.className = 'invalid'; return false; }
+  if (dd < 1 || dd > jalaliMonthLength(yy, mm)) { err.textContent = 'روز نامعتبر.'; inp.className = 'invalid'; return false; }
+  err.textContent = '✓ معتبر'; err.style.color = 'var(--success)';
+  inp.className = 'valid';
+  return true;
+}
+
+// ═══════ کد پستی ═══════
+function validatePostal() {
+  const inp = document.getElementById('postal');
+  const err = document.getElementById('postalErr');
+  const v = normalizeDigits(inp.value);
+  inp.value = v;
+  if (!/^\d{10}$/.test(v)) { err.textContent = 'کد پستی باید ۱۰ رقم باشد.'; inp.className = 'invalid'; return false; }
+  err.textContent = '✓ معتبر'; err.style.color = 'var(--success)';
+  inp.className = 'valid';
+  return true;
+}
+
+// ═══════ رمز عبور ═══════
+const FORBIDDEN = '&<>"\\/;,*|=%';
+function validatePw() {
+  const inp = document.getElementById('pw');
+  const err = document.getElementById('pwErr');
+  const v = inp.value;
+  if (!v) { err.textContent = 'رمز عبور اجباری است.'; inp.className = 'invalid'; return false; }
+  const bad = [...v].filter(c => FORBIDDEN.includes(c));
+  if (bad.length) { err.textContent = 'کاراکتر ممنوع استفاده شده.'; inp.className = 'invalid'; return false; }
+  if (v.length !== 6) { err.textContent = `باید ۶ کاراکتر باشد (${v.length}).`; inp.className = 'invalid'; return false; }
+  if (!/^[A-Za-z0-9]+$/.test(v)) { err.textContent = 'فقط حروف انگلیسی و اعداد.'; inp.className = 'invalid'; return false; }
+  if (!/[A-Za-z]/.test(v)) { err.textContent = 'حداقل یک حرف لازم است.'; inp.className = 'invalid'; return false; }
+  if (!/\d/.test(v)) { err.textContent = 'حداقل یک عدد لازم است.'; inp.className = 'invalid'; return false; }
+  err.textContent = '✓ معتبر'; err.style.color = 'var(--success)';
+  inp.className = 'valid';
+  return true;
+}
+function validatePw2() {
+  const inp = document.getElementById('pw2');
+  const err = document.getElementById('pw2Err');
+  const v = inp.value;
+  const pw = document.getElementById('pw').value;
+  if (v !== pw) { err.textContent = 'تکرار رمز مطابقت ندارد.'; inp.className = 'invalid'; return false; }
+  if (v) { err.textContent = '✓ مطابقت'; err.style.color = 'var(--success)'; inp.className = 'valid'; }
+  return true;
+}
+
+// ═══════ نوع ثبت‌نام ═══════
+function selectKind(kind) {
+  document.getElementById('kindNeed').classList.toggle('selected', kind === 'need');
+  document.getElementById('kindProvide').classList.toggle('selected', kind === 'provide');
+}
+
+// ═══════ Submit ═══════
+function onSubmit() {
+  const ok = validateNid() && validateMobile() && validateBirth() && validatePostal() && validatePw() && validatePw2();
+  if (!ok) {
+    alert('لطفاً خطاهای فرم را برطرف کنید.');
+    return false;
+  }
+  // نمایش فاز واکشی
+  const btn = document.getElementById('submitBtn');
+  const fs = document.getElementById('fetchStatus');
+  btn.disabled = true;
+  btn.textContent = 'در حال پردازش...';
+  fs.classList.add('show');
+  // شبیه‌سازی مراحل واکشی (در عمل، سرور این کار را می‌کند)
+  const steps = [
+    ['step_civil', 'ثبت احوال'],
+    ['step_post', 'پست ایران'],
+    ['step_insurance', 'تأمین اجتماعی'],
+    ['step_property', 'اموال و املاک'],
+    ['step_edu', 'آموزش‌وپرورش'],
+    ['step_higher', 'وزارت علوم'],
+    ['step_shaparak', 'شاپرک'],
+  ];
+  let i = 0;
+  function nextStep() {
+    if (i >= steps.length) {
+      btn.textContent = 'هدایت به پرسشنامه...';
+      return true;
+    }
+    const [id, name] = steps[i];
+    const el = document.getElementById(id);
+    el.classList.remove('pending');
+    el.classList.add('active');
+    el.querySelector('.icon').textContent = '⟳';
+    el.querySelector('.badge').textContent = 'در حال واکشی';
+    setTimeout(() => {
+      el.classList.remove('active');
+      el.classList.add('ok');
+      el.querySelector('.icon').textContent = '✓';
+      el.querySelector('.badge').textContent = 'موفق';
+      i++;
+      nextStep();
+    }, 400 + Math.random() * 300);
+    return false; // اجازه نمی‌دهیم فرم قبل از پایان submit شود
+  }
+  // بعد از نمایش مراحل، فرم واقعاً submit می‌شود
+  setTimeout(() => {
+    document.getElementById('regForm').submit();
+  }, 3500);
+  return false; // جلوگیری از submit فوری
+}
+
+// اعتبارسنجی اولیه
+validateNid();
+validateMobile();
+validateBirth();
+validatePostal();
 </script>
-{% endblock %}
+
+</body>
+</html>

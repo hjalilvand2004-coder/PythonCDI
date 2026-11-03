@@ -173,10 +173,23 @@ body{
         <label>نقش کاربر</label>
         <div class="input-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <select name="uid" required>
-            {% for uid, udata in users.items() %}
-              <option value="{{ uid }}">{{ roles[uid].label }} — ({{ uid }})</option>
+          <select name="uid" required id="uid-select">
+            <option value="">— انتخاب کنید —</option>
+            <optgroup label="سراسری">
+              {% for uid, udata in users.items() if not udata.get("province") %}
+              <option value="{{ uid }}">{{ udata.name }} ({{ roles[udata.get('role', uid)].label if udata.get('role', uid) in roles else udata.get('role', uid) }})</option>
+              {% endfor %}
+            </optgroup>
+            {% set ns = namespace(current_prov=None) %}
+            {% for uid, udata in users.items() if udata.get("province") %}
+              {% if ns.current_prov != udata.province %}
+                {% set ns.current_prov = udata.province %}
+            </optgroup>
+            <optgroup label="{{ province_names.get(udata.province, udata.province) }}">
+              {% endif %}
+              <option value="{{ uid }}">{{ udata.name }} — {{ roles[udata.role].label if udata.role in roles else udata.role }}</option>
             {% endfor %}
+            </optgroup>
           </select>
         </div>
       </div>

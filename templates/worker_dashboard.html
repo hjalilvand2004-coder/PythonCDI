@@ -471,4 +471,249 @@
   </div>
 </div>
 
+{# ═══════════════════════════════════════════════════════════
+   ═══════ گزارش پروندهٔ شهروندی و امتیاز صداقت ═══════
+   ═══════════════════════════════════════════════════════════ #}
+
+{% if citizen_rows %}
+<div class="chart-card" style="border:2px solid var(--p-l);background:linear-gradient(135deg,var(--p-ll) 0%,#fff 70%)">
+  <h2 style="margin:0 0 14px;font-size:16px;color:var(--p-dd);display:flex;align-items:center;gap:8px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    گزارش پروندهٔ شهروندی و امتیاز صداقت
+  </h2>
+
+  <p class="card-desc" style="margin-bottom:14px">
+    این گزارش بر اساس مقایسهٔ پاسخ‌های خوداظهاری نیازمندان با ارزیابی همیاران در EM-MPI تهیه شده است.
+    امتیاز صداقت نشان می‌دهد چه مقدار از اطلاعات اولیهٔ نیازمند با واقعیت میدانی هم‌سو بوده است.
+    پرونده‌های با صداقت پایین نیازمند راستی‌آزمایی فوری هستند.
+  </p>
+
+  {# ── آمار خلاصهٔ صداقت ─── #}
+  <div class="stat-grid" style="margin-bottom:14px">
+    <div class="stat-mini teal">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ citizen_rows|length }}</div>
+        <div class="sm-lbl">پروندهٔ شهروندی</div>
+      </div>
+    </div>
+    <div class="stat-mini green">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ avg_honesty }}<span style="font-size:11px;color:var(--mut)">/۱۰۰</span></div>
+        <div class="sm-lbl">میانگین صداقت</div>
+      </div>
+    </div>
+    <div class="stat-mini green">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ total_matched }}</div>
+        <div class="sm-lbl">انطباق کامل</div>
+      </div>
+    </div>
+    <div class="stat-mini amber">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ total_partial }}</div>
+        <div class="sm-lbl">مغایرت جزئی</div>
+      </div>
+    </div>
+    <div class="stat-mini red">
+      <div class="sm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div class="sm-info">
+        <div class="sm-num">{{ total_mismatched }}</div>
+        <div class="sm-lbl">مغایرت کامل</div>
+      </div>
+    </div>
+  </div>
+
+  {# ── توزیع سطوح صداقت ─── #}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      توزیع پرونده‌ها بر اساس سطح صداقت
+    </h3>
+    {% set cp_levels = [('H4','صداقت بالا','var(--green)'), ('H3','صداقت متوسط','var(--blue)'), ('H2','قابل توجه','var(--amber)'), ('H1','پایین','var(--red)')] %}
+    {% set max_cp = by_honesty_level.values() | max if by_honesty_level else 1 %}
+    {% if max_cp and max_cp > 0 %}
+    {% for code, name, color in cp_levels %}
+    <div class="bar-row">
+      <div class="bar-label">{{ code }} — {{ name }}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:{{ (by_honesty_level.get(code, 0) / max_cp * 100)|round }}%;background:{{ color }}">
+          <span class="bar-val">{{ by_honesty_level.get(code, 0) }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty"><div class="e-sub">داده‌ای موجود نیست.</div></div>
+    {% endif %}
+  </div>
+
+  {# ── توزیع مغایرت در ابعاد ۵گانه ─── #}
+  {% set total_dim_mm = cp_dim_mismatch_dist.values() | sum %}
+  {% if total_dim_mm and total_dim_mm > 0 %}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-.38-.21-.71-.53-.88C18.71 14.75 17.5 13.5 17.5 11.5V8c0-3.04-2.46-5.5-5.5-5.5S6.5 4.96 6.5 8v3.5c0 2-1.21 3.25-2.97 4.12-.32.17-.53.5-.53.88V18h18v-1.5z"/></svg>
+      توزیع مغایرت‌ها در ابعاد ۵گانه محرومیت
+    </h3>
+    <div style="display:flex;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-bottom:10px">
+      {% for dk in ['A','B','C','D','E'] %}
+        {% set val = cp_dim_mismatch_dist.get(dk, 0) %}
+        {% if val > 0 %}
+          {% set pct = (val * 100 / total_dim_mm) | round(1) %}
+          {% set color_options = ['var(--red)', '#ea580c', 'var(--amber)', 'var(--blue)', '#9333ea'] %}
+          {% set color = color_options[loop.index0] %}
+          <div style="width:{{ pct }}%;background:{{ color }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700" title="{{ dk }}. {{ cp_dim_names[dk] }}: {{ val }} مغایرت">
+            {{ dk }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>بُعد</th><th>نام</th><th>تعداد مغایرت</th><th>سهم</th></tr></thead>
+        <tbody>
+          {% for dk in ['A','B','C','D','E'] %}
+          {% set val = cp_dim_mismatch_dist.get(dk, 0) %}
+          <tr>
+            <td><b>{{ dk }}</b></td>
+            <td>{{ cp_dim_names[dk] }}</td>
+            <td class="num" style="color:var(--red);font-weight:700">{{ val }}</td>
+            <td class="num">{% if total_dim_mm > 0 %}{{ (val * 100 / total_dim_mm) | round(1) }}٪{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── پرونده‌های نیازمند راستی‌آزمایی (صداقت پایین) ─── #}
+  {% if low_honesty_cases %}
+  <div class="chart-card" style="border-inline-start:4px solid var(--red)">
+    <h3 style="color:var(--red)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      پرونده‌های نیازمند راستی‌آزمایی (صداقت کمتر از ۷۰)
+    </h3>
+    <p class="card-desc" style="color:var(--red)">این پرونده‌ها مغایرت قابل‌توجهی بین خوداظهاری و ارزیابی همیار دارند و باید بررسی شوند.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>شناسه</th><th>نام</th><th>امتیاز صداقت</th><th>سطح</th><th>تعداد مغایرت</th><th>امتیاز EM-MPI</th><th>عملیات</th></tr></thead>
+        <tbody>
+          {% for c in low_honesty_cases %}
+          <tr style="background:var(--red-bg)">
+            <td class="mono">{{ c.hid }}</td>
+            <td>{{ c.name }}</td>
+            <td><b style="color:var(--red);font-size:15px">{{ c.honesty_score }}</b> <span class="small">/۱۰۰</span></td>
+            <td><span class="badge P0"><span class="dot"></span>{{ c.honesty_level }}</span></td>
+            <td><b style="color:var(--red)">{{ c.mismatched }}</b></td>
+            <td>{{ c.emmpi_score }}</td>
+            <td>
+              <a class="btn sec sm" href="{{ url_for('household_view', hid=c.hid) }}">مشاهدهٔ پرونده</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── جدول کامل پرونده‌های شهروندی ─── #}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+      فهرست همهٔ پرونده‌های شهروندی
+    </h3>
+    <p class="card-desc">مرتب‌شده بر اساس کمترین صداقت (نیاز به بررسی فوری).</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>شناسه</th>
+            <th>نام</th>
+            <th>EM-MPI</th>
+            <th>سطح</th>
+            <th>پرچم قرمز</th>
+            <th>صداقت</th>
+            <th>سطح صداقت</th>
+            <th>انطباق</th>
+            <th>مغایرت</th>
+            <th>نرخ انطباق</th>
+            <th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in citizen_rows %}
+          <tr style="{% if r.honesty_score < 50 %}background:var(--red-bg){% elif r.honesty_score < 70 %}background:var(--amber-bg){% else %}background:var(--green-bg){% endif %}">
+            <td class="mono">{{ r.hid }}</td>
+            <td>{{ r.name }}</td>
+            <td><b>{{ r.emmpi_score }}</b></td>
+            <td><span class="small">{{ r.emmpi_level }}</span></td>
+            <td>{% if r.has_red_flags %}<span class="badge P0"><span class="dot"></span>دارد</span>{% else %}<span class="tag">—</span>{% endif %}</td>
+            <td>
+              <b style="font-size:15px;color:{% if r.honesty_score < 50 %}var(--red){% elif r.honesty_score < 70 %}var(--amber){% else %}var(--green){% endif %}">{{ r.honesty_score }}</b>
+              <span class="small">/۱۰۰</span>
+            </td>
+            <td><span class="badge {% if r.honesty_level_code == 'H4' %}P3{% elif r.honesty_level_code == 'H3' %}P2{% elif r.honesty_level_code == 'H2' %}P1{% else %}P0{% endif %}"><span class="dot"></span>{{ r.honesty_level }}</span></td>
+            <td style="color:var(--green);font-weight:700">{{ r.matched }}</td>
+            <td style="color:var(--red);font-weight:700">{{ r.mismatched }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:5px">
+                <div style="width:50px;height:6px;background:var(--bg-2);border-radius:3px;overflow:hidden">
+                  <div style="width:{{ r.match_rate }}%;height:100%;background:{% if r.match_rate >= 85 %}var(--green){% elif r.match_rate >= 50 %}var(--amber){% else %}var(--red){% endif %}"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:var(--mut)">{{ r.match_rate }}٪</span>
+              </div>
+            </td>
+            <td>
+              <a class="btn sec sm" href="{{ url_for('household_view', hid=r.hid) }}" style="padding:4px 10px;font-size:11px">پرونده</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ── توضیح سطوح صداقت ─── #}
+  <div class="chart-card">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      راهنمای سطوح صداقت
+    </h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>کد</th><th>نام</th><th>دامنه</th><th>تفسیر</th></tr></thead>
+        <tbody>
+          {% for h_level in HONESTY_LEVELS %}
+          <tr>
+            <td><span class="badge {{ h_level.color }}"><span class="dot"></span>{{ h_level.code }}</span></td>
+            <td><b>{{ h_level.name }}</b></td>
+            <td class="mono">{{ h_level.min }}-{{ h_level.max }}</td>
+            <td class="small" style="color:var(--ink-2)">{{ h_level.interp }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="chart-card">
+  <h3>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    گزارش پروندهٔ شهروندی
+  </h3>
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px;color:var(--mut-3)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+    <div class="e-title">هنوز پروندهٔ ارزیابی‌شده‌ای موجود نیست</div>
+    <div class="e-sub">پس از تکمیل EM-MPI برای پرونده‌ها، گزارش صداقت به‌طور خودکار تولید می‌شود.</div>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

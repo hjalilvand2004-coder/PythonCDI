@@ -77,6 +77,119 @@
 .ei-table .ei-score-bar{display:inline-block;height:6px;background:linear-gradient(90deg,var(--p),var(--p-l));border-radius:3px;vertical-align:middle;margin-inline-end:6px}
 </style>
 
+{# ── اگر غیرنیازمند ثبت شده (امتیاز زیر ۱۵۰) ──────────── #}
+{% if h.emmpi and h.emmpi.get('not_eligible') %}
+<div class="alert" style="background:linear-gradient(135deg,var(--amber-bg),#fff);border:2px solid var(--amber-line);border-radius:var(--r-lg);padding:24px 28px;margin-bottom:18px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--amber),#b45309);color:#fff;display:grid;place-items:center;flex-shrink:0;box-shadow:0 4px 12px rgba(217,119,6,.3)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div style="flex:1">
+      {# ─── متن متمایز بر اساس نقش ─── #}
+      {% if u.role == 'beneficiary' %}
+        {# پیام برای نیازمند #}
+        <h2 style="margin:0 0 6px;font-size:18px;color:#92400e">پروندهٔ شما به‌عنوان غیرنیازمند ثبت شد</h2>
+        <p style="margin:0 0 10px;font-size:13px;color:var(--ink-2);line-height:1.7">
+          بر اساس نتیجه غربالگری EM-MPI، امتیاز محرومیت شما <b>{{ r.score }} از ۱۰۰۰</b> است که زیر آستانهٔ نیاز (۱۵۰ امتیاز) قرار دارد و هیچ پرچم قرمزی فعال نیست. طبق سند Emdad_sanadHemayt0004، این پرونده از چرخهٔ فرایند توانمندسازی خارج شده است.
+        </p>
+        <p style="margin:0 0 14px;font-size:12px;color:var(--mut);line-height:1.7">
+          <b>توجه:</b> این تصمیم نهایی نیست. شما حق دارید نسبت به این نتیجه اعتراض کنید. در صورت تأیید اعتراض توسط مددکار خانواده، پرونده مجدداً وارد چرخهٔ ارزیابی خواهد شد.
+        </p>
+      {% else %}
+        {# پیام برای همیار/مددکار/مدیر #}
+        <h2 style="margin:0 0 6px;font-size:18px;color:#92400e">این پرونده به‌عنوان غیرنیازمند ثبت شد</h2>
+        <p style="margin:0 0 10px;font-size:13px;color:var(--ink-2);line-height:1.7">
+          بر اساس نتیجه غربالگری EM-MPI، امتیاز محرومیت این خانوار <b>{{ r.score }} از ۱۰۰۰</b> است که زیر آستانهٔ نیاز (۱۵۰ امتیاز) قرار دارد و هیچ پرچم قرمزی فعال نیست. طبق سند Emdad_sanadHemayt0004، این پرونده از چرخهٔ فرایند توانمندسازی خارج شده است.
+        </p>
+        <p style="margin:0 0 14px;font-size:12px;color:var(--mut);line-height:1.7">
+          <b>نکته:</b> نیازمند حق اعتراض به این نتیجه را دارد. در صورت ثبت اعتراض، مددکار خانواده می‌تواند آن را تأیید یا رد کند. اعتراض‌ها در همین صفحه نمایش داده می‌شوند.
+        </p>
+      {% endif %}
+
+      {# فرم اعتراض — فقط برای نیازمند #}
+      {% if u.role == 'beneficiary' and h.status == 'not_eligible' %}
+      <form method="post" action="{{ url_for('emmpi_appeal', hid=hid) }}" style="background:#fff;border:1px solid var(--amber-line);border-radius:var(--r-md);padding:14px 16px">
+        <h3 style="margin:0 0 8px;font-size:13px;color:var(--amber)">فرم اعتراض</h3>
+        <label style="font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px;display:block">دلیل اعتراض خود را تشریح کنید *</label>
+        <textarea name="appeal_reason" required placeholder="مثال: شرایط خانوار تغییر کرده، اطلاعات ناقص ثبت شده، پرچم قرمز نادیده گرفته شده، یا دلایل دیگر..." style="min-height:80px"></textarea>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn warn" type="submit" style="background:var(--amber);border-color:var(--amber)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+            ثبت اعتراض
+          </button>
+          <a class="btn sec sm" href="{{ url_for('index') }}">بازگشت به داشبورد</a>
+        </div>
+      </form>
+      {% elif u.role == 'beneficiary' and h.status == 'appeal_pending' %}
+      <div style="background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:var(--r-md);padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--blue)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <b style="color:var(--blue);font-size:13px">اعتراض شما ثبت شد — در انتظار بررسی مددکار خانواده</b>
+        </div>
+        {% if h.appeals %}
+        {% set last_appeal = h.appeals[-1] %}
+        <div style="margin-top:8px;font-size:11.5px;color:var(--ink-2)">
+          <b>دلیل:</b> {{ last_appeal.reason }}<br>
+          <b>تاریخ:</b> <span class="mono">{{ last_appeal.at[:19] }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% elif u.role != 'beneficiary' and h.status == 'appeal_pending' %}
+      <div style="background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:var(--r-md);padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--blue)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <b style="color:var(--blue);font-size:13px">اعتراض نیازمند ثبت شده — در انتظار بررسی</b>
+        </div>
+      </div>
+      {% endif %}
+
+      {# نمایش اعتراض‌های قبلی و وضعیت #}
+      {% if h.appeals and h.appeals|length > 0 %}
+      <div style="margin-top:14px">
+        <h4 style="margin:0 0 8px;font-size:12px;color:var(--ink-2)">{% if u.role == 'beneficiary' %}تاریخچهٔ اعتراض‌های شما{% else %}تاریخچهٔ اعتراض‌های این پرونده{% endif %}</h4>
+        {% for ap in h.appeals %}
+        <div style="background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="badge {% if ap.status == 'approved' %}P3{% elif ap.status == 'rejected' %}P0{% else %}P2{% endif %}">
+              <span class="dot"></span>
+              {% if ap.status == 'approved' %}تأیید شد{% elif ap.status == 'rejected' %}رد شد{% else %}در انتظار بررسی{% endif %}
+            </span>
+            <span class="small mono">{{ ap.at[:19] }}</span>
+            <span class="small">— توسط: {{ ap.by_name or ap.by }}</span>
+          </div>
+          <div class="small" style="color:var(--ink-2)">{{ ap.reason }}</div>
+          {% if ap.resolve_note %}
+          <div class="small" style="margin-top:4px;color:var(--mut)"><b>یادداشت بازبین:</b> {{ ap.resolve_note }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# برای مددکار/مدیر: فرم بررسی اعتراض #}
+      {% if u.role in ('worker', 'hqmanager') and h.appeals %}
+      {% for ap in h.appeals if ap.status == 'pending' %}
+      <div style="margin-top:14px;background:#fff;border:2px solid var(--p-l);border-radius:var(--r-md);padding:14px 16px">
+        <h4 style="margin:0 0 8px;font-size:13px;color:var(--p-dd)">بررسی اعتراض (مددکار/مدیر)</h4>
+        <div class="small" style="margin-bottom:10px;padding:8px 10px;background:var(--bg-2);border-radius:6px">
+          <b>دلیل اعتراض:</b> {{ ap.reason }}
+        </div>
+        <form method="post" action="{{ url_for('resolve_appeal', hid=hid, idx=loop.index0) }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:200px">
+            <label style="font-size:11px;font-weight:600;color:var(--ink-2);margin-bottom:4px;display:block">یادداشت</label>
+            <input type="text" name="note" placeholder="توضیح تصمیم..." style="font-size:12px">
+          </div>
+          <button class="btn sm" type="submit" name="decision" value="approve" style="background:var(--green);border-color:var(--green)">تأیید اعتراض</button>
+          <button class="btn warn sm" type="submit" name="decision" value="reject">رد اعتراض</button>
+        </form>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {# ── HERO: امتیاز کل و سطح ──────────────────────────── #}
 <div class="score-hero">
   <div class="score-row">
