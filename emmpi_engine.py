@@ -1354,13 +1354,44 @@ def suggest_assistant(result):
         return {"role": "caseworker", "reason": "امتیاز بالا"}
     return {"role": "assistant", "reason": "پایش"}
 
-SAMPLE_ASSISTANTS = []
-ASSISTANT_ROLES = {"assistant": "همیار"}
-MATCH_CRITERIA = {}
+SAMPLE_ASSISTANTS = [
+    {"id": "tehran_ast1", "name": "مریم احمدی", "role": "assistant", "province": "tehran",
+     "areas": ["تهران", "البرز"], "specialties": ["health", "care", "education"], "rating": 4.8,
+     "role_label": "همیار"},
+    {"id": "tehran_ast2", "name": "علی رضایی", "role": "assistant", "province": "tehran",
+     "areas": ["تهران"], "specialties": ["employment", "finance"], "rating": 4.6,
+     "role_label": "همیار"},
+    {"id": "tehran_ast3", "name": "سمیرا نوری", "role": "assistant", "province": "tehran",
+     "areas": ["تهران"], "specialties": ["housing", "legal"], "rating": 4.7,
+     "role_label": "همیار"},
+    {"id": "esfahan_ast1", "name": "حسین کریمی", "role": "assistant", "province": "esfahan",
+     "areas": ["اصفهان"], "specialties": ["health", "care"], "rating": 4.5,
+     "role_label": "همیار"},
+    {"id": "worker_tehran", "name": "کارشناس غربالگری تهران", "role": "worker", "province": "tehran",
+     "areas": ["تهران"], "specialties": ["screening"], "rating": 4.9,
+     "role_label": "کارشناس غربالگری"},
+    {"id": "employ_tehran", "name": "کارشناس اشتغال", "role": "employ", "province": "tehran",
+     "areas": ["تهران"], "specialties": ["employment", "skills"], "rating": 4.4,
+     "role_label": "کارشناس اشتغال"},
+]
+ASSISTANT_ROLES = {
+    "assistant": "همیار", "worker": "کارشناس غربالگری", "rose": "رئیس استان",
+    "swclinic": "مسئول سلامت روان", "employ": "کارشناس اشتغال", "caseworker": "مددکار",
+    "manager": "مدیر", "beneficiary": "نیازمند", "hqmanager": "مدیر ستاد",
+}
+MATCH_CRITERIA = {"province": 0.5, "specialty": 0.3, "load": 0.2}
 COMPONENT_META = {d: {"label": DIMENSIONS[d]["title"]} for d in DIMENSIONS}
 def get_component_meta(d): return COMPONENT_META.get(d, {"label": d})
 def get_referral_paths_visual(): return REFERRAL_PATHS
-def match_assistants(household, available=None): return available or []
+def match_assistants(household, available=None):
+    """پیشنهاد همیار بر اساس استان و تخصص"""
+    available = available or SAMPLE_ASSISTANTS
+    prov = household.get("province") if household else None
+    if prov:
+        matched = [a for a in available if a.get("province") == prov]
+        if matched:
+            return matched
+    return available
 def compute_citizen_profile(sd_data, indicators_data, emmpi_result=None): return {"honesty_level": "H1", "match_ratio": 1.0}
 SD_TO_EMPI_FULL = {}
 SD_ANSWER_LABELS = {}
