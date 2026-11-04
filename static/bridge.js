@@ -392,6 +392,140 @@
     `;
   }
 
+  // ─── patch خط فقر: مخفی‌کردن فیلدهای دستی و نمایش خودکار ───
+  // برنامه استاتیک فیلدهای دستی برای خط فقر دارد
+  // این تابع آن‌ها را مخفی کرده و نمایش خودکار از مرکز رصد فقر جایگزین می‌کند
+  let povertyPatched = false;
+
+  function patchPovertyLineUI() {
+    if (povertyPatched) return;
+
+    // جستجوی بخش خط فقر در DOM
+    const allElements = document.querySelectorAll('*');
+    let povertySection = null;
+
+    for (const el of allElements) {
+      const text = el.textContent || '';
+      // جستجوی عناوین مربوط به خط فقر
+      if ((text.includes('خط فقر منطقه‌ای') || text.includes('نسخه خط فقر')) &&
+          el.children.length > 0 && el.children.length < 50) {
+        povertySection = el;
+        break;
+      }
+    }
+
+    if (!povertySection) return;
+
+    // یافتن container بالاتر (کارت یا section)
+    let container = povertySection;
+    for (let i = 0; i < 5; i++) {
+      if (container.parentElement) container = container.parentElement;
+    }
+
+    // مخفی‌کردن تمام input/select/textarea در این بخش
+    const inputs = container.querySelectorAll('input, select, textarea, button');
+    let hiddenCount = 0;
+    for (const inp of inputs) {
+      // فقط فیلدهای خط فقر (نه دکمه‌های ناوبری)
+      const inpText = (inp.placeholder || '') + (inp.name || '') + (inp.id || '');
+      if (inpText.includes('فقر') || inpText.includes('poverty') ||
+          inpText.includes('سرانه') || inpText.includes('perCapita') ||
+          inpText.includes('منبع') || inpText.includes('source') ||
+          inpText.includes('اعتبار') || inpText.includes('status') ||
+          inpText.includes('pl_') || inp.type === 'number' ||
+          (inp.tagName === 'SELECT' && inpText === '')) {
+        inp.style.display = 'none';
+        hiddenCount++;
+      }
+    }
+
+    // همچنین مخفی‌کردن labelهای مربوطه
+    const labels = container.querySelectorAll('label');
+    for (const lbl of labels) {
+      const lt = lbl.textContent || '';
+      if (lt.includes('سرانه') || lt.includes('منبع') || lt.includes('اعتبار') ||
+          lt.includes('تأییدنشده') || lt.includes('تأییدشده') || lt.includes('نامعتبر')) {
+        lbl.style.display = 'none';
+      }
+    }
+
+    if (hiddenCount > 0 || true) {
+      // تزریق نمایش خودکار خط فقر
+      const raw = localStorage.getItem(STORE_KEY);
+      let pl = null;
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          const assessments = parsed?.state?.assessments || {};
+          const activeId = parsed?.state?.activeId || Object.keys(assessments)[0];
+          const assessment = assessments[activeId];
+          pl = assessment?.household?.povertyLine;
+        } catch {}
+      }
+
+      // حذف نمایش قبلی اگر موجود است
+      const oldDisplay = document.getElementById('autoPovertyDisplay');
+      if (oldDisplay) oldDisplay.remove();
+
+      // ساخت نمایش خودکار
+      const display = document.createElement('div');
+      display.id = 'autoPovertyDisplay';
+      display.style.cssText = `
+        background: linear-gradient(135deg, #e6f7f6, #dbeafe);
+        border: 2px solid #12938d; border-radius: 12px;
+        padding: 16px 20px; margin: 12px 0; font-family: Vazirmatn, sans-serif;
+      `;
+
+      if (pl && pl.monthlyPerCapita) {
+        display.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:20px;">📡</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#12938d;">خط فقر منطقه‌ای — واکشی خودکار از مرکز رصد فقر</div>
+              <div style="font-size:11px;color:#64748b;">${pl.source || 'مرکز رصد فقر'} — ${pl.validAsOf || '۱۴۰۴/۰۷'}</div>
+            </div>
+            <span style="margin-right:auto;background:#16a34a;color:#fff;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">✓ تأییدشده</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="background:#fff;padding:12px;border-radius:8px;text-align:center;">
+              <div style="font-size:11px;color:#64748b;">خط فقر سرانه ماهانه</div>
+              <div style="font-size:20px;font-weight:700;color:#1d3d63;">${pl.monthlyPerCapita?.toLocaleString('fa-IR')}</div>
+              <div style="font-size:10px;color:#94a3b8;">تومان / نفر</div>
+            </div>
+            <div style="background:#fff;padding:12px;border-radius:8px;text-align:center;">
+              <div style="font-size:11px;color:#64748b;">خط فقر کل خانوار</div>
+              <div style="font-size:20px;font-weight:700;color:#1d3d63;">${pl.householdTotal?.toLocaleString('fa-IR')}</div>
+              <div style="font-size:10px;color:#94a3b8;">تومان / ماه</div>
+            </div>
+          </div>
+          ${pl.factors ? `
+          <details style="margin-top:10px;">
+            <summary style="font-size:12px;color:#12938d;cursor:pointer;font-weight:600;">📋 جزئیات محاسبه</summary>
+            <div style="font-size:11px;color:#1a2b3c;margin-top:8px;white-space:pre-line;background:#fff;padding:10px;border-radius:6px;line-height:1.8;">
+              ${pl.details || ''}
+            </div>
+          </details>` : ''}
+          <div style="font-size:10px;color:#94a3b8;margin-top:8px;text-align:center;">
+            📡 این داده توسط وب‌سرویس مرکز رصد فقر محاسبه شده — ورود دستی غیرفعال است
+          </div>
+        `;
+      } else {
+        display.innerHTML = `
+          <div style="text-align:center;padding:8px;">
+            <span style="font-size:20px;">⏳</span>
+            <div style="font-size:13px;color:#12938d;font-weight:600;margin-top:4px;">در حال واکشی خط فقر از مرکز رصد فقر...</div>
+            <div style="font-size:11px;color:#64748b;margin-top:4px;">بر اساس ترکیب خانوار (تعداد، سن، جنسیت) و استان محل سکونت</div>
+          </div>
+        `;
+      }
+
+      // درج در بخش خط فقر
+      povertySection.parentElement.insertBefore(display, povertySection.nextSibling);
+      povertyPatched = true;
+      console.log('[Bridge] Poverty line UI patched — manual fields hidden, auto-display shown');
+    }
+  }
+
   // ─── نشان نقش ───
   function showRoleBadge() {
     if (role === 'assistant') {
@@ -420,7 +554,19 @@
       if (!monitoringActive || redirecting) return;
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
+      // واکشی خط فقر اگر هنوز انجام نشده
       if (!povertyLineFetched) fetchPovertyLine();
+      // patch کردن UI خط فقر (مخفی‌کردن فیلدهای دستی)
+      if (!povertyPatched) patchPovertyLineUI();
+      // اگر خط فقر واکشی شده اما patch هنوز انجام نشده یا نیاز به به‌روزرسانی دارد
+      if (povertyPatched && povertyLineFetched) {
+        // به‌روزرسانی نمایش اگر خط فقر تازه واکشی شده
+        const display = document.getElementById('autoPovertyDisplay');
+        if (display && display.querySelector('⏳')) {
+          povertyPatched = false;  // برای به‌روزرسانی مجدد
+          patchPovertyLineUI();
+        }
+      }
       if (raw !== lastRaw) {
         lastRaw = raw;
         if (saveTimer) clearTimeout(saveTimer);
