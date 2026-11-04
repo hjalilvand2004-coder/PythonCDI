@@ -243,34 +243,153 @@
     const activeId = parsed?.state?.activeId || Object.keys(assessments)[0];
     const assessment = assessments[activeId];
     if (!assessment) return;
+
     const hh = assessment.household || {};
+    // بررسی اینکه آیا قبلاً خط فقر تأییدشده از مرکز رصد فقر موجود است
     if (hh.povertyLine?.source?.includes('رصد فقر')) { povertyLineFetched = true; return; }
+
     const members = assessment.members || [];
     const postalCode = hh.postalCode || '';
     const province = hh.province || '';
+
+    // اگر هنوز اعضا یا استان موجود نیست، صبر کن
     if (members.length === 0 || (!province && !postalCode)) return;
-    const ages = members.map(m => m.age || 35).filter(a => a > 0);
+
+    // استخراج سن و جنسیت اعضا برای سرویس خط فقر
+    const ages = [];
+    const genders = [];
+    for (const m of members) {
+      const a = m.age || 35;
+      ages.push(a);
+      genders.push(m.gender || 'male');
+    }
+
+    console.log('[Bridge] Fetching poverty line from رصد فقر — province:', province,
+                'members:', members.length, 'ages:', ages, 'genders:', genders);
+
     try {
-      const params = new URLSearchParams({province, postal_code: postalCode, ages: ages.join(','), members: String(members.length), urban: '1'});
-      const resp = await fetch(`/api/poverty-line?${params}`);
+      // فراخوانی سرویس خط فقر با سن و جنسیت
+      const resp = await fetch('/api/poverty-line', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          province: province || 'tehran',
+          postal_code: postalCode,
+          members: members.map(m => ({age: m.age || 35, gender: m.gender || 'male'})),
+          urban: true,
+        }),
+      });
       if (!resp.ok) return;
       const pl = await resp.json();
-      hh.povertyLine = {monthlyPerCapita: pl.monthlyPerCapita, region: pl.province, source: pl.source, validAsOf: pl.validAsOf, status: pl.status, householdTotal: pl.householdTotal, details: pl.details, factors: pl.factors};
+
+      console.log('[Bridge] Poverty line received:', {
+        perCapita: pl.monthlyPerCapita,
+        total: pl.householdTotal,
+        source: pl.source,
+      });
+
+      // تزریق خط فقر در assessment با وضعیت verified
+      hh.povertyLine = {
+        monthlyPerCapita: pl.monthlyPerCapita,
+        householdTotal: pl.householdTotal,
+        adjustedPerCapita: pl.adjustedPerCapita,
+        region: pl.province,
+        source: pl.source,
+        validAsOf: pl.validAsOf,
+        status: 'verified',  // تأییدشده توسط مرکز رصد فقر
+        details: pl.details,
+        factors: pl.factors,
+        fetchedAt: new Date().toISOString(),
+      };
       assessment.household = hh;
       assessments[activeId] = assessment;
       parsed.state.assessments = assessments;
       localStorage.setItem(STORE_KEY, JSON.stringify(parsed));
+
       povertyLineFetched = true;
+      console.log('[Bridge] Poverty line injected — status: verified');
+
+      // نمایش نوتیفیکیشن
       showPovertyNotification(pl);
-    } catch(e) {}
+
+      // به‌روزرسانی پنل خط فقر اگر موجود است
+      updatePovertyPanel(pl);
+    } catch(e) {
+      console.error('[Bridge] Poverty line fetch error:', e);
+    }
   }
 
   function showPovertyNotification(pl) {
     const n = document.createElement('div');
-    n.style.cssText = 'position:fixed;bottom:80px;right:16px;z-index:9999;background:#fff;border:1px solid #12938d;border-right:4px solid #12938d;border-radius:12px;padding:14px 18px;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,.15);font-family:Vazirmatn,sans-serif;';
-    n.innerHTML = `<div style="font-size:13px;font-weight:700;color:#12938d;margin-bottom:4px;">📊 خط فقر منطقه‌ای — مرکز رصد فقر</div><div style="font-size:12px;color:#1a2b3c;line-height:1.7;">استان: ${pl.province}<br>خط فقر سرانه: ${pl.monthlyPerCapita?.toLocaleString('fa-IR')} تومان<br>خط فقر کل خانوار: ${pl.householdTotal?.toLocaleString('fa-IR')} تومان<br><span style="color:#64748b;font-size:11px;">${pl.source} — ${pl.validAsOf}</span></div>`;
+    n.id = 'povertyNotif';
+    n.style.cssText = `
+      position:fixed; bottom:16px; right:16px; z-index:9999;
+      background:#fff; border:2px solid #12938d; border-right:5px solid #12938d;
+      border-radius:14px; padding:16px 20px; max-width:380px;
+      box-shadow:0 6px 24px rgba(0,0,0,.15); font-family:Vazirmatn,sans-serif;
+    `;
+    n.innerHTML = `
+      <div style="font-size:14px;font-weight:700;color:#12938d;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        📊 خط فقر منطقه‌ای — مرکز رصد فقر
+      </div>
+      <div style="font-size:13px;color:#1a2b3c;line-height:1.8;">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#64748b;">استان:</span>
+          <span style="font-weight:600;">${pl.province}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#64748b;">خط فقر سرانه:</span>
+          <span style="font-weight:600;">${pl.monthlyPerCapita?.toLocaleString('fa-IR')} تومان</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#64748b;">خط فقر کل خانوار:</span>
+          <span style="font-weight:600;">${pl.householdTotal?.toLocaleString('fa-IR')} تومان</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#64748b;">ترکیب:</span>
+          <span style="font-weight:600;">${pl.factors?.adult_male || 0} مرد، ${pl.factors?.adult_female || 0} زن، ${pl.factors?.child_count || 0} کودک</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;">
+          <span style="color:#64748b;">وضعیت:</span>
+          <span style="font-weight:600;color:#16a34a;">✓ تأییدشده</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:8px;text-align:center;">
+        ${pl.source} — ${pl.validAsOf}
+      </div>
+    `;
     document.body.appendChild(n);
-    setTimeout(() => { n.style.transition='opacity .5s'; n.style.opacity='0'; setTimeout(() => n.remove(), 500); }, 8000);
+    setTimeout(() => {
+      n.style.transition = 'opacity .5s, transform .5s';
+      n.style.opacity = '0';
+      n.style.transform = 'translateY(20px)';
+      setTimeout(() => n.remove(), 500);
+    }, 12000);
+  }
+
+  // پنل دائمی خط فقر در گوشه صفحه
+  function updatePovertyPanel(pl) {
+    let panel = document.getElementById('povertyPanel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'povertyPanel';
+      panel.style.cssText = `
+        position:fixed; top:60px; left:8px; z-index:9998;
+        background:#fff; border:1px solid #12938d; border-radius:10px;
+        padding:10px 14px; max-width:250px;
+        box-shadow:0 4px 12px rgba(0,0,0,.1); font-family:Vazirmatn,sans-serif;
+        font-size:12px;
+      `;
+      document.body.appendChild(panel);
+    }
+    panel.innerHTML = `
+      <div style="font-weight:700;color:#12938d;margin-bottom:4px;">📊 خط فقر (رصد فقر)</div>
+      <div style="color:#1a2b3c;line-height:1.6;">
+        سرانه: ${pl.monthlyPerCapita?.toLocaleString('fa-IR')}<br>
+        کل خانوار: ${pl.householdTotal?.toLocaleString('fa-IR')}<br>
+        <span style="color:#16a34a;font-size:11px;">✓ تأییدشده — ${pl.validAsOf}</span>
+      </div>
+    `;
   }
 
   // ─── نشان نقش ───

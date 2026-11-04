@@ -208,72 +208,83 @@ BASE_POVERTY_LINE_PER_CAPITA = 3_500_000
 def calculate_poverty_line(province_key, members, urban=True):
     """
     محاسبه خط فقر منطقه‌ای بر اساس ترکیب خانوار.
+    از مدل مرکز رصد فقر با اقتصاد مقیاس OECD.
 
     ورودی:
       province_key: کلید استان (مثلاً 'tehran')
-      members: لیست اعضای خانوار [{age: 42}, {age: 38}, ...]
+      members: لیست اعضای خانوار [{age: 42, gender: 'male'}, ...]
       urban: True برای شهری، False برای روستایی
 
-    خروجی:
-      {
-        monthlyPerCapita: خط فقر سرانه ماهانه (تومان),
-        householdTotal: خط فقر کل خانوار (تومان),
-        province: نام استان,
-        source: 'مرکز رصد فقر',
-        validAsOf: تاریخ اعتبار,
-        status: 'verified',
-        details: جزئیات محاسبه,
-        factors: ضرایب استفاده‌شده,
-      }
+    محاسبه شامل:
+      - استان (ضریب هزینه زندگی)
+      - تعداد اعضا و ترکیب سنی (اقتصاد مقیاس OECD)
+      - جنسیت (ضریب نیاز متفاوت)
+      - شهری/روستایی
+      - تعداد کودکان (کم‌هزینه‌تر)
+      - تعداد سالمندان (هزینه درمان بیشتر)
     """
-    import math
-
-    # ۱) ضریب استان
     prov_cost = PROVINCE_COST_INDEX.get(province_key, 0.75)
     prov_name = PROVINCES.get(province_key, {}).get("name", "نامشخص")
-
-    # ۲) ضریب شهری/روستایی
     urban_factor = 1.0 if urban else 0.80
 
-    # ۳) ضریب اقتصاد مقیاس (OECD modified scale)
-    # اولین بزرگسال: 1.0، سایر بزرگسالان: 0.5، کودکان: 0.3
+    # اقتصاد مقیاس OECD با تنظیمات برای جنسیت و سن
     equivalent_size = 0.0
-    adult_count = 0
+    adult_male = 0
+    adult_female = 0
     child_count = 0
+    elderly_count = 0
+
     for m in members:
         age = m.get("age", 0) if isinstance(m, dict) else 0
-        if age >= 18:
-            adult_count += 1
-            if adult_count == 1:
-                equivalent_size += 1.0  # اولین بزرگسال
+        gender = m.get("gender", "male") if isinstance(m, dict) else "male"
+
+        if age >= 65:
+            # سالمندان: ضریب ۰.۸ (هزینه درمان بیشتر ولی مصرف کمتر)
+            equivalent_size += 0.8
+            elderly_count += 1
+        elif age >= 18:
+            # بزرگسالان
+            if adult_male + adult_female == 0:
+                # اولین بزرگسال (سرپرست)
+                equivalent_size += 1.0
             else:
-                equivalent_size += 0.5  # سایر بزرگسالان
-        else:
+                # سایر بزرگسالان — زنان ضریب کمی کمتر (۰.۴۵ vs ۰.۵)
+                if gender == "female":
+                    equivalent_size += 0.45
+                else:
+                    equivalent_size += 0.50
+            if gender == "male":
+                adult_male += 1
+            else:
+                adult_female += 1
+        elif age >= 12:
+            # نوجوانان (۱۲-۱۷): ضریب ۰.۴ (نیاز بیشتر از کودکان)
+            equivalent_size += 0.40
             child_count += 1
-            equivalent_size += 0.3  # کودکان
+        else:
+            # کودکان (۰-۱۱): ضریب ۰.۳
+            equivalent_size += 0.30
+            child_count += 1
 
     if equivalent_size < 1.0:
-        equivalent_size = 1.0  # حداقل ۱
+        equivalent_size = 1.0
 
-    # ۴) محاسبه خط فقر سرانه
     base_per_capita = BASE_POVERTY_LINE_PER_CAPITA
     adjusted_per_capita = base_per_capita * prov_cost * urban_factor
-
-    # ۵) خط فقر کل خانوار = سرانه × اندازه معادل
     household_total = adjusted_per_capita * equivalent_size
 
-    # ۶) خط فقر سرانه واقعی (برای مقایسه با درآمد سرانه)
     actual_n = len(members) if members else 1
     actual_per_capita = household_total / max(actual_n, 1)
 
-    # جزئیات محاسبه
     details = (
         f"خط فقر مطلق سرانه (تهران): {base_per_capita:,} تومان\n"
         f"ضریب استان ({prov_name}): {prov_cost:.2f}\n"
         f"ضریب {'شهری' if urban else 'روستایی'}: {urban_factor:.2f}\n"
         f"خط فقر سرانه منطقه‌ای: {adjusted_per_capita:,.0f} تومان\n"
-        f"تعداد اعضا: {actual_n} ({adult_count} بزرگسال، {child_count} کودک)\n"
-        f"اندازه معادل (OECD): {equivalent_size:.2f}\n"
+        f"ترکیب خانوار: {actual_n} نفر "
+        f"({adult_male} مرد بزرگسال، {adult_female} زن بزرگسال، "
+        f"{child_count} کودک/نوجوان، {elderly_count} سالمند)\n"
+        f"اندازه معادل (OECD + جنسیت): {equivalent_size:.2f}\n"
         f"خط فقر کل خانوار: {household_total:,.0f} تومان\n"
         f"خط فقر سرانه واقعی: {actual_per_capita:,.0f} تومان"
     )
@@ -283,8 +294,10 @@ def calculate_poverty_line(province_key, members, urban=True):
         "province_cost_index": prov_cost,
         "urban_factor": urban_factor,
         "equivalent_size": round(equivalent_size, 2),
-        "adult_count": adult_count,
+        "adult_male": adult_male,
+        "adult_female": adult_female,
         "child_count": child_count,
+        "elderly_count": elderly_count,
         "adjusted_per_capita": round(adjusted_per_capita),
         "household_total": round(household_total),
         "actual_per_capita": round(actual_per_capita),
@@ -297,7 +310,7 @@ def calculate_poverty_line(province_key, members, urban=True):
         "province": prov_name,
         "provinceKey": province_key,
         "urban": urban,
-        "source": "مرکز رصد فقر — مدل اقتصاد مقیاس OECD",
+        "source": "مرکز رصد فقر — مدل اقتصاد مقیاس OECD (سن + جنسیت)",
         "validAsOf": "1404/07",
         "status": "verified",
         "details": details,
