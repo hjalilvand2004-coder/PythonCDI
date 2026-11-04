@@ -1010,7 +1010,8 @@ def questionnaire_new():
     base_tag = '<base href="/static/porsesh/">'
     html = html.replace('<head>', '<head>' + base_tag, 1)
     # بدون hid → حالت ثبت‌نام جدید
-    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
+    action = request.args.get('action', '')
+    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";window.BRIDGE_ACTION="{action}";</script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
 
