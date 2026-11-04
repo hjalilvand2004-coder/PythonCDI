@@ -17,6 +17,52 @@
 </div>
 {% endif %}
 
+<!-- Citizenship Score (امتیاز شهروندی) -->
+{% if h.assessment and h.assessment.citizenship_score %}
+{% set cs = h.assessment.citizenship_score %}
+<div class="m-card" style="border-right:4px solid {% if cs.score >= 85 %}#16a34a{% elif cs.score >= 65 %}#f59e0b{% else %}#dc2626{% endif %};">
+  <h3 style="color:#1d3d63;">🛡️ امتیاز شهروندی</h3>
+  <div style="text-align:center;margin:12px 0;">
+    <div style="font-size:36px;font-weight:700;color:{% if cs.score >= 85 %}#16a34a{% elif cs.score >= 65 %}#f59e0b{% else %}#dc2626{% endif %};">{{ cs.score }}</div>
+    <div style="font-size:12px;color:#64748b;">از ۱۰۰</div>
+  </div>
+  <div style="font-size:13px;color:#1a2b3c;margin-bottom:8px;">{{ cs.level_label }}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#1d3d63;">{{ cs.total_keys }}</div>
+      <div style="font-size:10px;color:#64748b;">کل پرسش‌ها</div>
+    </div>
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#16a34a;">{{ cs.matched }}</div>
+      <div style="font-size:10px;color:#64748b;">تطابق</div>
+    </div>
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#dc2626;">{{ cs.changed }}</div>
+      <div style="font-size:10px;color:#64748b;">اصلاحات</div>
+    </div>
+  </div>
+  {% if cs.corrections and cs.corrections|length > 0 %}
+  <details style="margin-top:12px;">
+    <summary style="font-size:13px;color:#1d3d63;cursor:pointer;font-weight:600;">
+      📝 لیست اصلاحات ({{ cs.corrections|length }})
+    </summary>
+    <div style="margin-top:8px;font-size:12px;">
+      {% for c in cs.corrections[:10] %}
+      <div style="padding:6px;background:#f1f5f9;border-radius:6px;margin-bottom:4px;">
+        <strong>{{ c.key }}</strong>: {{ c.old }} → {{ c.new }}
+      </div>
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
+</div>
+{% elif h.assessment and h.assessment.beneficiary_answers and not h.assessment.citizenship_score %}
+<div class="m-card" style="background:#eff6ff;border:1px solid #bfdbfe;">
+  <h3 style="color:#1e40af;">🛡️ امتیاز شهروندی</h3>
+  <p style="font-size:13px;color:#1e40af;">خوداظهاری نیازمند ثبت شده. پس از بازبینی همیار، امتیاز شهروندی محاسبه خواهد شد.</p>
+</div>
+{% endif %}
+
 <!-- Info Card -->
 <div class="m-card">
   <h3>📋 اطلاعات پرونده</h3>

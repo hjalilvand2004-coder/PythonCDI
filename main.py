@@ -67,7 +67,8 @@ from emmpi_engine import (DIMENSIONS as EMMPI_DIMENSIONS, INDICATORS as EMMPI_IN
                           suggest_flags as emmpi_suggest_flags,
                           validate_weights as emmpi_validate_weights,
                           BANK_AGREEMENT_PARAGRAPHS,
-                          REGISTRATION_KINDS)
+                          REGISTRATION_KINDS,
+                          compute_citizenship_score)
 
 # ─── وب‌سرویس‌های فرضی (ثبت‌احوال، بیمه، آموزش، اشتغال) ───
 from web_services import (fetch_all_services, fetch_civil_registry,
@@ -1097,6 +1098,9 @@ def api_create_assessment():
     # ذخیره assessment
     assessment["status"] = "submitted"
     assessment["updatedAt"] = datetime.now().isoformat(timespec="seconds")
+    # ذخیره snapshot پاسخ‌های نیازمند (خوداظهاری) برای مقایسه بعدی با همیار
+    assessment["beneficiary_answers"] = dict(assessment.get("answers", {}))
+    assessment["beneficiary_submitted_at"] = datetime.now().isoformat(timespec="seconds")
     h["assessment"] = assessment
 
     # استخراج نام و استان
@@ -1259,6 +1263,25 @@ def api_complete_assessment(hid):
         assessment["status"] = "submitted"
         assessment["updatedAt"] = datetime.now().isoformat(timespec="seconds")
         h["assessment"] = assessment
+
+        # ─── محاسبه امتیاز شهروندی (فقط در حالت همیار) ───
+        role = data.get("role", "beneficiary")
+        if role == "assistant":
+            beneficiary_answers = assessment.get("beneficiary_answers", {})
+            assistant_answers = assessment.get("answers", {})
+            if beneficiary_answers:
+                citizenship = compute_citizenship_score(beneficiary_answers, assistant_answers)
+                assessment["citizenship_score"] = citizenship
+                assessment["assistant_answers"] = dict(assistant_answers)
+                assessment["assistant_submitted_at"] = datetime.now().isoformat(timespec="seconds")
+                print(f"[api_complete] Citizenship score: {citizenship['score']} ({citizenship['level']}) — {citizenship['changed']} corrections")
+            else:
+                # اگر snapshot نیازمند موجود نیست (مثلاً نیازمند از سیستم قدیمی آمده)
+                assessment["citizenship_score"] = {
+                    "score": 100, "level": "H1", "level_label": "بدون مقایسه",
+                    "total_keys": 0, "matched": 0, "changed": 0, "corrections": [],
+                }
+
         # محاسبه EM-MPI اگر answers موجود است
         answers = assessment.get("answers", {})
         members = assessment.get("members", [])
@@ -1363,9 +1386,9 @@ def assistant_pool():
         # فیلتر استانی (مدیر ستاد همه را می‌بیند)
         if u.get("province"):
             hh_prov = h.get("identity", {}).get("province", "")
-            if hh_prov != u["province"]:
+            user_prov_name = get_province_name(u["province"])
+            if hh_prov != u["province"] and hh_prov != user_prov_name:
                 continue
-
         # فیلتر کانال
         hh_channel = h.get("request_channel", "unknown")
         if filter_channel and hh_channel != filter_channel:

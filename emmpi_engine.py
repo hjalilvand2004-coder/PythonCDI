@@ -1393,6 +1393,106 @@ def match_assistants(household, available=None):
             return matched
     return available
 def compute_citizen_profile(sd_data, indicators_data, emmpi_result=None): return {"honesty_level": "H1", "match_ratio": 1.0}
+
+# ═══════════════════════════════════════════════════════════
+# امتیاز شهروندی — مقایسه خوداظهاری نیازمند با بازبینی همیار
+# ═══════════════════════════════════════════════════════════
+
+def compute_citizenship_score(beneficiary_answers, assistant_answers):
+    """
+    محاسبه امتیاز شهروندی بر اساس تفاوت خوداظهاری نیازمند با بازبینی همیار.
+
+    ورودی:
+      beneficiary_answers: dict پاسخ‌های اصلی نیازمند (خوداظهاری)
+      assistant_answers: dict پاسخ‌های اصلاح‌شده توسط همیار
+
+    خروجی:
+      {
+        score: 0-100 (۱۰۰ = کامل تطابق، ۰ = کامل مغایرت)
+        level: H1/H2/H3/H4
+        level_label: برچسب فارسی
+        total_keys: تعداد کل پرسش‌ها
+        matched: تعداد تطابق‌ها
+        changed: تعداد تغییرات
+        corrections: لیست تغییرات [{key, old, new}],
+      }
+    """
+    if not beneficiary_answers:
+        beneficiary_answers = {}
+    if not assistant_answers:
+        assistant_answers = {}
+
+    # کلیدهای مشترک (فیلدهای عضومحور با #memberId و فیلدهای خانواری)
+    all_keys = set(beneficiary_answers.keys()) | set(assistant_answers.keys())
+    # حذف کلیدهای غیرامتیازی (مثل توضیحات متنی)
+    scored_prefixes = [
+        "A1_", "A2_", "A3_", "A4_", "A5_", "A6_", "A7_", "A_malnut", "A_pregnant",
+        "B1_", "B2_", "B3_", "B4_", "B5_", "B6_", "B7_",
+        "C1_", "C2_", "C3_", "C4_", "C5_", "C6_", "C7_", "C8_", "C9_",
+        "D1_", "D2_", "D3_",
+        "E1_", "E2_", "E3_", "E4_",
+    ]
+    scored_keys = [k for k in all_keys if any(k.startswith(p) for p in scored_prefixes)]
+
+    if not scored_keys:
+        return {
+            "score": 100, "level": "H1", "level_label": "بسیار صادق",
+            "total_keys": 0, "matched": 0, "changed": 0, "corrections": [],
+        }
+
+    matched = 0
+    changed = 0
+    corrections = []
+
+    for key in scored_keys:
+        old_val = beneficiary_answers.get(key)
+        new_val = assistant_answers.get(key)
+
+        # نرمال‌سازی برای مقایسه
+        def norm(v):
+            if isinstance(v, list):
+                return sorted([str(x) for x in v])
+            return str(v) if v is not None else None
+
+        old_n = norm(old_val)
+        new_n = norm(new_val)
+
+        if old_n == new_n:
+            matched += 1
+        else:
+            changed += 1
+            corrections.append({
+                "key": key,
+                "old": old_val,
+                "new": new_val,
+            })
+
+    total = len(scored_keys)
+    score = round((matched / total) * 100) if total > 0 else 100
+
+    # سطح امتیاز شهروندی
+    if score >= 85:
+        level = "H1"
+        level_label = "بسیار صادق — تطابق بالا"
+    elif score >= 65:
+        level = "H2"
+        level_label = "صادق — تطابق متوسط"
+    elif score >= 40:
+        level = "H3"
+        level_label = "نقض جزئی — تطابق پایین"
+    else:
+        level = "H4"
+        level_label = "نقض شدید — مغایرت گسترده"
+
+    return {
+        "score": score,
+        "level": level,
+        "level_label": level_label,
+        "total_keys": total,
+        "matched": matched,
+        "changed": changed,
+        "corrections": corrections,
+    }
 SD_TO_EMPI_FULL = {}
 SD_ANSWER_LABELS = {}
 EMPI_SEVERITY_LABELS = {0: "فاقد محرومیت", 1: "متوسط", 2: "شدید"}
