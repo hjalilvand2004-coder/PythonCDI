@@ -1,0 +1,82 @@
+{% extends "mobile/base.html" %}
+{% set title = "کیف پول همیار" %}
+{% set subtitle = u.name %}
+{% set active_tab = "profile" %}
+
+{% block content %}
+<!-- Balance Card -->
+<div class="m-card" style="background:linear-gradient(135deg,#1d3d63,#12938d);color:#fff;text-align:center;border:none;">
+  <div style="font-size:13px;opacity:0.8;margin-bottom:8px;">💰 موجودی کیف پول</div>
+  <div style="font-size:36px;font-weight:700;">{{ wallet.balance or 0 }} <span style="font-size:14px;opacity:0.8;">تومان</span></div>
+  <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;opacity:0.7;">در انتظار تأیید</div>
+      <div style="font-size:18px;font-weight:600;">{{ total_pending }} ت</div>
+    </div>
+    <div>
+      <div style="font-size:11px;opacity:0.7;">کل درآمد</div>
+      <div style="font-size:18px;font-weight:600;">{{ total_earned }} ت</div>
+    </div>
+  </div>
+</div>
+
+<!-- Services Provided -->
+<div class="m-card">
+  <h3>📋 خدمات ارائه‌شده ({{ my_services|length }})</h3>
+  {% if my_services %}
+  <div class="m-list" style="margin-top:12px;">
+    {% for svc in my_services %}
+    <div class="m-list-item" style="flex-direction:column;align-items:stretch;">
+      <div style="display:flex;align-items:center;width:100%;">
+        <div class="avatar" style="margin-left:12px;">{{ svc.name[:1] if svc.name else '؟' }}</div>
+        <div class="info" style="flex:1;">
+          <div class="title">{{ svc.name }}</div>
+          <div class="desc">امتیاز: {{ svc.emmpi_score or '—' }} • {{ svc.priority }}</div>
+        </div>
+        <div style="text-align:left;">
+          <div style="font-size:16px;font-weight:700;color:#16a34a;">+{{ svc.cost }} ت</div>
+          {% if svc.satisfaction %}
+          <div style="font-size:11px;color:#f59e0b;">⭐ {{ svc.satisfaction }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;">
+        <span class="badge {% if svc.status == 'closed' %}done{% elif svc.status == 'claimed' %}claimed{% else %}pending{% endif %}" style="font-size:10px;">
+          {% if svc.status == 'closed' %}تکمیل{% elif svc.status == 'claimed' %}در رسیدگی{% else %}در انتظار{% endif %}
+        </span>
+        {% if svc.status == 'closed' and not svc.satisfaction %}
+        <a href="/m/satisfaction/{{ svc.hid }}" style="font-size:10px;color:#12938d;text-decoration:none;margin-right:auto;">📝 رضایت‌سنجی</a>
+        {% endif %}
+        <a href="/m/case/{{ svc.hid }}" style="font-size:10px;color:#1d3d63;text-decoration:none;margin-right:auto;">مشاهده →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <p>هنوز خدماتی ثبت نشده است</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Recent Transactions -->
+{% if transactions %}
+<div class="m-card">
+  <h3>📊 تراکنش‌های اخیر</h3>
+  <div style="margin-top:12px;">
+    {% for tx in transactions %}
+    <div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">{{ tx.type or tx.description or 'تراکنش' }}</div>
+        <div style="font-size:11px;color:#94a3b8;">{{ tx.at[:16] if tx.at else '' }}</div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:{% if tx.amount > 0 %}#16a34a{% else %}#dc2626{% endif %};">
+        {% if tx.amount > 0 %}+{% endif %}{{ tx.amount }} ت
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

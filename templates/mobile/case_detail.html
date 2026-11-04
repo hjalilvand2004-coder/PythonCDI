@@ -120,6 +120,15 @@
   {% if h.status == 'claimed' or h.status == 'emmpi_done' %}
   <a href="/questionnaire/{{ hid }}?role=assistant" class="m-btn">📝 بازبینی پرسشنامه</a>
   {% endif %}
+  {% if h.status == 'closed' and u.role == 'beneficiary' and not h.satisfaction %}
+  <a href="/m/satisfaction/{{ hid }}" class="m-btn success">⭐ ثبت رضایت‌سنجی از همیار</a>
+  {% endif %}
+  {% if h.status == 'closed' and u.role == 'beneficiary' and h.satisfaction %}
+  <div class="m-card" style="background:#fffbeb;border:1px solid #fde68a;text-align:center;">
+    <div style="font-size:24px;color:#f59e0b;">⭐ {{ h.satisfaction[-1].average }}</div>
+    <div style="font-size:12px;color:#92400e;">رضایت‌سنجی ثبت شده</div>
+  </div>
+  {% endif %}
   <a href="/m" class="m-btn outline">← بازگشت</a>
 </div>
 

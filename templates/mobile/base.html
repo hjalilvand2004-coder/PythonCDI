@@ -44,9 +44,9 @@
     <a href="/profile" class="tab {% if active_tab == 'profile' %}active{% endif %}"><span style="font-size:20px">👤</span><span>پروفایل</span></a>
   {% elif role in ('assistant', 'worker', 'rose', 'swclinic', 'employ') %}
     <a href="/m/pool" class="tab {% if active_tab == 'pool' %}active{% endif %}"><span style="font-size:20px">🏊</span><span>استخر</span></a>
-    <a href="/m" class="tab {% if active_tab == 'cases' %}active{% endif %}"><span style="font-size:20px">📁</span><span>پرونده‌ها</span></a>
+    <a href="/m/dashboard" class="tab {% if active_tab == 'cases' %}active{% endif %}"><span style="font-size:20px">📊</span><span>عملکرد</span></a>
+    <a href="/m/wallet" class="tab {% if active_tab == 'profile' %}active{% endif %}"><span style="font-size:20px">💰</span><span>کیف پول</span></a>
     <a href="/questionnaire" class="tab {% if active_tab == 'questionnaire' %}active{% endif %}"><span style="font-size:20px">📝</span><span>پرسشنامه</span></a>
-    <a href="/profile" class="tab {% if active_tab == 'profile' %}active{% endif %}"><span style="font-size:20px">👤</span><span>پروفایل</span></a>
   {% else %}
     <a href="/" class="tab {% if active_tab == 'home' %}active{% endif %}"><span style="font-size:20px">🏠</span><span>خانه</span></a>
     <a href="/hq/oversight" class="tab {% if active_tab == 'oversight' %}active{% endif %}"><span style="font-size:20px">👁️</span><span>نظارت</span></a>

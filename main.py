@@ -4371,3 +4371,6 @@ else:
 
 # ─── مسیرهای موبایل اپ (PWA) ───
 import mobile_routes
+
+# ─── قابلیت‌های موبایل: رضایت‌سنجی، کیف پول، داشبورد ───
+import mobile_features

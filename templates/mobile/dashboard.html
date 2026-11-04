@@ -1,0 +1,82 @@
+{% extends "mobile/base.html" %}
+{% set title = "داشبورد عملکرد" %}
+{% set subtitle = u.name %}
+{% set active_tab = "cases" %}
+
+{% block content %}
+<div style="text-align:center;margin-bottom:20px;">
+  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1d3d63,#12938d);margin:0 auto 12px;display:grid;place-items:center;font-size:28px;color:#fff;font-weight:700;">
+    {{ u.name[:1] if u.name else '👤' }}
+  </div>
+  <h2 style="font-size:18px;color:#1d3d63;">{{ u.name }}</h2>
+</div>
+
+<!-- Stats Grid -->
+<div class="stat-grid">
+  <div class="stat-card ok">
+    <div class="num">{{ stats.total_cases }}</div>
+    <div class="lbl">کل پرونده‌ها</div>
+  </div>
+  <div class="stat-card ok">
+    <div class="num">{{ stats.completed }}</div>
+    <div class="lbl">تکمیل‌شده</div>
+  </div>
+  <div class="stat-card warn">
+    <div class="num">{{ stats.in_progress }}</div>
+    <div class="lbl">در حال رسیدگی</div>
+  </div>
+  <div class="stat-card {% if stats.urgent_cases > 0 %}danger{% else %}ok{% endif %}">
+    <div class="num">{{ stats.urgent_cases }}</div>
+    <div class="lbl">فوری</div>
+  </div>
+</div>
+
+<!-- Satisfaction & Earnings -->
+<div class="stat-grid">
+  <div class="stat-card" style="grid-column:span 1;">
+    <div class="num" style="color:#f59e0b;">⭐ {{ stats.avg_satisfaction }}</div>
+    <div class="lbl">میانگین رضایت</div>
+  </div>
+  <div class="stat-card ok" style="grid-column:span 1;">
+    <div class="num">{{ stats.total_earned }} ت</div>
+    <div class="lbl">کل درآمد</div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="m-card">
+  <h3>⚡ دسترسی سریع</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+    <a href="/m/pool" class="m-btn" style="font-size:13px;padding:12px;">🏊 استخر</a>
+    <a href="/m/wallet" class="m-btn outline" style="font-size:13px;padding:12px;">💰 کیف پول</a>
+  </div>
+</div>
+
+<!-- My Cases -->
+{% if my_cases %}
+<div class="m-card">
+  <h3>📁 پرونده‌های اخیر</h3>
+  <div class="m-list" style="margin-top:12px;">
+    {% for item in my_cases %}
+    <a href="/m/case/{{ item.hid }}" class="m-list-item">
+      <div class="avatar">{{ item.h.identity.name[:1] if item.h.identity.name else '؟' }}</div>
+      <div class="info">
+        <div class="title">{{ item.h.identity.name or item.hid }}</div>
+        <div class="desc">
+          {% if item.h.emmpi and item.h.emmpi.result and item.h.emmpi.result.score is defined %}
+          📊 {{ item.h.emmpi.result.score }}
+          {% endif %}
+          {% if item.h.assessment and item.h.assessment.citizenship_score %}
+          • 🛡️ {{ item.h.assessment.citizenship_score.score }}
+          {% endif %}
+        </div>
+      </div>
+      <span class="badge {% if item.h.status == 'closed' %}done{% elif item.h.status == 'claimed' %}claimed{% else %}pending{% endif %}">
+        {% if item.h.status == 'closed' %}تکمیل{% elif item.h.status == 'claimed' %}در رسیدگی{% else %}در انتظار{% endif %}
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

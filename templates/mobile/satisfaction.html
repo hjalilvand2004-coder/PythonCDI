@@ -1,0 +1,66 @@
+{% extends "mobile/base.html" %}
+{% set title = "رضایت‌سنجی عملکرد همیار" %}
+{% set subtitle = assistant.name or "همیار" %}
+
+{% block content %}
+<div style="text-align:center;margin-bottom:24px;">
+  <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1d3d63,#12938d);margin:0 auto 12px;display:grid;place-items:center;font-size:28px;color:#fff;">
+    {{ (assistant.name or '؟')[:1] }}
+  </div>
+  <h2 style="font-size:18px;color:#1d3d63;">{{ assistant.name or 'همیار' }}</h2>
+  <p style="font-size:13px;color:#64748b;">{{ assistant.role_label or assistant.role or '' }}</p>
+  <p style="font-size:12px;color:#94a3b8;margin-top:4px;">پرونده: {{ hid }}</p>
+</div>
+
+<div class="m-card" style="text-align:center;background:#eff6ff;border:1px solid #bfdbfe;margin-bottom:20px;">
+  <p style="font-size:14px;color:#1e40af;line-height:1.7;">
+    🙏 لطفاً عملکرد همیار را ارزیابی کنید<br>
+    <span style="font-size:12px;color:#64748b;">نظر شما در بهبود کیفیت خدمات مؤثر است</span>
+  </p>
+</div>
+
+<form method="POST">
+  {% for dim in dimensions %}
+  <div class="m-card" style="text-align:center;">
+    <div style="font-size:28px;margin-bottom:4px;">{{ dim.icon }}</div>
+    <div style="font-size:14px;font-weight:600;color:#1d3d63;margin-bottom:12px;">{{ dim.label }}</div>
+    <div style="display:flex;justify-content:center;gap:8px;" id="stars_{{ dim.id }}">
+      {% for i in range(1, 6) %}
+      <button type="button" onclick="setStars('{{ dim.id }}', {{ i }})"
+              id="star_{{ dim.id }}_{{ i }}"
+              style="font-size:28px;background:none;border:none;cursor:pointer;color:#dbe3ec;transition:color .15s;">
+        ⭐
+      </button>
+      {% endfor %}
+    </div>
+    <input type="hidden" name="score_{{ dim.id }}" id="score_{{ dim.id }}" value="0">
+  </div>
+  {% endfor %}
+
+  <div class="m-card">
+    <div style="font-size:14px;font-weight:600;color:#1d3d63;margin-bottom:8px;">💬 نظر شما (اختیاری)</div>
+    <textarea name="comment" rows="3" placeholder="توضیحات بیشتر درباره عملکرد همیار..."
+              style="width:100%;padding:10px;border:1px solid #dbe3ec;border-radius:10px;font-family:inherit;font-size:14px;resize:vertical;"></textarea>
+  </div>
+
+  <button type="submit" class="m-btn success" style="margin-top:16px;">
+    ✅ ثبت رضایت‌سنجی
+  </button>
+</form>
+
+<script>
+function setStars(dimId, count) {
+  for (let i = 1; i <= 5; i++) {
+    const star = document.getElementById('star_' + dimId + '_' + i);
+    if (i <= count) {
+      star.style.color = '#f59e0b';
+      star.style.transform = 'scale(1.1)';
+    } else {
+      star.style.color = '#dbe3ec';
+      star.style.transform = 'scale(1)';
+    }
+  }
+  document.getElementById('score_' + dimId).value = count;
+}
+</script>
+{% endblock %}
