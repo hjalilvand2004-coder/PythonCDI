@@ -71,6 +71,33 @@ h1 { font-size: 22px; margin-bottom: 8px; color: var(--p); }
     </div>
   </div>
 
+  {# ─── امتیاز شهروندی (فقط اگر محاسبه شده) ─── #}
+  {% if h.assessment and h.assessment.citizenship_score %}
+  {% set cs = h.assessment.citizenship_score %}
+  <div class="score-box" style="background:{% if cs.score >= 85 %}#f0fdf4{% elif cs.score >= 65 %}#fffbeb{% else %}#fef2f2{% endif %};border-color:{% if cs.score >= 85 %}#bbf7d0{% elif cs.score >= 65 %}#fde68a{% else %}#fecaca{% endif %};">
+    <div class="score" style="color:{% if cs.score >= 85 %}#16a34a{% elif cs.score >= 65 %}#f59e0b{% else %}#dc2626{% endif %};">{{ cs.score }}</div>
+    <div class="label">امتیاز شهروندی (از ۱۰۰)</div>
+    <div style="font-size: 13px; margin-top: 4px; color: #166534;">{{ cs.level_label }}</div>
+    <div style="font-size: 12px; margin-top: 8px; color: #64748b;">
+      {{ cs.matched }} تطابق • {{ cs.changed }} اصلاح از {{ cs.total_keys }} پرسش
+    </div>
+    {% if cs.corrections and cs.corrections|length > 0 %}
+    <details style="margin-top:12px;text-align:right;">
+      <summary style="font-size:12px;cursor:pointer;color:#1d3d63;font-weight:600;">
+        📝 لیست اصلاحات همیار ({{ cs.corrections|length }})
+      </summary>
+      <div style="margin-top:8px;font-size:11px;">
+        {% for c in cs.corrections[:15] %}
+        <div style="padding:4px 8px;background:#fff;border-radius:4px;margin-bottom:3px;">
+          <strong>{{ c.key }}</strong>: {{ c.old }} → {{ c.new }}
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {% if h.emmpi and h.emmpi.result and h.emmpi.result.score is defined %}
   <div class="score-box">
     <div class="score">{{ h.emmpi.result.score }}</div>
