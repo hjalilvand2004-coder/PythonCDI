@@ -1,6 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // پل ارتباطی بین برنامه استاتیک پرسشنامه و Flask
-// دو حالت: ۱) بدون hid (ثبت‌نام جدید) ۲) با hid (بازبینی همیار)
+// مشکل: برنامه استاتیک ۸ پرونده دمو دارد که در localStorage با وضعیت
+// submitted قرار می‌گیرند. bridge نباید این داده‌ها را ذخیره کند.
+//
+// راه‌حل: localStorage پاک نمی‌شود. در عوض، پس از بارگذاری کامل برنامه،
+// وضعیت همه assessmentها به‌عنوان baseline ثبت می‌شود. فقط تغییر وضعیت
+// از baseline به submitted باعث ذخیره و redirect می‌شود.
 // ═══════════════════════════════════════════════════════════
 (function() {
   'use strict';
@@ -11,35 +16,24 @@
 
   console.log('[Bridge] Init — hid:', hid || '(new)', 'role:', role);
 
-  // ─── مرحله ۱: پاک‌کردن داده‌های دمو در حالت ثبت‌نام جدید ───
-  // برنامه استاتیک ۸ پرونده نمونه دارد که در نخستین اجرا بارگذاری می‌شوند
-  // این داده‌ها دارای وضعیت submitted/closed هستند و باعث redirect زودهنگام می‌شوند
-  if (!hid) {
-    console.log('[Bridge] New registration mode — clearing localStorage');
-    localStorage.removeItem(STORE_KEY);
-    // همچنین پاک‌کردن کلیدهای مرتبط
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key && key.includes('porsesh')) {
-        localStorage.removeItem(key);
-      }
-    }
-  }
-
-  // ─── مرحله ۲: متغیرهای حالت ───
-  let initialized = false;
-  let lastStatus = {};  // {assessmentId: lastKnownStatus}
+  // ─── متغیرهای حالت ───
+  let baselineStatus = {};  // وضعیت اولیه assessmentها پس از بارگذاری
   let monitoringActive = false;
+  let saveTimer = null;
+  let redirecting = false;
 
   // ─── بارگذاری داده از Flask (فقط در حالت بازبینی همیار) ───
   async function loadFromFlask() {
     if (!hid) {
-      console.log('[Bridge] No hid — fresh registration mode, localStorage cleared');
+      // حالت ثبت‌نام جدید — localStorage را پاک نمی‌کنیم!
+      // برنامه استاتیک خودش داده‌های دمو را بارگذاری می‌کند.
+      // ما فقط وضعیت baseline را ثبت می‌کنیم تا تغییرات واقعی را تشخیص دهیم.
+      console.log('[Bridge] New registration mode — will record baseline after app loads');
       return;
     }
     try {
       const resp = await fetch(`/api/assessment/${hid}`);
-      if (!resp.ok) { console.log('[Bridge] No data on server'); return; }
+      if (!resp.ok) { return; }
       const data = await resp.json();
       if (!data?.assessments) return;
       const storeData = {
@@ -51,10 +45,33 @@
     } catch(e) { console.error('[Bridge] Load error:', e); }
   }
 
+  // ─── ثبت وضعیت baseline ───
+  // پس از بارگذاری کامل برنامه، وضعیت همه assessmentها را ثبت می‌کنیم.
+  // این شامل داده‌های دمو هم می‌شود. بعداً فقط تغییرات از این baseline
+  // باعث ذخیره می‌شوند.
+  function recordBaseline() {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) {
+      console.log('[Bridge] No data in localStorage yet for baseline');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      const assessments = parsed?.state?.assessments || {};
+      baselineStatus = {};
+      for (const [id, a] of Object.entries(assessments)) {
+        baselineStatus[id] = a.status || 'draft';
+        console.log('[Bridge] Baseline —', id, ':', baselineStatus[id]);
+      }
+      console.log('[Bridge] Baseline recorded for', Object.keys(baselineStatus).length, 'assessments');
+    } catch(e) {
+      console.error('[Bridge] Baseline error:', e);
+    }
+  }
+
   // ─── ذخیره داده در Flask ───
-  let saveTimer = null;
-  async function saveToFlask() {
-    if (!monitoringActive) return;  // فقط پس از فعال‌شدن نظارت
+  async function checkAndSave() {
+    if (!monitoringActive || redirecting) return;
 
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return;
@@ -66,101 +83,95 @@
     if (!assessment) return;
 
     const currentStatus = assessment.status || 'draft';
-    const previousStatus = lastStatus[activeId] || 'draft';
+    const baseline = baselineStatus[activeId];
 
-    console.log('[Bridge] Status check — activeId:', activeId,
-                'current:', currentStatus, 'previous:', previousStatus);
-
-    // ─── فقط در صورت تغییر وضعیت به submitted/closed اقدام کن ───
-    // این از redirect زودهنگام به‌خاطر داده‌های دمو جلوگیری می‌کند
-    if ((currentStatus === 'submitted' || currentStatus === 'closed') &&
-        previousStatus !== 'submitted' && previousStatus !== 'closed') {
-
-      console.log('[Bridge] Status transition to', currentStatus, '— saving to Flask');
-      monitoringActive = false;  // توقف نظارت برای جلوگیری از ذخیره مضاعف
-
-      const url = hid ? `/api/assessment/${hid}/complete` : '/api/assessment/create';
-      try {
-        const body = JSON.stringify({
-          assessments: assessments,
-          activeId: activeId,
-          hid: hid,
-          role: role,
-        });
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: body,
-        });
-        const result = await resp.json();
-        console.log('[Bridge] Saved to Flask:', result);
-        if (result.hid) {
-          setTimeout(() => {
-            if (role === 'assistant') {
-              window.location.href = `/assistant/review/${result.hid}?done=1`;
-            } else {
-              window.location.href = `/registration-success/${result.hid}`;
-            }
-          }, 2000);  // تأخیر بیشتر برای نمایش نتیجه در برنامه
-        }
-      } catch(e) { console.error('[Bridge] Save error:', e); monitoringActive = true; }
-    } else if (hid && currentStatus !== previousStatus) {
-      // ذخیره دوره‌ای در حالت بازبینی همیار (فقط برای تغییرات غیر submitted)
-      try {
-        await fetch(`/api/assessment/${hid}`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({assessments: assessments, hid: hid}),
-        });
-        console.log('[Bridge] Auto-saved (status:', currentStatus, ')');
-      } catch(e) { console.error('[Bridge] Auto-save error:', e); }
+    // ─── منطق کلیدی: فقط در صورت تغییر وضعیت از baseline ───
+    // اگر assessment در baseline بود و وضعیتش تغییر کرده → ممکن است واقعی باشد
+    // اگر assessment در baseline نبود (جدید) و وضعیت submitted دارد → بررسی بیشتر
+    if (currentStatus !== 'submitted' && currentStatus !== 'closed') {
+      return;  // فقط وضعیت‌های submitted/closed مهم هستند
     }
 
-    // به‌روزرسانی وضعیت قبلی
-    lastStatus[activeId] = currentStatus;
+    // اگر این assessment در baseline بود و وضعیتش همان submitted بود → نادیده بگیر
+    if (baseline === 'submitted' || baseline === 'closed') {
+      console.log('[Bridge] Ignoring — assessment was already submitted in baseline:', activeId);
+      return;
+    }
+
+    // اگر assessment جدید است (در baseline نبود) و submitted است →
+    // فقط اگر قبلاً آن را به‌عنوان draft دیده‌ایم (یعنی کاربر واقعاً آن را پر کرده)
+    if (baseline === undefined) {
+      // assessment جدید — بررسی کنیم آیا قبلاً در baseline بود یا نه
+      // اگر در baseline نبود و الان submitted است، ممکن است دمو باشد
+      // اما اگر کاربر آن را ایجاد کرده باشد، باید اول draft دیده باشیم
+      // چون baseline را بعد از بارگذاری کامل ثبت کردیم، هر assessment که در baseline
+      // نبود ولی الان submitted است، احتمالاً دمو است که بعد از baseline اضافه شده
+      // یا کاربر واقعاً آن را ایجاد و تکمیل کرده
+      // برای اطمینان، فقط assessmentهایی را ذخیره می‌کنیم که دارای household.headNationalId باشند
+      // (یعنی کاربر واقعاً ثبت‌نام کرده)
+      const hh = assessment.household || {};
+      if (!hh.headNationalId) {
+        console.log('[Bridge] Ignoring — no national ID in assessment:', activeId);
+        return;
+      }
+    }
+
+    // ─── ذخیره واقعی ───
+    console.log('[Bridge] REAL submission detected — saving to Flask');
+    redirecting = true;
+    monitoringActive = false;
+
+    const url = hid ? `/api/assessment/${hid}/complete` : '/api/assessment/create';
+    try {
+      const body = JSON.stringify({
+        assessments: assessments,
+        activeId: activeId,
+        hid: hid,
+        role: role,
+      });
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      });
+      const result = await resp.json();
+      console.log('[Bridge] Saved to Flask:', result);
+      if (result.hid) {
+        setTimeout(() => {
+          if (role === 'assistant') {
+            window.location.href = `/assistant/review/${result.hid}?done=1`;
+          } else {
+            window.location.href = `/registration-success/${result.hid}`;
+          }
+        }, 3000);  // تأخیر ۳ ثانیه برای نمایش نتیجه در برنامه
+      }
+    } catch(e) {
+      console.error('[Bridge] Save error:', e);
+      redirecting = false;
+      monitoringActive = true;
+    }
   }
 
   // ─── نظارت بر تغییرات localStorage ───
   function startMonitoring() {
-    // ابتدا وضعیت فعلی را ثبت کن (بدون اقدام)
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        const assessments = parsed?.state?.assessments || {};
-        for (const [id, a] of Object.entries(assessments)) {
-          lastStatus[id] = a.status || 'draft';
-          console.log('[Bridge] Initial status for', id, ':', lastStatus[id]);
-        }
-      } catch {}
-    }
-
-    // تأخیر ۳ ثانیه قبل از فعال‌شدن نظارت
-    // این به کاربر زمان می‌دهد تا ثبت‌نام کند و پرسشنامه را شروع کند
-    setTimeout(() => {
-      monitoringActive = true;
-      console.log('[Bridge] Monitoring activated (after 3s delay)');
-    }, 3000);
-
-    // نظارت با storage event
+    // نظارت با storage event (برای tabهای دیگر)
     window.addEventListener('storage', (e) => {
       if (e.key === STORE_KEY) {
         if (saveTimer) clearTimeout(saveTimer);
-        saveTimer = setTimeout(saveToFlask, 1500);
+        saveTimer = setTimeout(checkAndSave, 2000);
       }
     });
 
     // Polling برای تشخیص تغییرات در همان tab
-    let lastHash = '';
+    let lastRaw = '';
     setInterval(() => {
-      if (!monitoringActive) return;
+      if (!monitoringActive || redirecting) return;
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
-      const hash = raw.length + ':' + raw.substring(0, 80);
-      if (hash !== lastHash) {
-        lastHash = hash;
+      if (raw !== lastRaw) {
+        lastRaw = raw;
         if (saveTimer) clearTimeout(saveTimer);
-        saveTimer = setTimeout(saveToFlask, 2000);
+        saveTimer = setTimeout(checkAndSave, 2000);
       }
     }, 2000);
   }
@@ -182,16 +193,40 @@
 
   // ─── اجرا ───
   loadFromFlask().then(() => {
+    showRoleBadge();
+
+    // مرحله ۱: ثبت baseline اولیه (قبل از بارگذاری کامل برنامه)
+    recordBaseline();
+
+    // مرحله ۲: تأخیر ۵ ثانیه برای بارگذاری کامل برنامه استاتیک
+    // برنامه Next.js ممکن است داده‌های دمو را بعد از چند ثانیه بارگذاری کند
+    setTimeout(() => {
+      // ثبت مجدد baseline پس از بارگذاری کامل
+      recordBaseline();
+      // فعال‌کردن نظارت
+      monitoringActive = true;
+      console.log('[Bridge] Monitoring activated (after 5s delay)');
+      // بررسی اولیه
+      checkAndSave();
+    }, 5000);
+
+    // مرحله ۳: ثبت مجدد baseline هر ۲ ثانیه برای ۱۰ ثانیه اول
+    // این برای تشخیص داده‌های دمو است که با تأخیر بارگذاری می‌شوند
+    let baselineCount = 0;
+    const baselineInterval = setInterval(() => {
+      recordBaseline();
+      baselineCount++;
+      if (baselineCount >= 5) {  // ۵ بار × ۲ ثانیه = ۱۰ ثانیه
+        clearInterval(baselineInterval);
+        console.log('[Bridge] Baseline recording complete');
+      }
+    }, 2000);
+
     startMonitoring();
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', showRoleBadge);
-    } else {
-      showRoleBadge();
-    }
-    console.log('[Bridge] Ready — monitoring starts in 3s');
+    console.log('[Bridge] Ready — monitoring starts after 5s');
   });
 
   window.addEventListener('beforeunload', () => {
-    if (monitoringActive) saveToFlask();
+    if (monitoringActive && !redirecting) checkAndSave();
   });
 })();
