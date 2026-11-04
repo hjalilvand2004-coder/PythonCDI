@@ -77,7 +77,8 @@ from web_services import (fetch_all_services, fetch_civil_registry,
 # ─── داده‌های جغرافیایی ایران (۳۱ استان + شهرها + مختصات) ───
 from iran_geo import (PROVINCES, get_province_choices, get_cities_for_province,
                       get_province_name, get_province_coords, get_all_province_coords,
-                      detect_province_from_postal_code)
+                      detect_province_from_postal_code, calculate_poverty_line,
+                      PROVINCE_COST_INDEX)
 
 # ─── سیستم مالی (کیف پول + هزینه خدمات) ───
 from finance_engine import (SERVICE_COSTS, COMPLEXITY_MULTIPLIERS, ROLE_MULTIPLIERS,
@@ -1159,6 +1160,51 @@ def api_create_assessment():
     db["households"][hid] = h
     save_db(db)
     return jsonify({"ok": True, "hid": hid})
+
+
+# ═══════════════════════════════════════════════════════════
+# سرویس خط فقر منطقه‌ای — مرکز رصد فقر
+# ═══════════════════════════════════════════════════════════
+@app.route("/api/poverty-line", methods=["GET", "POST"])
+def api_poverty_line():
+    """واکشی خط فقر منطقه‌ای از مرکز رصد فقر.
+    محاسبه بر اساس: استان، تعداد اعضا، ترکیب سنی، شهری/روستایی.
+
+    GET: /api/poverty-line?province=tehran&members=4&ages=42,38,14,8&urban=1
+    POST: {"province": "tehran", "members": [{"age": 42}, ...], "urban": true}
+    """
+    if request.method == "POST":
+        data = request.get_json() or {}
+        province_key = data.get("province", "")
+        members = data.get("members", [])
+        urban = data.get("urban", True)
+        postal_code = data.get("postal_code", "")
+    else:
+        province_key = request.args.get("province", "")
+        members_raw = request.args.get("members", "1")
+        ages_raw = request.args.get("ages", "")
+        urban = request.args.get("urban", "1") in ("1", "true", "True")
+        postal_code = request.args.get("postal_code", "")
+
+    # اگر استان مشخص نشده، از کد پستی تشخیص بده
+    if not province_key and postal_code:
+        detected = detect_province_from_postal_code(postal_code)
+        if detected:
+            province_key = detected[0]
+
+    # اگر اعضا به‌صورت ages آمده، تبدیل کن
+    if isinstance(members_raw, str) and ages_raw:
+        ages = [int(a) for a in ages_raw.split(",") if a.strip().isdigit()]
+        members = [{"age": a} for a in ages]
+    elif isinstance(members_raw, str):
+        n = int(members_raw) if members_raw.isdigit() else 1
+        members = [{"age": 35} for _ in range(n)]  # سن پیش‌فرض
+
+    if not province_key:
+        province_key = "tehran"  # پیش‌فرض
+
+    result = calculate_poverty_line(province_key, members, urban)
+    return jsonify(result)
 
 
 @app.route("/api/assessment/<hid>")

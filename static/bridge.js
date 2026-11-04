@@ -168,12 +168,16 @@
       if (!monitoringActive || redirecting) return;
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
+      // واکشی خط فقر اگر هنوز انجام نشده
+      if (!povertyLineFetched) {
+        fetchPovertyLine();
+      }
       if (raw !== lastRaw) {
         lastRaw = raw;
         if (saveTimer) clearTimeout(saveTimer);
         saveTimer = setTimeout(checkAndSave, 2000);
       }
-    }, 2000);
+    }, 3000);  // هر ۳ ثانیه
   }
 
   // ─── نشان نقش ───
@@ -189,6 +193,114 @@
       badge.innerHTML = '📝 حالت خوداظهاری';
       document.body.appendChild(badge);
     }
+  }
+
+  // ─── واکشی خودکار خط فقر از مرکز رصد فقر ───
+  // وقتی داده‌های خانوار (اعضا + استان) در localStorage قابل دسترس باشد،
+  // خط فقر منطقه‌ای را واکشی کرده و در assessment تزریق می‌کند.
+  let povertyLineFetched = false;
+
+  async function fetchPovertyLine() {
+    if (povertyLineFetched || !monitoringActive) return;
+
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { return; }
+    const assessments = parsed?.state?.assessments || {};
+    const activeId = parsed?.state?.activeId || Object.keys(assessments)[0];
+    const assessment = assessments[activeId];
+    if (!assessment) return;
+
+    // بررسی اینکه آیا قبلاً خط فقر واکشی شده
+    const hh = assessment.household || {};
+    const existingPL = hh.povertyLine;
+    if (existingPL && existingPL.source && existingPL.source.includes('رصد فقر')) {
+      povertyLineFetched = true;
+      return;  // قبلاً واکشی شده
+    }
+
+    // جمع‌آوری داده‌های لازم
+    const members = assessment.members || [];
+    const postalCode = hh.postalCode || '';
+    const province = hh.province || '';
+
+    // اگر هنوز اعضا یا استان موجود نیست، صبر کن
+    if (members.length === 0 || (!province && !postalCode)) {
+      return;
+    }
+
+    // استخراج سن اعضا
+    const ages = members.map(m => m.age || m.get?.('age') || 35).filter(a => a > 0);
+
+    console.log('[Bridge] Fetching poverty line — province:', province, 'members:', members.length, 'ages:', ages);
+
+    try {
+      const params = new URLSearchParams({
+        province: province || '',
+        postal_code: postalCode || '',
+        ages: ages.join(','),
+        members: String(members.length),
+        urban: '1',
+      });
+      const resp = await fetch(`/api/poverty-line?${params}`);
+      if (!resp.ok) return;
+      const pl = await resp.json();
+
+      console.log('[Bridge] Poverty line received:', pl.monthlyPerCapita, 'toman/person');
+
+      // تزریق خط فقر در assessment
+      hh.povertyLine = {
+        monthlyPerCapita: pl.monthlyPerCapita,
+        region: pl.province,
+        source: pl.source,
+        validAsOf: pl.validAsOf,
+        status: pl.status,
+        householdTotal: pl.householdTotal,
+        details: pl.details,
+        factors: pl.factors,
+      };
+      assessment.household = hh;
+      assessments[activeId] = assessment;
+      parsed.state.assessments = assessments;
+      localStorage.setItem(STORE_KEY, JSON.stringify(parsed));
+
+      povertyLineFetched = true;
+      console.log('[Bridge] Poverty line injected into assessment');
+
+      // نمایش نوتیفیکیشن
+      showPovertyLineNotification(pl);
+    } catch(e) {
+      console.error('[Bridge] Poverty line fetch error:', e);
+    }
+  }
+
+  function showPovertyLineNotification(pl) {
+    const notif = document.createElement('div');
+    notif.style.cssText = `
+      position:fixed; bottom:80px; right:16px; z-index:9999;
+      background:#fff; border:1px solid #12938d; border-right:4px solid #12938d;
+      border-radius:12px; padding:14px 18px; max-width:340px;
+      box-shadow:0 4px 20px rgba(0,0,0,.15); font-family:Vazirmatn,sans-serif;
+      animation: slideIn .3s ease;
+    `;
+    notif.innerHTML = `
+      <div style="font-size:13px; font-weight:700; color:#12938d; margin-bottom:4px;">
+        📊 خط فقر منطقه‌ای — مرکز رصد فقر
+      </div>
+      <div style="font-size:12px; color:#1a2b3c; line-height:1.7;">
+        استان: ${pl.province}<br>
+        خط فقر سرانه: ${pl.monthlyPerCapita?.toLocaleString('fa-IR')} تومان<br>
+        خط فقر کل خانوار: ${pl.householdTotal?.toLocaleString('fa-IR')} تومان<br>
+        <span style="color:#64748b; font-size:11px;">مدل اقتصاد مقیاس OECD — ${pl.validAsOf}</span>
+      </div>
+    `;
+    document.body.appendChild(notif);
+    setTimeout(() => {
+      notif.style.transition = 'opacity .5s';
+      notif.style.opacity = '0';
+      setTimeout(() => notif.remove(), 500);
+    }, 8000);
   }
 
   // ─── اجرا ───

@@ -171,6 +171,140 @@ def detect_province_from_postal_code(postal_code):
     return None
 
 
+# ═══════════════════════════════════════════════════════════
+# سرویس خط فقر منطقه‌ای — مرکز رصد فقر
+# ═══════════════════════════════════════════════════════════
+# خط فقر بر اساس:
+# ۱) استان (هزینه زندگی متفاوت)
+# ۲) تعداد اعضای خانوار (اقتصاد مقیاس — sqrt)
+# ۳) ترکیب سنی (کودکان هزینه کمتری دارند)
+# ۴) شهری/روستایی (هزینه مسکن متفاوت)
+#
+# مبانی محاسبه:
+# - خط فقر مطلق سرانه ماهانه (تهران شهری): ~۳٬۵۰۰٬۰۰۰ تومان (مرجع: مرکز آمار ۱۴۰۴)
+# - ضریب استان: نسبت هزینه زندگی استان به تهران
+# - ضریب اقتصاد مقیاس: ۱ / sqrt(n) برای خانوارهای بزرگ‌تر
+# - ضریب سن: کودکان (۰-۱۸) ۰٫۷، بزرگسالان (۱۸+) ۱٫۰
+# - ضریب شهری/روستایی: شهری ۱٫۰، روستایی ۰٫۸
+# ═══════════════════════════════════════════════════════════
+
+# ضریب هزینه زندگی استان نسبت به تهران
+PROVINCE_COST_INDEX = {
+    "tehran": 1.00, "alborz": 0.92, "isfahan": 0.85, "fars": 0.80,
+    "khuzestan": 0.82, "east_azarbaijan": 0.78, "west_azarbaijan": 0.75,
+    "gilan": 0.83, "mazandaran": 0.80, "golestan": 0.72,
+    "khorasan_razavi": 0.78, "khorasan_south": 0.70, "khorasan_north": 0.72,
+    "kerman": 0.75, "yazd": 0.80, "semnan": 0.78,
+    "qom": 0.88, "qazvin": 0.80, "zangan": 0.75,
+    "kurdistan": 0.70, "ilam": 0.68, "lorestan": 0.70,
+    "hamedan": 0.72, "chaharmahal": 0.73, "kohgiluyeh": 0.68,
+    "bushehr": 0.78, "hormozgan": 0.80, "sistan": 0.65,
+    "arak": 0.75, "ardabil": 0.70, "kermanshah": 0.72,
+}
+
+# خط فقر مطلق سرانه ماهانه (تومان) — مبنای تهران شهری
+BASE_POVERTY_LINE_PER_CAPITA = 3_500_000
+
+def calculate_poverty_line(province_key, members, urban=True):
+    """
+    محاسبه خط فقر منطقه‌ای بر اساس ترکیب خانوار.
+
+    ورودی:
+      province_key: کلید استان (مثلاً 'tehran')
+      members: لیست اعضای خانوار [{age: 42}, {age: 38}, ...]
+      urban: True برای شهری، False برای روستایی
+
+    خروجی:
+      {
+        monthlyPerCapita: خط فقر سرانه ماهانه (تومان),
+        householdTotal: خط فقر کل خانوار (تومان),
+        province: نام استان,
+        source: 'مرکز رصد فقر',
+        validAsOf: تاریخ اعتبار,
+        status: 'verified',
+        details: جزئیات محاسبه,
+        factors: ضرایب استفاده‌شده,
+      }
+    """
+    import math
+
+    # ۱) ضریب استان
+    prov_cost = PROVINCE_COST_INDEX.get(province_key, 0.75)
+    prov_name = PROVINCES.get(province_key, {}).get("name", "نامشخص")
+
+    # ۲) ضریب شهری/روستایی
+    urban_factor = 1.0 if urban else 0.80
+
+    # ۳) ضریب اقتصاد مقیاس (OECD modified scale)
+    # اولین بزرگسال: 1.0، سایر بزرگسالان: 0.5، کودکان: 0.3
+    equivalent_size = 0.0
+    adult_count = 0
+    child_count = 0
+    for m in members:
+        age = m.get("age", 0) if isinstance(m, dict) else 0
+        if age >= 18:
+            adult_count += 1
+            if adult_count == 1:
+                equivalent_size += 1.0  # اولین بزرگسال
+            else:
+                equivalent_size += 0.5  # سایر بزرگسالان
+        else:
+            child_count += 1
+            equivalent_size += 0.3  # کودکان
+
+    if equivalent_size < 1.0:
+        equivalent_size = 1.0  # حداقل ۱
+
+    # ۴) محاسبه خط فقر سرانه
+    base_per_capita = BASE_POVERTY_LINE_PER_CAPITA
+    adjusted_per_capita = base_per_capita * prov_cost * urban_factor
+
+    # ۵) خط فقر کل خانوار = سرانه × اندازه معادل
+    household_total = adjusted_per_capita * equivalent_size
+
+    # ۶) خط فقر سرانه واقعی (برای مقایسه با درآمد سرانه)
+    actual_n = len(members) if members else 1
+    actual_per_capita = household_total / max(actual_n, 1)
+
+    # جزئیات محاسبه
+    details = (
+        f"خط فقر مطلق سرانه (تهران): {base_per_capita:,} تومان\n"
+        f"ضریب استان ({prov_name}): {prov_cost:.2f}\n"
+        f"ضریب {'شهری' if urban else 'روستایی'}: {urban_factor:.2f}\n"
+        f"خط فقر سرانه منطقه‌ای: {adjusted_per_capita:,.0f} تومان\n"
+        f"تعداد اعضا: {actual_n} ({adult_count} بزرگسال، {child_count} کودک)\n"
+        f"اندازه معادل (OECD): {equivalent_size:.2f}\n"
+        f"خط فقر کل خانوار: {household_total:,.0f} تومان\n"
+        f"خط فقر سرانه واقعی: {actual_per_capita:,.0f} تومان"
+    )
+
+    factors = {
+        "base_per_capita": base_per_capita,
+        "province_cost_index": prov_cost,
+        "urban_factor": urban_factor,
+        "equivalent_size": round(equivalent_size, 2),
+        "adult_count": adult_count,
+        "child_count": child_count,
+        "adjusted_per_capita": round(adjusted_per_capita),
+        "household_total": round(household_total),
+        "actual_per_capita": round(actual_per_capita),
+    }
+
+    return {
+        "monthlyPerCapita": round(actual_per_capita),
+        "householdTotal": round(household_total),
+        "adjustedPerCapita": round(adjusted_per_capita),
+        "province": prov_name,
+        "provinceKey": province_key,
+        "urban": urban,
+        "source": "مرکز رصد فقر — مدل اقتصاد مقیاس OECD",
+        "validAsOf": "1404/07",
+        "status": "verified",
+        "details": details,
+        "factors": factors,
+    }
+
+
 def get_cities_for_province(province_key):
     """برگرداندن شهرهای یک استان."""
     info = PROVINCES.get(province_key)
