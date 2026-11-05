@@ -223,11 +223,9 @@
       if (result.hid) {
         setTimeout(() => {
           if (role === 'assistant') {
-            // همیار پس از تکمیل → هدایت به داشبورد موبایل (استخر/پرونده‌ها)
-            window.location.href = '/m';
+            window.location.href = `/registration-success/${result.hid}`;
           } else {
-            // نیازمند پس از تکمیل → صفحه موفقیت
-            window.location.href = '/registration-success/' + result.hid;
+            window.location.href = `/registration-success/${result.hid}`;
           }
         }, 3000);
       }
@@ -577,46 +575,13 @@
     }, 2000);
   }
 
-  // ─── باز کردن خودکار مودال ثبت‌نام ───
-  const autoRegister = window.BRIDGE_ACTION === 'register' ||
-    new URLSearchParams(window.location.search).get('action') === 'register';
-
-  function autoOpenRegister() {
-    if (!autoRegister) return false;
-    const buttons = document.querySelectorAll('button, a, [role="button"]');
-    for (const btn of buttons) {
-      const text = (btn.textContent || '').trim();
-      if (text.includes('ثبت‌نام') || text.includes('شروع پرسشنامه') ||
-          text.includes('پرسشنامه جدید') || text.includes('شروع') ||
-          text.includes('نیازمند') || text.includes('need_service')) {
-        console.log('[Bridge] Auto-clicking:', text.substring(0, 30));
-        btn.click();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  let regAttempts = 0;
-  function tryAutoRegister() {
-    if (!autoRegister || regAttempts >= 20) return;
-    regAttempts++;
-    if (!autoOpenRegister()) {
-      setTimeout(tryAutoRegister, 800);
-    } else {
-      console.log('[Bridge] Registration modal opened');
-    }
-  }
-
   // ─── اجرا ───
   loadFromFlask().then(() => {
     showRoleBadge();
     recordBaseline();
+    // باز کردن مستقیم پرونده (برای حالت همیار)
     if (hid) forceOpenAssessment();
-    // باز کردن خودکار مودال ثبت‌نام (برای حالت ثبت‌نام نیازمند)
-    if (autoRegister) {
-      setTimeout(tryAutoRegister, 2000);
-    }
+    // ایجاد پنل امتیاز شهروندی زنده (برای همیار)
     if (role === 'assistant') {
       setTimeout(createCitizenshipPanel, 3000);
     }

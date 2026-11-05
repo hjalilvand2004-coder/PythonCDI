@@ -345,10 +345,6 @@ def login():
         pw = request.form.get("password", "")
         if uid in USERS and USERS[uid]["password"] == pw:
             session["uid"] = uid
-            # پشتیبانی از پارامتر next برای هدایت به صفحه موبایل
-            next_url = request.args.get("next", "")
-            if next_url and next_url.startswith("/"):
-                return redirect(next_url)
             return redirect(url_for("index"))
         error = "نام کاربری یا گذرواژه نادرست است."
     return render_template("login.html", error=error, users=USERS, roles=ROLES,
@@ -1343,18 +1339,12 @@ def api_complete_assessment(hid):
 @app.route("/assistant/review/<hid>")
 @login_required
 def assistant_review(hid):
-    """همیار پرسشنامه را با داده پیش‌تکمیل‌شده می‌بیند و می‌تواند اصلاح کند.
-    اگر done=1 در URL باشد، همیار کارش تمام شده و به استخر/داشبورد برمی‌گردد."""
+    """همیار پرسشنامه را با داده پیش‌تکمیل‌شده می‌بیند و می‌تواند اصلاح کند."""
     u = current_user()
     db = load_db()
     h = db["households"].get(hid)
     if not h:
         return redirect(url_for("index"))
-
-    # اگر done=1 است → بازبینی تمام شده → هدایت به استخر
-    if request.args.get("done") == "1":
-        return redirect(url_for("mobile_home"))
-
     if u["role"] not in ("assistant", "worker", "rose", "swclinic", "caseworker", "manager"):
         return "این بخش فقط برای همیاران قابل دسترسی است.", 403
     # تخصیص به همیار
