@@ -223,9 +223,11 @@
       if (result.hid) {
         setTimeout(() => {
           if (role === 'assistant') {
-            window.location.href = `/registration-success/${result.hid}`;
+            // همیار پس از تکمیل → هدایت به داشبورد موبایل (استخر/پرونده‌ها)
+            window.location.href = '/m';
           } else {
-            window.location.href = `/registration-success/${result.hid}`;
+            // نیازمند پس از تکمیل → صفحه موفقیت
+            window.location.href = '/registration-success/' + result.hid;
           }
         }, 3000);
       }
@@ -526,43 +528,6 @@
     }
   }
 
-  // ─── باز کردن خودکار مودال ثبت‌نام ───
-  // وقتی کاربر از دکمه «ثبت‌نام» در صفحه لاگین CDI می‌آید،
-  // مستقیماً مودال ثبت‌نام برنامه پرسشنامه باز شود
-  const autoRegister = window.BRIDGE_ACTION === 'register' ||
-    new URLSearchParams(window.location.search).get('action') === 'register';
-
-  function autoOpenRegister() {
-    if (!autoRegister) return;
-
-    // جستجوی دکمه «ثبت‌نام» یا «شروع پرسشنامه» در DOM
-    const buttons = document.querySelectorAll('button, a, [role="button"]');
-    for (const btn of buttons) {
-      const text = (btn.textContent || '').trim();
-      if (text.includes('ثبت‌نام') || text.includes('شروع پرسشنامه') ||
-          text.includes('پرسشنامه جدید') || text.includes('شروع') ||
-          text.includes('ثبت‌نام نیازمند') || text.includes('登记') ||
-          text.includes('فرم جدید') || text.includes('پرونده جدید')) {
-        console.log('[Bridge] Auto-clicking register button:', text.substring(0, 30));
-        btn.click();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // تلاش مکرر برای کلیک روی دکمه ثبت‌نام
-  let registerAttempts = 0;
-  function tryAutoRegister() {
-    if (!autoRegister || registerAttempts >= 15) return;
-    registerAttempts++;
-    if (!autoOpenRegister()) {
-      setTimeout(tryAutoRegister, 1000);
-    } else {
-      console.log('[Bridge] Registration modal auto-opened');
-    }
-  }
-
   // ─── نشان نقش ───
   function showRoleBadge() {
     if (role === 'assistant') {
@@ -618,10 +583,6 @@
     recordBaseline();
     // باز کردن مستقیم پرونده (برای حالت همیار)
     if (hid) forceOpenAssessment();
-    // باز کردن خودکار مودال ثبت‌نام (برای حالت ثبت‌نام نیازمند)
-    if (autoRegister) {
-      setTimeout(tryAutoRegister, 3000);  // بعد از بارگذاری برنامه
-    }
     // ایجاد پنل امتیاز شهروندی زنده (برای همیار)
     if (role === 'assistant') {
       setTimeout(createCitizenshipPanel, 3000);

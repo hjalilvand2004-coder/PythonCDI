@@ -345,6 +345,10 @@ def login():
         pw = request.form.get("password", "")
         if uid in USERS and USERS[uid]["password"] == pw:
             session["uid"] = uid
+            # پشتیبانی از پارامتر next برای هدایت به صفحه موبایل
+            next_url = request.args.get("next", "")
+            if next_url and next_url.startswith("/"):
+                return redirect(next_url)
             return redirect(url_for("index"))
         error = "نام کاربری یا گذرواژه نادرست است."
     return render_template("login.html", error=error, users=USERS, roles=ROLES,
@@ -1010,8 +1014,7 @@ def questionnaire_new():
     base_tag = '<base href="/static/porsesh/">'
     html = html.replace('<head>', '<head>' + base_tag, 1)
     # بدون hid → حالت ثبت‌نام جدید
-    action = request.args.get('action', '')
-    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";window.BRIDGE_ACTION="{action}";</script>'
+    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
 
@@ -1212,41 +1215,6 @@ def api_poverty_line():
     return jsonify(result)
 
 
-@app.route("/api/pool")
-@login_required
-def api_pool():
-    """API استخر درخواست‌ها برای موبایل اپ — فرمت JSON."""
-    u = current_user()
-    db = load_db()
-    cases = []
-    for hid, h in db["households"].items():
-        if h.get("status") != "pending":
-            continue
-        # فیلتر استانی
-        if u.get("province"):
-            hh_prov = h.get("identity", {}).get("province", "")
-            user_prov_name = get_province_name(u["province"])
-            if hh_prov != u["province"] and hh_prov != user_prov_name:
-                continue
-        emmpi = h.get("emmpi", {}).get("result", {})
-        score = emmpi.get("score", 0) if isinstance(emmpi.get("score"), (int, float)) else 0
-        flags = emmpi.get("red_flags", [])
-        cases.append({
-            "hid": hid,
-            "name": h.get("identity", {}).get("name", hid),
-            "location": h.get("identity", {}).get("location", ""),
-            "province": h.get("identity", {}).get("province", ""),
-            "score": score,
-            "flags": [{"code": f.get("code",""), "title": f.get("title","")} for f in (flags if isinstance(flags, list) else [])],
-            "members": int(h.get("identity", {}).get("members", 0) or 0),
-            "status": h.get("status", "pending"),
-            "created_at": h.get("state", {}).get("created_at", ""),
-        })
-    # مرتب‌سازی: فوری (score >= 600 یا پرچم) اول
-    cases.sort(key=lambda c: (-(1 if c["score"] >= 600 or c["flags"] else 0), -c["score"]))
-    return jsonify({"cases": cases, "count": len(cases)})
-
-
 @app.route("/api/assessment/<hid>")
 @login_required
 def api_get_assessment(hid):
@@ -1375,12 +1343,18 @@ def api_complete_assessment(hid):
 @app.route("/assistant/review/<hid>")
 @login_required
 def assistant_review(hid):
-    """همیار پرسشنامه را با داده پیش‌تکمیل‌شده می‌بیند و می‌تواند اصلاح کند."""
+    """همیار پرسشنامه را با داده پیش‌تکمیل‌شده می‌بیند و می‌تواند اصلاح کند.
+    اگر done=1 در URL باشد، همیار کارش تمام شده و به استخر/داشبورد برمی‌گردد."""
     u = current_user()
     db = load_db()
     h = db["households"].get(hid)
     if not h:
         return redirect(url_for("index"))
+
+    # اگر done=1 است → بازبینی تمام شده → هدایت به استخر
+    if request.args.get("done") == "1":
+        return redirect(url_for("mobile_home"))
+
     if u["role"] not in ("assistant", "worker", "rose", "swclinic", "caseworker", "manager"):
         return "این بخش فقط برای همیاران قابل دسترسی است.", 403
     # تخصیص به همیار
