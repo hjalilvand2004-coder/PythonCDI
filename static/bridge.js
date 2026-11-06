@@ -7,8 +7,47 @@
   const STORE_KEY = 'porseshnameh-db';
   const hid = window.BRIDGE_HID || '';
   const role = window.BRIDGE_ROLE || 'beneficiary';
+  const action = window.BRIDGE_ACTION || '';
+  const autoRegister = action === 'register';
 
-  console.log('[Bridge] Init — hid:', hid || '(new)', 'role:', role);
+  console.log('[Bridge] Init — hid:', hid || '(new)', 'role:', role, 'action:', action);
+
+  // ─── باز کردن خودکار مودال ثبت‌نام ───
+  // وقتی action=register است، مودال ثبت‌نام پرسشنامه خودکار باز می‌شود
+  // این از داشتن دو فرم لاگین جلوگیری می‌کند
+  let registerOpened = false;
+  function tryOpenRegister() {
+    if (registerOpened || !autoRegister) return;
+    // جستجوی دکمه‌های ثبت‌نام در DOM
+    const els = document.querySelectorAll('button, a, [role="button"], div[onclick]');
+    for (const el of els) {
+      const text = (el.textContent || '').trim();
+      if (text.includes('ثبت‌نام') || text.includes('شروع پرسشنامه') ||
+          text.includes('پرسشنامه جدید') || text.includes('شروع') ||
+          text.includes('نیازمند') || text.includes('need_service') ||
+          text.includes('فرم جدید')) {
+        console.log('[Bridge] Auto-opening register:', text.substring(0, 30));
+        el.click();
+        registerOpened = true;
+        return;
+      }
+    }
+  }
+
+  // تلاش مکرر — هر ۸۰۰ms تا ۲۵ ثانیه
+  let regTimer = null;
+  function startAutoRegister() {
+    if (!autoRegister) return;
+    let attempts = 0;
+    regTimer = setInterval(() => {
+      attempts++;
+      if (registerOpened || attempts > 30) {
+        clearInterval(regTimer);
+        return;
+      }
+      tryOpenRegister();
+    }, 800);
+  }
 
   let baselineStatus = {};
   let monitoringActive = false;
@@ -594,6 +633,10 @@
     let bc = 0;
     const bi = setInterval(() => { recordBaseline(); bc++; if (bc >= 5) clearInterval(bi); }, 2000);
     startMonitoring();
+    // شروع باز کردن خودکار مودال ثبت‌نام
+    if (autoRegister) {
+      setTimeout(startAutoRegister, 2000);
+    }
     console.log('[Bridge] Ready');
   });
 

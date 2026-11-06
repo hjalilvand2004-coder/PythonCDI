@@ -345,7 +345,9 @@ def login():
         pw = request.form.get("password", "")
         if uid in USERS and USERS[uid]["password"] == pw:
             session["uid"] = uid
-            return redirect(url_for("index"))
+            # هدایت به داشبورد موبایل (یکپارچه)
+            next_url = request.args.get("next", "/m")
+            return redirect(next_url)
         error = "نام کاربری یا گذرواژه نادرست است."
     return render_template("login.html", error=error, users=USERS, roles=ROLES,
                            province_names={k: v["name"] for k, v in PROVINCES.items()})
@@ -1010,7 +1012,7 @@ def questionnaire_new():
     base_tag = '<base href="/static/porsesh/">'
     html = html.replace('<head>', '<head>' + base_tag, 1)
     # بدون hid → حالت ثبت‌نام جدید
-    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
+    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";window.BRIDGE_ACTION="register";</script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
 
@@ -1624,8 +1626,8 @@ def assistant_claim(hid):
     })
     save_db(db)
 
-    # هدایت به بازبینی پرسشنامه (برنامه استاتیک با داده پیش‌تکمل‌شده)
-    return redirect(url_for("assistant_review", hid=hid))
+    # هدایت مستقیم به پرسشنامه با داده پیش‌تکمیل‌شده
+    return redirect(f"/questionnaire/{hid}?role=assistant")
 
 
 # ─────────────────────────────────────────────────────────
