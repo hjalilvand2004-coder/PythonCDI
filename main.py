@@ -1629,8 +1629,8 @@ def assistant_claim(hid):
     })
     save_db(db)
 
-    # هدایت به بازبینی پرسشنامه (برنامه استاتیک با داده پیش‌تکمل‌شده)
-    return redirect(url_for("assistant_review", hid=hid))
+    # هدایت مستقیم به پرسشنامه با داده پیش‌تکمیل‌شده
+    return redirect(f"/questionnaire/{hid}?role=assistant")
 
 
 # ─────────────────────────────────────────────────────────
