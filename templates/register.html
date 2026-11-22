@@ -225,6 +225,18 @@ input.valid { border-color: var(--success); }
   </div>
 
   <div class="field-group">
+    <label class="field-label">نام <span class="req">*</span></label>
+    <input type="text" name="first_name" id="firstName" maxlength="40" placeholder="مثلاً محمد" autocomplete="given-name" oninput="validateName('firstName','firstNameErr')">
+    <div class="field-error" id="firstNameErr"></div>
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">نام خانوادگی <span class="req">*</span></label>
+    <input type="text" name="last_name" id="lastName" maxlength="60" placeholder="مثلاً رضایی" autocomplete="family-name" oninput="validateName('lastName','lastNameErr')">
+    <div class="field-error" id="lastNameErr"></div>
+  </div>
+
+  <div class="field-group">
     <label class="field-label">کد ملی سرپرست <span class="req">*</span></label>
     <input type="text" name="national_id" id="nid" maxlength="10" placeholder="۱۰ رقم" oninput="validateNid()" autocomplete="off">
     <div class="field-hint">کلید شناسایی و مبنای استعلام همه مراجع ثبتی</div>
@@ -344,6 +356,20 @@ function normalizeDigits(s) {
     const ai = ar.indexOf(c); if (ai >= 0) return en[ai];
     return c;
   }).join('').replace(/[\s\-_]/g, '');
+}
+
+// ═══════ نام / نام خانوادگی ═══════
+function validateName(inputId, errId) {
+  const inp = document.getElementById(inputId);
+  const v = (inp.value || '').trim();
+  if (!v) { setErr(errId, 'این فیلد اجباری است.', false); inp.className = 'invalid'; return false; }
+  if (v.length < 2) { setErr(errId, 'حداقل ۲ کاراکتر.', false); inp.className = 'invalid'; return false; }
+  if (v.length > 60) { setErr(errId, 'حداکثر ۶۰ کاراکتر.', false); inp.className = 'invalid'; return false; }
+  // فقط حروف فارسی/عربی، فاصله و نیم‌فاصله
+  if (!/^[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\s\u200C]+$/.test(v)) {
+    setErr(errId, 'فقط حروف فارسی مجاز است.', false); inp.className = 'invalid'; return false;
+  }
+  setErr(errId, '✓ معتبر', true); inp.className = 'valid'; return true;
 }
 
 function setErr(id, msg, ok) {
@@ -546,7 +572,9 @@ function selectKind(kind) {
 
 // ═══════ Submit ═══════
 function onSubmit() {
-  const ok = validateNid() && validateMobile() && validateBirth() && validatePostal() && validatePw();
+  const ok = validateName('firstName','firstNameErr') &&
+              validateName('lastName','lastNameErr') &&
+              validateNid() && validateMobile() && validateBirth() && validatePostal() && validatePw();
   if (!ok) { alert('لطفاً خطاهای فرم را برطرف کنید.'); return false; }
   const btn = document.getElementById('submitBtn');
   const fs = document.getElementById('fetchStatus');

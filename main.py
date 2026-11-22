@@ -368,10 +368,14 @@ def logout():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """ثبت‌نام نیازمند جدید — از صفحه لاگین قابل دسترسی است.
-    کد ملی، موبایل، تاریخ تولد، کد پستی، رمز عبور را می‌گیرد،
-    سرویس‌ها را واکشی می‌کند و سپس به پرسشنامه هدایت می‌شود."""
+    نام، نام خانوادگی، کد ملی، موبایل، تاریخ تولد، کد پستی، رمز عبور را می‌گیرد،
+    سرویس‌ها را واکشی می‌کند و سپس به پرسشنامه هدایت می‌شود.
+    نام و نام خانوادگی واردشده در assessment به‌عنوان responderName و headName تزریق می‌شود
+    تا در پرسشنامه (به‌جای نام نمونه) نمایش داده شود."""
     error = ""
     if request.method == "POST":
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
         national_id = emmpi_normalize_digits(request.form.get("national_id", "").strip())
         date_of_birth_raw = request.form.get("date_of_birth", "").strip()
         contact = emmpi_normalize_digits(request.form.get("contact", "").strip())
@@ -381,177 +385,218 @@ def register():
 
         date_of_birth = emmpi_normalize_jalali(date_of_birth_raw) or date_of_birth_raw
 
-        # اعتبارسنجی
-        nid_err = emmpi_nid_error(national_id)
-        if nid_err:
-            error = nid_err
+        # نام کامل برای تزریق به پرسشنامه
+        full_name = f"{first_name} {last_name}".strip()
+
+        # اعتبارسنجی نام/نام خانوادگی
+        if len(first_name) < 2 or len(last_name) < 2:
+            error = "نام و نام خانوادگی باید حداقل ۲ کاراکتر باشد."
         else:
-            mob_err = emmpi_mobile_error(contact)
-            if mob_err:
-                error = mob_err
+            nid_err = emmpi_nid_error(national_id)
+            if nid_err:
+                error = nid_err
             else:
-                birth_err = emmpi_birth_error(date_of_birth_raw)
-                if birth_err:
-                    error = birth_err
-                elif len(emmpi_normalize_digits(postal_code)) != 10:
-                    error = "کد پستی باید دقیقاً ۱۰ رقم باشد."
+                mob_err = emmpi_mobile_error(contact)
+                if mob_err:
+                    error = mob_err
                 else:
-                    pw_err = emmpi_password_error(password)
-                    if pw_err:
-                        error = pw_err
+                    birth_err = emmpi_birth_error(date_of_birth_raw)
+                    if birth_err:
+                        error = birth_err
+                    elif len(emmpi_normalize_digits(postal_code)) != 10:
+                        error = "کد پستی باید دقیقاً ۱۰ رقم باشد."
                     else:
-                        # بررسی تکراری نبودن کد ملی
-                        db = load_db()
-                        hid = f"H-{national_id[-6:]}"
-                        if hid in db["households"]:
-                            error = "این کد ملی قبلاً ثبت شده است. لطفاً وارد شوید."
+                        pw_err = emmpi_password_error(password)
+                        if pw_err:
+                            error = pw_err
                         else:
-                            # ساخت کاربر جدید در USERS (سراسری)
-                            new_uid = f"ben_{national_id[-6:]}"
-                            if new_uid not in USERS:
-                                USERS[new_uid] = {
-                                    "password": password,
-                                    "name": f"نیازمند ({national_id[-6:]})",
-                                    "role": "beneficiary",
-                                    "province": None,
+                            # بررسی تکراری نبودن کد ملی
+                            db = load_db()
+                            hid = f"H-{national_id[-6:]}"
+                            if hid in db["households"]:
+                                error = "این کد ملی قبلاً ثبت شده است. لطفاً وارد شوید."
+                            else:
+                                # ساخت کاربر جدید در USERS (سراسری)
+                                new_uid = f"ben_{national_id[-6:]}"
+                                if new_uid not in USERS:
+                                    USERS[new_uid] = {
+                                        "password": password,
+                                        "name": full_name,
+                                        "first_name": first_name,
+                                        "last_name": last_name,
+                                        "role": "beneficiary",
+                                        "province": None,
+                                    }
+
+                                # ساخت Assessment با ۸ سرویس قطعی
+                                assessment = {
+                                    "id": hid,
+                                    "createdAt": datetime.now().isoformat(timespec="seconds"),
+                                    "updatedAt": datetime.now().isoformat(timespec="seconds"),
+                                    "ruleSetVersion": EMMPI_RULE_SET["fullId"],
+                                    "status": "draft",
+                                    "demo": EMMPI_RULE_SET["demo"],
+                                    "registrationKind": "need_service",
+                                    "requestTypes": ["درخواست تشکیل/به‌روزرسانی پرونده حمایت"],
+                                    "household": {
+                                        "headFirstName": first_name,
+                                        "headLastName": last_name,
+                                        "responderName": full_name,
+                                        "responderRelation": "سرپرست",
+                                        "headName": full_name,
+                                        "headNationalId": national_id,
+                                        "headNationalIdStatus": "has",
+                                        "headBirthDate": date_of_birth,
+                                        "headMobile": contact,
+                                        "postalCode": postal_code,
+                                        "headPasswordHash": emmpi_hash_password(password),
+                                        "consents": {"bankAccess": consent_bank,
+                                                     "agreedAt": datetime.now().isoformat(timespec="seconds")},
+                                        "registeredAt": datetime.now().isoformat(timespec="seconds"),
+                                    },
+                                    "members": [{
+                                        "id": "m1",
+                                        "firstName": first_name,
+                                        "lastName": last_name,
+                                        "relation": "سرپرست",
+                                        "memberType": "registry",
+                                        "isHead": True,
+                                        "nationalId": national_id,
+                                        "nationalIdStatus": "has",
+                                        "fromRegistration": True,
+                                    }],
+                                    "answers": {},
+                                    "incomeSources": [],
+                                    "flags": [],
+                                    "qualityIssues": [],
+                                    "referrals": [],
+                                    "reviews": [],
+                                    "corrections": [],
+                                    "audit": [{
+                                        "at": datetime.now().isoformat(timespec="seconds"),
+                                        "actor": new_uid,
+                                        "role": "household",
+                                        "action": "ثبت‌نام و واکشی خودکار وب‌سرویس‌ها",
+                                        "detail": f"کد ملی: {national_id} — نام: {full_name}",
+                                    }],
+                                    "webServices": {},
                                 }
 
-                            # ساخت Assessment با ۸ سرویس قطعی
-                            assessment = {
-                                "id": hid,
-                                "createdAt": datetime.now().isoformat(timespec="seconds"),
-                                "updatedAt": datetime.now().isoformat(timespec="seconds"),
-                                "ruleSetVersion": EMMPI_RULE_SET["fullId"],
-                                "status": "draft",
-                                "demo": EMMPI_RULE_SET["demo"],
-                                "registrationKind": "need_service",
-                                "requestTypes": ["درخواست تشکیل/به‌روزرسانی پرونده حمایت"],
-                                "household": {
-                                    "headNationalId": national_id,
-                                    "headNationalIdStatus": "has",
-                                    "headBirthDate": date_of_birth,
-                                    "headMobile": contact,
-                                    "postalCode": postal_code,
-                                    "headPasswordHash": emmpi_hash_password(password),
-                                    "consents": {"bankAccess": consent_bank,
-                                                 "agreedAt": datetime.now().isoformat(timespec="seconds")},
-                                    "registeredAt": datetime.now().isoformat(timespec="seconds"),
-                                },
-                                "members": [],
-                                "answers": {},
-                                "incomeSources": [],
-                                "flags": [],
-                                "qualityIssues": [],
-                                "referrals": [],
-                                "reviews": [],
-                                "corrections": [],
-                                "audit": [{
-                                    "at": datetime.now().isoformat(timespec="seconds"),
-                                    "actor": new_uid,
-                                    "role": "household",
-                                    "action": "ثبت‌نام و واکشی خودکار وب‌سرویس‌ها",
-                                    "detail": f"کد ملی: {national_id}",
-                                }],
-                                "webServices": {},
-                            }
+                                # واکشی ۷ سرویس
+                                service_order = ["civil_registry", "post", "shaparak_bank",
+                                                 "insurance", "property", "higher_edu", "education_school"]
+                                for svc_id in service_order:
+                                    result = emmpi_simulate_service(svc_id, assessment)
+                                    assessment["webServices"][svc_id] = result
+                                    if result.get("prefills"):
+                                        pf = result["prefills"]
+                                        if pf.get("householdPatch"):
+                                            assessment["household"].update(pf["householdPatch"])
+                                        if pf.get("memberCreates"):
+                                            for mc in pf["memberCreates"]:
+                                                mid = f"m{len(assessment['members']) + 1}"
+                                                assessment["members"].append({
+                                                    "id": mid,
+                                                    "firstName": mc["firstName"],
+                                                    "relation": mc["relation"],
+                                                    "age": mc.get("age"),
+                                                    "gender": mc.get("gender", "male"),
+                                                    "memberType": "registry",
+                                                    "fromRegistry": True,
+                                                    "nationalIdStatus": "has",
+                                                    "schoolAge": isinstance(mc.get("age"), (int, float)) and 6 <= mc["age"] <= 18,
+                                                    "educationStatus": "na",
+                                                    "employmentStatus": "na",
+                                                    "isHead": mc["relation"] == "سرپرست",
+                                                })
+                                        if pf.get("answerPrefills"):
+                                            for ap in pf["answerPrefills"]:
+                                                assessment["answers"][ap["key"]] = ap["value"]
+                                        if pf.get("memberPrefills"):
+                                            for mp in pf["memberPrefills"]:
+                                                for m in assessment["members"]:
+                                                    if m["id"] == mp["memberId"]:
+                                                        m.update(mp["patch"])
+                                                        break
 
-                            # واکشی ۷ سرویس
-                            service_order = ["civil_registry", "post", "shaparak_bank",
-                                             "insurance", "property", "higher_edu", "education_school"]
-                            for svc_id in service_order:
-                                result = emmpi_simulate_service(svc_id, assessment)
-                                assessment["webServices"][svc_id] = result
-                                if result.get("prefills"):
-                                    pf = result["prefills"]
-                                    if pf.get("householdPatch"):
-                                        assessment["household"].update(pf["householdPatch"])
-                                    if pf.get("memberCreates"):
-                                        for mc in pf["memberCreates"]:
-                                            mid = f"m{len(assessment['members']) + 1}"
-                                            assessment["members"].append({
-                                                "id": mid,
-                                                "firstName": mc["firstName"],
-                                                "relation": mc["relation"],
-                                                "age": mc.get("age"),
-                                                "gender": mc.get("gender", "male"),
-                                                "memberType": "registry",
-                                                "fromRegistry": True,
-                                                "nationalIdStatus": "has",
-                                                "schoolAge": isinstance(mc.get("age"), (int, float)) and 6 <= mc["age"] <= 18,
-                                                "educationStatus": "na",
-                                                "employmentStatus": "na",
-                                                "isHead": mc["relation"] == "سرپرست",
-                                            })
-                                    if pf.get("answerPrefills"):
-                                        for ap in pf["answerPrefills"]:
-                                            assessment["answers"][ap["key"]] = ap["value"]
-                                    if pf.get("memberPrefills"):
-                                        for mp in pf["memberPrefills"]:
-                                            for m in assessment["members"]:
-                                                if m["id"] == mp["memberId"]:
-                                                    m.update(mp["patch"])
-                                                    break
+                                # استخراج نام و نشانی
+                                civil = assessment["webServices"].get("civil_registry", {})
+                                civil_head_name = (civil.get("data") or {}).get("نام و نام خانوادگی سرپرست", "")
+                                post = assessment["webServices"].get("post", {})
+                                post_data = post.get("data") or {}
+                                province = post_data.get("استان", "")
+                                city = post_data.get("شهرستان / منطقه", "")
+                                location = f"{province}، {city}" if province and city else ""
 
-                            # استخراج نام و نشانی
-                            civil = assessment["webServices"].get("civil_registry", {})
-                            head_name = (civil.get("data") or {}).get("نام و نام خانوادگی سرپرست", "")
-                            post = assessment["webServices"].get("post", {})
-                            post_data = post.get("data") or {}
-                            province = post_data.get("استان", "")
-                            city = post_data.get("شهرستان / منطقه", "")
-                            location = f"{province}، {city}" if province and city else ""
+                                # تضمین نام واقعی کاربر در assessment (حتی اگر وب‌سرویس نام نمونه برگرداند)
+                                # نام و نام خانوادگی واردشده در فرم ثبت‌نام همیشه ملاک است.
+                                assessment["household"]["responderName"] = full_name
+                                assessment["household"]["headName"] = full_name
+                                assessment["household"]["headFirstName"] = first_name
+                                assessment["household"]["headLastName"] = last_name
+                                # اگر member سرپرست از وب‌سرویس اضافه شده، نام آن را هم overwrite کن
+                                for m in assessment["members"]:
+                                    if m.get("isHead") or m.get("relation") == "سرپرست":
+                                        m["firstName"] = first_name
+                                        m["lastName"] = last_name
+                                        break
 
-                            # ساخت پرونده خانوار
-                            h = {
-                                "identity": {
-                                    "hid": hid,
+                                # نام برای identity — اولویت با نام واردشده توسط کاربر
+                                head_name = full_name or civil_head_name
+
+                                # ساخت پرونده خانوار
+                                h = {
+                                    "identity": {
+                                        "hid": hid,
+                                        "national_id": national_id,
+                                        "first_name": first_name,
+                                        "last_name": last_name,
+                                        "name": head_name,
+                                        "province": province,
+                                        "province_name": province,
+                                        "city": city,
+                                        "location": location,
+                                        "members": str(len(assessment["members"])),
+                                        "contact": contact,
+                                        "at_risk": "", "at_risk_list": [],
+                                    },
+                                    "em_input": {"level": "", "redflags": [], "em_dims": [],
+                                                 "redflag_labels": [], "services_received": [],
+                                                 "em_date": "", "note": ""},
+                                    "state": {"redflags": [], "em_dims": [], "active_axes": [],
+                                              "answers": {},
+                                              "created_at": datetime.now().isoformat(timespec="seconds"),
+                                              "created_by": "beneficiary"},
+                                    "layer2_done": False, "layer3_done": False,
+                                    "decisions": [], "referrals": [], "history": [],
+                                    "preferences": {}, "capacities": [], "causes": [],
                                     "national_id": national_id,
-                                    "name": head_name,
-                                    "province": province,
-                                    "province_name": province,
-                                    "city": city,
-                                    "location": location,
-                                    "members": str(len(assessment["members"])),
-                                    "contact": contact,
-                                    "at_risk": "", "at_risk_list": [],
-                                },
-                                "em_input": {"level": "", "redflags": [], "em_dims": [],
-                                             "redflag_labels": [], "services_received": [],
-                                             "em_date": "", "note": ""},
-                                "state": {"redflags": [], "em_dims": [], "active_axes": [],
-                                          "answers": {},
-                                          "created_at": datetime.now().isoformat(timespec="seconds"),
-                                          "created_by": "beneficiary"},
-                                "layer2_done": False, "layer3_done": False,
-                                "decisions": [], "referrals": [], "history": [],
-                                "preferences": {}, "capacities": [], "causes": [],
-                                "national_id": national_id,
-                                "request_channel": "website",
-                                "status": "pending",
-                                "claimed_by": None,
-                                "self_declaration": {
-                                    "submitted_at": datetime.now().isoformat(timespec="seconds"),
-                                    "registration_kind": "need_service",
-                                    "postal_code": postal_code,
-                                    "date_of_birth": date_of_birth,
-                                    "consent_bank": consent_bank,
-                                },
-                                "web_service_data": {},
-                                "assessment": assessment,
-                            }
-                            h["history"].append({
-                                "at": datetime.now().isoformat(timespec="seconds"),
-                                "by": "beneficiary",
-                                "action": f"ثبت‌نام با کد ملی {national_id} + واکشی {len(service_order)} سرویس — {len(assessment['members'])} عضو از ثبت احوال"
-                            })
-                            db["households"][hid] = h
-                            save_db(db)
+                                    "request_channel": "website",
+                                    "status": "pending",
+                                    "claimed_by": None,
+                                    "self_declaration": {
+                                        "submitted_at": datetime.now().isoformat(timespec="seconds"),
+                                        "registration_kind": "need_service",
+                                        "postal_code": postal_code,
+                                        "date_of_birth": date_of_birth,
+                                        "consent_bank": consent_bank,
+                                    },
+                                    "web_service_data": {},
+                                    "assessment": assessment,
+                                }
+                                h["history"].append({
+                                    "at": datetime.now().isoformat(timespec="seconds"),
+                                    "by": "beneficiary",
+                                    "action": f"ثبت‌نام با کد ملی {national_id} + واکشی {len(service_order)} سرویس — {len(assessment['members'])} عضو از ثبت احوال"
+                                })
+                                db["households"][hid] = h
+                                save_db(db)
 
-                            # لاگین خودکار کاربر جدید
-                            session["uid"] = new_uid
-                            session["role"] = "beneficiary"
-                            session["beneficiary_hid"] = hid
-                            return redirect(url_for("questionnaire_app", hid=hid))
+                                # لاگین خودکار کاربر جدید
+                                session["uid"] = new_uid
+                                session["role"] = "beneficiary"
+                                session["beneficiary_hid"] = hid
+                                return redirect(url_for("questionnaire_app", hid=hid))
 
     return render_template("register.html", error=error)
 
@@ -1003,34 +1048,22 @@ def self_declaration(hid):
 @app.route("/questionnaire")
 def questionnaire_new():
     """صفحه پرسشنامه برای ثبت‌نام جدید (بدون hid) — نیازمند جدید.
-    ابتدا فرم نام/نام خانوادگی/کد ملی نشان داده می‌شود، سپس پرسشنامه با این داده باز می‌شود."""
+    برای ثبت‌نام نیازمند جدید، از مسیر /register استفاده شود که فرم کامل (نام، نام
+    خانوادگی، کد ملی، موبایل، تاریخ تولد، کد پستی، رمز عبور) را می‌گیرد و ۷ سرویس
+    را واکشی می‌کند. این مسیر فقط برای دسترسی مستقیم به پرسشنامه با نمونه‌های نمایشی است."""
     u = current_user() or {"role": "beneficiary"}
     role = u.get("role", "beneficiary")
-    # اگر داده‌های ثبت‌نام به صورت query string داده شده، پرسشنامه را با آن باز کن
-    reg_name = request.args.get("name", "").strip()
-    reg_family = request.args.get("family", "").strip()
-    reg_nid = request.args.get("nid", "").strip()
-    if reg_name and reg_family:
-        # حالت ثبت‌نام با داده — مستقیم پرسشنامه را باز کن
-        idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
-        try:
-            with open(idx_path, "r", encoding="utf-8") as f:
-                html = f.read()
-        except Exception:
-            return "فایل پرسشنامه یافت نشد", 500
-        base_tag = '<base href="/static/porsesh/">'
-        html = html.replace('<head>', '<head>' + base_tag, 1)
-        # bridge با داده‌های ثبت‌نام
-        import json as _json
-        reg_data = _json.dumps({"name": reg_name, "family": reg_family, "nid": reg_nid})
-        bridge = (f'<script src="/static/bridge.js"></script>'
-                  f'<script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";'
-                  f'window.BRIDGE_ACTION="register";'
-                  f'window.BRIDGE_REG_DATA={reg_data};</script>')
-        html = html.replace('</body>', bridge + '</body>')
-        return html
-    # در غیر این صورت فرم ثبت‌نام اولیه را نشان بده
-    return render_template("register_form.html", role=role)
+    idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
+    try:
+        with open(idx_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except Exception:
+        return "فایل پرسشنامه یافت نشد", 500
+    base_tag = '<base href="/static/porsesh/">'
+    html = html.replace('<head>', '<head>' + base_tag, 1)
+    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
+    html = html.replace('</body>', bridge + '</body>')
+    return html
 
 
 @app.route("/registration-success/<hid>")
