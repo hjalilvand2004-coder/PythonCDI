@@ -576,6 +576,112 @@
   }
 
   // ─── اجرا ───
+  // اگر داده ثبت‌نام از فرم اولیه دریافت شده، آن را به‌جای نمونه‌های نمایشی در store قرار بده
+  function seedRegistrationAssessment() {
+    const reg = window.BRIDGE_REG_DATA;
+    if (!reg || (!reg.name && !reg.family)) {
+      console.log('[Bridge] No registration data — using defaults');
+      return;
+    }
+    const fullName = `${reg.name} ${reg.family}`.trim();
+    const nid = reg.nid || '';
+
+    // ساخت assessment جدید با داده‌های واردشده
+    const newId = 'REG-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    const now = new Date().toISOString();
+    const ruleSetVersion = 'EM-MPI-RF-1.0.0-demo';
+
+    const assessment = {
+      id: newId,
+      createdAt: now,
+      updatedAt: now,
+      ruleSetVersion: ruleSetVersion,
+      status: 'draft',
+      demo: false,  // نمونه نیست — واقعی
+      requestTypes: [],
+      household: {
+        responderName: fullName,
+        responderRelation: 'سرپرست',
+        headName: fullName,
+        headNationalIdStatus: nid ? 'has' : 'missing',
+        headNationalId: nid || undefined,
+      },
+      members: [{
+        id: 'm-' + Date.now().toString(36),
+        memberType: 'registry',
+        firstName: reg.name,
+        relation: 'سرپرست',
+      }],
+      answers: {},
+      incomeSources: [],
+      flags: [],
+      qualityIssues: [],
+      referrals: [],
+      reviews: [],
+      corrections: [],
+      audit: [{
+        id: 'aud-' + Date.now().toString(36),
+        at: now,
+        actor: 'نیازمند',
+        role: 'household',
+        action: 'ثبت‌نام اولیه',
+        detail: `ثبت‌نام توسط ${fullName}`,
+      }],
+      changeStatements: [],
+      webServices: {},
+      documents: [],
+    };
+
+    // پاک‌سازی samples نمایشی و قرار دادن assessment واقعی به‌عنوان فعال
+    let storeData;
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      storeData = raw ? JSON.parse(raw) : {state: {assessments: {}}, version: 0};
+    } catch {
+      storeData = {state: {assessments: {}}, version: 0};
+    }
+    if (!storeData.state) storeData.state = {assessments: {}};
+    if (!storeData.state.assessments) storeData.state.assessments = {};
+
+    // حذف نمونه‌های نمایشی قبلی (demo: true) — فقط رکوردهای غیر demo باقی بمانند
+    const cleaned = {};
+    for (const [k, v] of Object.entries(storeData.state.assessments)) {
+      if (v && v.demo) continue;  // نمونه‌ها حذف
+      cleaned[k] = v;
+    }
+    cleaned[newId] = assessment;
+
+    storeData.state.assessments = cleaned;
+    storeData.state.activeId = newId;
+    storeData.state.view = 'wizard';
+    storeData.state.wizardStep = 1;
+    storeData.version = 0;
+
+    localStorage.setItem(STORE_KEY, JSON.stringify(storeData));
+    console.log('[Bridge] Seeded registration assessment:', newId, '— name:', fullName);
+
+    // پس از load شدن پرسشنامه، wizard را به‌جای لیست نمونه‌ها باز کن
+    setTimeout(function ensureWizardOpen() {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      try {
+        const p = JSON.parse(raw);
+        if (p?.state?.activeId !== newId || p?.state?.view !== 'wizard') {
+          p.state.activeId = newId;
+          p.state.view = 'wizard';
+          p.state.wizardStep = 1;
+          localStorage.setItem(STORE_KEY, JSON.stringify(p));
+          console.log('[Bridge] Ensured wizard open for:', newId);
+        }
+      } catch {}
+    }, 1500);
+  }
+
+  // اجرای seed قبل از loadFromFlask تا پرسشنامه داده درست را ببیند
+  if (window.BRIDGE_ACTION === 'register' && window.BRIDGE_REG_DATA) {
+    seedRegistrationAssessment();
+  }
+
   loadFromFlask().then(() => {
     showRoleBadge();
     recordBaseline();

@@ -1003,21 +1003,34 @@ def self_declaration(hid):
 @app.route("/questionnaire")
 def questionnaire_new():
     """صفحه پرسشنامه برای ثبت‌نام جدید (بدون hid) — نیازمند جدید.
-    نیاز به لاگین ندارد — برنامه استاتیک مودال ثبت‌نام خودش را نشان می‌دهد."""
+    ابتدا فرم نام/نام خانوادگی/کد ملی نشان داده می‌شود، سپس پرسشنامه با این داده باز می‌شود."""
     u = current_user() or {"role": "beneficiary"}
     role = u.get("role", "beneficiary")
-    idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
-    try:
-        with open(idx_path, "r", encoding="utf-8") as f:
-            html = f.read()
-    except Exception:
-        return "فایل پرسشنامه یافت نشد", 500
-    base_tag = '<base href="/static/porsesh/">'
-    html = html.replace('<head>', '<head>' + base_tag, 1)
-    # بدون hid → حالت ثبت‌نام جدید
-    bridge = f'<script src="/static/bridge.js"></script><script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script>'
-    html = html.replace('</body>', bridge + '</body>')
-    return html
+    # اگر داده‌های ثبت‌نام به صورت query string داده شده، پرسشنامه را با آن باز کن
+    reg_name = request.args.get("name", "").strip()
+    reg_family = request.args.get("family", "").strip()
+    reg_nid = request.args.get("nid", "").strip()
+    if reg_name and reg_family:
+        # حالت ثبت‌نام با داده — مستقیم پرسشنامه را باز کن
+        idx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "porsesh", "index.html")
+        try:
+            with open(idx_path, "r", encoding="utf-8") as f:
+                html = f.read()
+        except Exception:
+            return "فایل پرسشنامه یافت نشد", 500
+        base_tag = '<base href="/static/porsesh/">'
+        html = html.replace('<head>', '<head>' + base_tag, 1)
+        # bridge با داده‌های ثبت‌نام
+        import json as _json
+        reg_data = _json.dumps({"name": reg_name, "family": reg_family, "nid": reg_nid})
+        bridge = (f'<script src="/static/bridge.js"></script>'
+                  f'<script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";'
+                  f'window.BRIDGE_ACTION="register";'
+                  f'window.BRIDGE_REG_DATA={reg_data};</script>')
+        html = html.replace('</body>', bridge + '</body>')
+        return html
+    # در غیر این صورت فرم ثبت‌نام اولیه را نشان بده
+    return render_template("register_form.html", role=role)
 
 
 @app.route("/registration-success/<hid>")

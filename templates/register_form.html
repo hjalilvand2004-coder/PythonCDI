@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1d3d63">
+<title>ثبت‌نام نیازمند | پرسشنامه</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --primary:#1d3d63;--primary-light:#3a5a85;--bg:#f4f6f9;--card:#fff;
+  --ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--red:#dc2626;--green:#16a34a;
+  --r:14px;--sh:0 4px 16px rgba(0,0,0,.06);
+}
+body{
+  font-family:Vazirmatn,sans-serif;background:var(--bg);color:var(--ink);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.card{
+  background:var(--card);border-radius:var(--r);box-shadow:var(--sh);
+  max-width:420px;width:100%;padding:32px 24px;
+}
+.logo{
+  width:64px;height:64px;margin:0 auto 18px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(29,61,99,.25);
+}
+.logo svg{width:32px;height:32px;color:#fff}
+h1{
+  font-size:18px;font-weight:700;text-align:center;margin-bottom:6px;color:var(--primary);
+}
+.subtitle{
+  font-size:13px;color:var(--mut);text-align:center;margin-bottom:24px;line-height:1.6;
+}
+.field{margin-bottom:14px}
+.field label{
+  display:block;font-size:12px;font-weight:600;color:var(--ink);
+  margin-bottom:6px;
+}
+.field label .req{color:var(--red);margin-right:2px}
+.field input{
+  width:100%;padding:13px 14px;font-family:inherit;font-size:14px;
+  border:1.5px solid var(--line);border-radius:10px;background:#fafbfc;
+  color:var(--ink);transition:all .15s;
+  text-align:right;
+}
+.field input::placeholder{color:#9ca3af;text-align:right}
+.field input:focus{
+  outline:none;border-color:var(--primary);background:#fff;
+  box-shadow:0 0 0 3px rgba(29,61,99,.1);
+}
+.btn{
+  display:block;width:100%;padding:14px;font-family:inherit;font-size:15px;
+  font-weight:700;border:none;border-radius:10px;cursor:pointer;
+  margin-top:8px;transition:transform .12s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff;
+}
+.btn-primary:active{transform:scale(.98)}
+.btn-back{
+  background:transparent;color:var(--mut);border:1.5px solid var(--line);
+  margin-top:8px;font-size:13px;padding:10px;
+}
+.hint{
+  margin-top:18px;padding:10px;background:#fef9e7;border-radius:8px;
+  font-size:11px;color:#92710d;line-height:1.6;text-align:center;
+}
+.hint b{color:#7a5c0a}
+.error{
+  background:#fef2f2;color:var(--red);padding:10px;border-radius:8px;
+  font-size:12px;margin-bottom:14px;text-align:center;display:none;
+}
+.error.show{display:block}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="8.5" cy="7" r="4"/>
+      <line x1="20" y1="8" x2="20" y2="14"/>
+      <line x1="23" y1="11" x2="17" y2="11"/>
+    </svg>
+  </div>
+  <h1>ثبت‌نام نیازمند جدید</h1>
+  <div class="subtitle">برای شروع پرسشنامه، اطلاعات پایه سرپرست خانوار را وارد کنید.<br>این اطلاعات در پرسشنامه نمایش داده می‌شود.</div>
+
+  <div class="error" id="err"></div>
+
+  <form id="regForm" action="/questionnaire" method="get">
+    <div class="field">
+      <label>نام <span class="req">*</span></label>
+      <input type="text" name="name" id="name" placeholder="مثال: محمد" autocomplete="given-name" required>
+    </div>
+    <div class="field">
+      <label>نام خانوادگی <span class="req">*</span></label>
+      <input type="text" name="family" id="family" placeholder="مثال: رضایی" autocomplete="family-name" required>
+    </div>
+    <div class="field">
+      <label>کد ملی <span class="req">*</span></label>
+      <input type="text" name="nid" id="nid" inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+             placeholder="۱۰ رقم" autocomplete="off" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">شروع پرسشنامه</button>
+  </form>
+
+  <a href="/login" class="btn btn-back">بازگشت به ورود</a>
+
+  <div class="hint">
+    <b>توجه:</b> این سامانه در مرحله آزمون است. اطلاعات واردشده در پرسشنامه ملاک قرار می‌گیرد و به‌جای داده‌های نمونه نمایش داده می‌شود.
+  </div>
+</div>
+
+<script>
+document.getElementById('regForm').addEventListener('submit', function(e){
+  var name = document.getElementById('name').value.trim();
+  var family = document.getElementById('family').value.trim();
+  var nid = document.getElementById('nid').value.trim();
+  var errEl = document.getElementById('err');
+
+  if (!name || !family) {
+    e.preventDefault();
+    errEl.textContent = 'نام و نام خانوادگی الزامی است';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!/^[0-9]{10}$/.test(nid)) {
+    e.preventDefault();
+    errEl.textContent = 'کد ملی باید ۱۰ رقم باشد';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+});
+
+// فقط اعداد انگلیسی برای کد ملی
+document.getElementById('nid').addEventListener('input', function(e){
+  this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
+});
+</script>
+</body>
+</html>
