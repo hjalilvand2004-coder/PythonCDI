@@ -34,16 +34,6 @@
       beneficiaryAnswers = assessment.beneficiary_answers || null;
       console.log('[Bridge] Beneficiary answers loaded:', beneficiaryAnswers ? Object.keys(beneficiaryAnswers).length + ' keys' : 'none');
 
-      // ذخیره نام واقعی کاربر برای حفاظت در برابر overwrite پرسشنامه استاتیک
-      const hh = assessment.household || {};
-      realName = {
-        responderName: hh.responderName || '',
-        headName: hh.headName || '',
-        headFirstName: hh.headFirstName || '',
-        headLastName: hh.headLastName || '',
-      };
-      console.log('[Bridge] Real name captured:', realName.headName || realName.responderName);
-
       const storeData = {
         state: { assessments: data.assessments, activeId: hid },
         version: 0,
@@ -51,105 +41,6 @@
       localStorage.setItem(STORE_KEY, JSON.stringify(storeData));
       console.log('[Bridge] Data loaded from Flask, activeId:', hid);
     } catch(e) { console.error('[Bridge] Load error:', e); }
-  }
-
-  // ─── حفاظت از نام واقعی کاربر در برابر overwrite پرسشنامه استاتیک ───
-  // پرسشنامه استاتیک وقتی کاربر دکمه «واکشی وب‌سرویس» را می‌زند، تابع aW("civil_registry")
-  // را اجرا می‌کند که نام نمونه (از آرایه شامل «قاسمی») تولید می‌کند و household.headName
-  // را overwrite می‌کند. این watcher هر ۵۰۰ms بررسی می‌کند و نام واقعی را حفظ می‌کند.
-  let realName = null;  // نام واقعی کاربر از /api/assessment
-  let nameGuardTimer = null;
-  let nameGuardActive = false;
-
-  function startNameGuard() {
-    if (!realName || (!realName.headName && !realName.responderName)) return;
-    if (nameGuardActive) return;
-    nameGuardActive = true;
-    console.log('[Bridge] Name guard started for:', realName.headName || realName.responderName);
-
-    nameGuardTimer = setInterval(() => {
-      try {
-        const raw = localStorage.getItem(STORE_KEY);
-        if (!raw) return;
-        const p = JSON.parse(raw);
-        const activeId = p?.state?.activeId;
-        if (!activeId) return;
-        const a = p?.state?.assessments?.[activeId];
-        if (!a || !a.household) return;
-
-        let changed = false;
-        // اگر نام واقعی set شده و مقدار فعلی متفاوت است (یا خالی)، آن را برگردان
-        if (realName.responderName && a.household.responderName !== realName.responderName) {
-          console.log('[Bridge] Restoring responderName:', a.household.responderName, '→', realName.responderName);
-          a.household.responderName = realName.responderName;
-          changed = true;
-        }
-        if (realName.headName && a.household.headName !== realName.headName) {
-          console.log('[Bridge] Restoring headName:', a.household.headName, '→', realName.headName);
-          a.household.headName = realName.headName;
-          changed = true;
-        }
-        if (realName.headFirstName && a.household.headFirstName !== realName.headFirstName) {
-          a.household.headFirstName = realName.headFirstName;
-          changed = true;
-        }
-        if (realName.headLastName && a.household.headLastName !== realName.headLastName) {
-          a.household.headLastName = realName.headLastName;
-          changed = true;
-        }
-        // حفاظت از member سرپرست
-        if (Array.isArray(a.members) && a.members.length > 0) {
-          const head = a.members.find(m => m.isHead || m.relation === 'سرپرست');
-          if (head) {
-            if (realName.headFirstName && head.firstName !== realName.headFirstName) {
-              head.firstName = realName.headFirstName;
-              changed = true;
-            }
-            if (realName.headLastName && head.lastName !== realName.headLastName) {
-              head.lastName = realName.headLastName;
-              changed = true;
-            }
-          }
-        }
-
-        if (changed) {
-          p.state.assessments[activeId] = a;
-          localStorage.setItem(STORE_KEY, JSON.stringify(p));
-        }
-      } catch(e) {
-        // silent
-      }
-    }, 500);
-
-    // همچنین به‌روزرسانی DOM اگر فرم نمایش داده شده است
-    setInterval(() => {
-      if (!realName || !realName.headName) return;
-      // جستجوی input‌های نام و جایگزینی اگر خالی یا نمونه هستند
-      try {
-        const inputs = document.querySelectorAll('input, textarea');
-        for (const inp of inputs) {
-          const id = inp.getAttribute('id') || '';
-          const name = inp.getAttribute('name') || '';
-          const val = (inp.value || '').trim();
-          const isNameField = id.includes('responderName') || id.includes('headName') ||
-                              name.includes('responderName') || name.includes('headName');
-          if (!isNameField) continue;
-          // اگر مقدار فعلی نمونه است (شامل «نمونه» یا متفاوت از نام واقعی)
-          if (val !== realName.responderName && val !== realName.headName) {
-            // فقط اگر input خالی است یا «نمونه» دارد یا با نام واقعی متفاوت است
-            const targetVal = id.includes('responder') || name.includes('responder')
-                              ? realName.responderName : realName.headName;
-            if (targetVal && val !== targetVal) {
-              const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set ||
-                             Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
-              if (setter) setter.call(inp, targetVal);
-              inp.dispatchEvent(new Event('input', {bubbles: true}));
-              inp.dispatchEvent(new Event('change', {bubbles: true}));
-            }
-          }
-        }
-      } catch(e) {}
-    }, 800);
   }
 
   // ─── باز کردن مستقیم پرونده در برنامه استاتیک ───
@@ -684,116 +575,219 @@
     }, 2000);
   }
 
-  // ─── تزریق حساب و session برای پرسشنامه استاتیک ───
-  // پرسشنامه استاتیک یک سیستم accounts/session جدا در localStorage دارد. وقتی کاربر
-  // از طریق /register سرور ثبت‌نام می‌کند، باید حساب او در accounts پرسشنامه استاتیک
-  // هم ثبت شود و session شروع شود تا مستقیم به پرسشنامه برود (نه صفحه ورود).
-  // passwordHash با الگوریتم FNV-1a (مشابه el() در پرسشنامه استاتیک) تولید می‌شود.
-  function fnv1aHash(str) {
-    let t = 0x811c9dc5;
-    for (let s = 0; s < str.length; s++) {
-      t ^= str.charCodeAt(s);
-      t = Math.imul(t, 0x1000193);
+  // ─── تزریق فیلدهای نام/نام خانوادگی به modal ثبت‌نام داخلی پرسشنامه ───
+  // modal ثبت‌نام داخلی (component lp) فقط فیلدهای کد ملی، موبایل، کد پستی، تاریخ تولد،
+  // رمز، نوع درخواست، موافقت‌نامه دارد. ما دو فیلد «نام» و «نام خانوادگی» را قبل از
+  // «کد ملی» اضافه می‌کنیم تا کاربر نام واقعی خود را وارد کند و در پرسشنامه نمایش داده شود
+  // (به‌جای نام نمونه «خانواده قاسمی» که از آرایه aB تولید می‌شود).
+  let nameFieldsInjected = false;
+  let realName = null;  // {firstName, lastName, fullName} — نام واقعی کاربر
+
+  function injectNameFieldsIntoModal() {
+    // پیدا کردن input reg-nid (نشانه modal ثبت‌نام داخلی)
+    const nidInput = document.getElementById('reg-nid');
+    if (!nidInput) return false;
+    // بررسی اینکه آیا قبلاً تزریق شده
+    if (document.getElementById('reg-firstName')) return true;
+
+    // پیدا کردن grid والد که reg-nid داخل آن است
+    const gridDiv = nidInput.closest('div.grid');
+    if (!gridDiv) {
+      // اگر grid پیدا نشد، parent field-group را پیدا می‌کنیم
+      return false;
     }
-    return `fnv1a:${(t >>> 0).toString(16).padStart(8, '0')}`;
+
+    // ساخت دو فیلد نام و نام خانوادگی (مشابه ساختار فیلدهای موجود)
+    function createField(id, label, placeholder) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-1.5';
+      wrapper.dataset.injected = 'true';
+      wrapper.innerHTML = `
+        <label for="${id}" class="flex items-center gap-1.5">نام ${id === 'reg-firstName' ? '' : 'خانوادگی'}
+          <span class="text-[10px] bg-red-100 text-destructive border border-destructive/30 gap-1 inline-flex items-center">
+            <svg class="size-3" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            اجباری
+          </span>
+        </label>
+        <input type="text" id="${id}" value="" placeholder="${placeholder}" aria-required="true"
+          style="width:100%; padding:8px 12px; border:1px solid hsl(var(--border,214.3 31.8% 91.4%)); border-radius:6px; font-family:inherit; font-size:14px; direction:rtl;" />
+        <p class="text-[11px] text-destructive leading-4" id="${id}-err" style="display:none;"></p>
+      `;
+      return wrapper;
+    }
+
+    const firstNameField = createField('reg-firstName', 'نام', 'مثلاً فاطمه');
+    const lastNameField = createField('reg-lastName', 'نام خانوادگی', 'مثلاً محمدی');
+
+    // درج فیلدها قبل از فیلد کد ملی (در ابتدای grid)
+    gridDiv.insertBefore(lastNameField, gridDiv.firstChild);
+    gridDiv.insertBefore(firstNameField, gridDiv.firstChild);
+
+    // اضافه کردن validation listeners
+    function validateName(id) {
+      const input = document.getElementById(id);
+      const err = document.getElementById(id + '-err');
+      const v = (input.value || '').trim();
+      if (!v) { err.textContent = 'این فیلد اجباری است.'; err.style.display = 'block'; return false; }
+      if (v.length < 2) { err.textContent = 'حداقل ۲ کاراکتر.'; err.style.display = 'block'; return false; }
+      if (!/^[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\s\u200C]+$/.test(v)) {
+        err.textContent = 'فقط حروف فارسی مجاز است.'; err.style.display = 'block'; return false;
+      }
+      err.style.display = 'none';
+      return true;
+    }
+
+    document.getElementById('reg-firstName').addEventListener('input', () => validateName('reg-firstName'));
+    document.getElementById('reg-lastName').addEventListener('input', () => validateName('reg-lastName'));
+
+    console.log('[Bridge] Name fields injected into registration modal');
+    nameFieldsInjected = true;
+    return true;
   }
 
-  function injectAccountAndSession() {
-    if (!hid) {
-      console.log('[Bridge] No hid — skipping account injection');
-      return;
+  // ─── حفاظت از نام واقعی در برابر overwrite پرسشنامه استاتیک ───
+  // پرسشنامه استاتیک در تابع aW("civil_registry") نام نمونه از آرایه aB (شامل «قاسمی»)
+  // تولید می‌کند و household.headName را overwrite می‌کند. این watcher نام واقعی را حفظ می‌کند.
+  let nameGuardTimer = null;
+  function startNameGuard() {
+    if (!realName || !realName.fullName) return;
+    if (nameGuardTimer) return;
+    console.log('[Bridge] Name guard started for:', realName.fullName);
+
+    nameGuardTimer = setInterval(() => {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        const activeId = p?.state?.activeId;
+        if (!activeId) return;
+        const a = p?.state?.assessments?.[activeId];
+        if (!a || !a.household) return;
+
+        let changed = false;
+        if (realName.fullName && a.household.headName !== realName.fullName) {
+          a.household.headName = realName.fullName;
+          changed = true;
+        }
+        if (realName.fullName && a.household.responderName !== realName.fullName) {
+          a.household.responderName = realName.fullName;
+          changed = true;
+        }
+        if (realName.firstName && a.household.headFirstName !== realName.firstName) {
+          a.household.headFirstName = realName.firstName;
+          changed = true;
+        }
+        if (realName.lastName && a.household.headLastName !== realName.lastName) {
+          a.household.headLastName = realName.lastName;
+          changed = true;
+        }
+        // حفاظت از member سرپرست
+        if (Array.isArray(a.members)) {
+          const head = a.members.find(m => m.isHead || m.relation === 'سرپرست');
+          if (head) {
+            if (realName.firstName && head.firstName !== realName.firstName) {
+              head.firstName = realName.firstName;
+              changed = true;
+            }
+            if (realName.lastName && head.lastName !== realName.lastName) {
+              head.lastName = realName.lastName;
+              changed = true;
+            }
+          }
+        }
+        if (changed) {
+          p.state.assessments[activeId] = a;
+          localStorage.setItem(STORE_KEY, JSON.stringify(p));
+        }
+      } catch(e) {}
+    }, 500);
+  }
+
+  // ─── capture نام از فیلدهای modal و ذخیره قبل از submit ───
+  // نام را قبل از submit (در فاز capture) ذخیره می‌کنیم چون پس از submit،
+  // پرسشنامه استاتیک modal را می‌بندد و فیلدها reset می‌شوند.
+  function captureNameBeforeSubmit() {
+    const fnInput = document.getElementById('reg-firstName');
+    const lnInput = document.getElementById('reg-lastName');
+    const firstName = (fnInput?.value || '').trim();
+    const lastName = (lnInput?.value || '').trim();
+    if (firstName && lastName) {
+      realName = { firstName, lastName, fullName: `${firstName} ${lastName}` };
+      console.log('[Bridge] Name captured before submit:', realName.fullName);
+      // ذخیره در sessionStorage به‌عنوان backup
+      try { sessionStorage.setItem('pendingRealName', JSON.stringify(realName)); } catch(e) {}
     }
+  }
+
+  function patchActiveAssessment() {
+    // اعمال نام ذخیره‌شده به assessment فعال در localStorage
+    if (!realName || !realName.fullName) {
+      // تلاش برای بازیابی از sessionStorage
+      try {
+        const saved = sessionStorage.getItem('pendingRealName');
+        if (saved) realName = JSON.parse(saved);
+      } catch(e) {}
+    }
+    if (!realName || !realName.fullName) return false;
+
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return;
+      if (!raw) return false;
       const p = JSON.parse(raw);
-      if (!p?.state) p.state = {};
-      if (!p.state.accounts) p.state.accounts = {};
+      const activeId = p?.state?.activeId;
+      if (!activeId) return false;
+      const a = p?.state?.assessments?.[activeId];
+      if (!a || !a.household) return false;
 
-      // استخراج داده از assessment فعال
-      const a = p.state.assessments?.[hid];
-      if (!a) {
-        console.warn('[Bridge] Assessment not found for account injection:', hid);
-        return;
-      }
-      const hh = a.household || {};
-      const nid = hh.headNationalId || '';
-      const fullName = hh.responderName || hh.headName || '';
-      const firstName = hh.headFirstName || '';
-      const lastName = hh.headLastName || '';
-      if (!nid) {
-        console.warn('[Bridge] No nationalId for account injection');
-        return;
-      }
-
-      // ثبت یا به‌روزرسانی account (اگر قبلاً ثبت نشده)
-      const kind = a.registrationKind || 'need_service';
-      if (!p.state.accounts[nid]) {
-        // پسورد پیش‌فرض — کاربر از طریق سرور ثبت‌نام کرده، پسورد سرور را نداریم
-        // یک hash placeholder می‌گذاریم تا login از طریق پرسشنامه استاتیک کار کند
-        // با پسورد سرور (که کاربر می‌داند)
-        p.state.accounts[nid] = {
-          nationalId: nid,
-          name: fullName,
-          firstName: firstName,
-          lastName: lastName,
-          kind: kind,
-          // hash پسورد سرور را نداریم — پس یک hash گذاشته و سپس session را مستقیم set می‌کنیم
-          passwordHash: 'server_registered',
-        };
-        console.log('[Bridge] Account registered:', nid, fullName);
-      } else {
-        // به‌روزرسانی نام اگر قبلاً ثبت شده
-        p.state.accounts[nid].name = fullName;
-        p.state.accounts[nid].firstName = firstName;
-        p.state.accounts[nid].lastName = lastName;
-      }
-
-      // شروع session با nationalId
-      p.state.session = {
-        nationalId: nid,
-        name: fullName,
-        kind: kind,
-        at: new Date().toISOString(),
-      };
-
-      // تنظیم view به wizard و activeId به hid
-      p.state.activeId = hid;
-      p.state.view = 'wizard';
-      p.state.wizardStep = p.state.wizardStep || 1;
-
-      localStorage.setItem(STORE_KEY, JSON.stringify(p));
-      console.log('[Bridge] Session injected for:', nid, fullName, '— view:', p.state.view);
-
-      // تلاش برای فراخوانی startSession در store (اگر store قابل دسترسی است)
-      // این برای اطمینان از اینکه state داخلی React هم به‌روزرسانی شود
-      setTimeout(() => {
-        try {
-          // راه‌حل ساده: dispatch یک storage event برای React
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: STORE_KEY,
-            newValue: localStorage.getItem(STORE_KEY),
-          }));
-          console.log('[Bridge] Storage event dispatched');
-        } catch(e) {
-          console.warn('[Bridge] Could not dispatch storage event:', e);
+      let changed = false;
+      if (a.household.headName !== realName.fullName) { a.household.headName = realName.fullName; changed = true; }
+      if (a.household.responderName !== realName.fullName) { a.household.responderName = realName.fullName; changed = true; }
+      if (a.household.headFirstName !== realName.firstName) { a.household.headFirstName = realName.firstName; changed = true; }
+      if (a.household.headLastName !== realName.lastName) { a.household.headLastName = realName.lastName; changed = true; }
+      if (Array.isArray(a.members)) {
+        const head = a.members.find(m => m.isHead || m.relation === 'سرپرست');
+        if (head) {
+          if (head.firstName !== realName.firstName) { head.firstName = realName.firstName; changed = true; }
+          if (head.lastName !== realName.lastName) { head.lastName = realName.lastName; changed = true; }
+        } else if (a.members.length > 0) {
+          a.members[0].firstName = realName.firstName;
+          a.members[0].lastName = realName.lastName;
+          changed = true;
         }
-      }, 200);
-    } catch(e) {
-      console.error('[Bridge] Account/session injection failed:', e);
-    }
+      }
+      // پچ accounts[nid].name تا startSession نام درست را بگیرد
+      const nid = a.household.headNationalId;
+      if (nid && p.state?.accounts) {
+        const acc = p.state.accounts[nid];
+        if (acc && acc.name !== realName.fullName) {
+          acc.name = realName.fullName;
+          acc.firstName = realName.firstName;
+          acc.lastName = realName.lastName;
+          changed = true;
+        }
+      }
+      // پچ session.name اگر session وجود دارد
+      if (p.state?.session && p.state.session.name !== realName.fullName) {
+        p.state.session.name = realName.fullName;
+        p.state.session.firstName = realName.firstName;
+        p.state.session.lastName = realName.lastName;
+        changed = true;
+      }
+      if (changed) {
+        p.state.assessments[activeId] = a;
+        localStorage.setItem(STORE_KEY, JSON.stringify(p));
+        console.log('[Bridge] Patched active assessment with real name:', realName.fullName);
+      }
+      return changed;
+    } catch(e) { console.error('[Bridge] patchActive error:', e); return false; }
   }
 
   // ─── اجرا ───
   loadFromFlask().then(() => {
     showRoleBadge();
     recordBaseline();
-    // تزریق حساب و session برای پرسشنامه استاتیک
-    injectAccountAndSession();
     // باز کردن مستقیم پرونده (برای حالت همیار)
     if (hid) forceOpenAssessment();
-    // فعال‌سازی حفاظت از نام واقعی کاربر (جلوی overwrite پرسشنامه استاتیک را می‌گیرد)
-    startNameGuard();
     // ایجاد پنل امتیاز شهروندی زنده (برای همیار)
     if (role === 'assistant') {
       setTimeout(createCitizenshipPanel, 3000);
@@ -807,6 +801,114 @@
     let bc = 0;
     const bi = setInterval(() => { recordBaseline(); bc++; if (bc >= 5) clearInterval(bi); }, 2000);
     startMonitoring();
+
+    // ── تزریق فیلدهای نام/نام خانوادگی به modal ثبت‌نام ──
+    // هر 500ms چک می‌کنیم تا modal باز شود و فیلدها را تزریق کنیم
+    // (هر بار modal باز می‌شود، فیلدها باید دوباره تزریق شوند چون React modal را mount/unmount می‌کند)
+    let submitHooked = false;
+    let enterHooked = false;
+    setInterval(() => {
+      if (injectNameFieldsIntoModal()) {
+        // hook دکمه submit فقط یک بار
+        if (!submitHooked) {
+          setTimeout(() => {
+            const buttons = document.querySelectorAll('button');
+            for (const btn of buttons) {
+              const text = (btn.textContent || '').trim();
+              if ((text.includes('ثبت‌نام') && text.includes('تکمیل')) || text.includes('ثبت‌نام و واکشی')) {
+                // در فاز capture (قبل از bubble به React) نام را ذخیره می‌کنیم
+                btn.addEventListener('click', captureNameBeforeSubmit, true);
+                // و در فاز bubble هم دوباره ذخیره کنیم
+                btn.addEventListener('click', captureNameBeforeSubmit, false);
+                submitHooked = true;
+                console.log('[Bridge] Submit button hooked');
+                break;
+              }
+            }
+          }, 500);
+        }
+      }
+
+      // hook دکمه «ورود به پرسشنامه — گام ۱» که پس از ثبت‌نام موفق نمایش داده می‌شود
+      // وقتی کاربر روی آن کلیک کرد، session را پچ می‌کنیم و سپس reload می‌کنیم
+      // تا React state را از localStorage بخواند
+      if (!enterHooked) {
+        const enterButtons = document.querySelectorAll('button');
+        for (const btn of enterButtons) {
+          const text = (btn.textContent || '').trim();
+          if (text.includes('ورود به پرسشنامه') && !btn.dataset.bridgeHooked) {
+            btn.dataset.bridgeHooked = 'true';
+            btn.addEventListener('click', () => {
+              console.log('[Bridge] Enter questionnaire button clicked — patching and reloading');
+              // ابتدا صبر می‌کنیم تا React session و view را set کند
+              setTimeout(() => {
+                patchActiveAssessment();
+                // یک بار reload تا React state را از localStorage بخواند
+                setTimeout(() => { window.location.reload(); }, 300);
+              }, 100);
+            }, true);
+            enterHooked = true;
+            console.log('[Bridge] Enter questionnaire button hooked');
+            break;
+          }
+        }
+      }
+    }, 500);
+
+    // ── watcher برای patch کردن assessment پس از ساخته شدن ──
+    // وقتی کاربر submit می‌زند، پرسشنامه استاتیک assessment را در localStorage می‌سازد.
+    // این watcher نام واقعی را به assessment، accounts و session اعمال می‌کند و نام را به DOM تزریق می‌کند.
+    let lastActiveId = null;
+    let nameGuardStarted = false;
+    setInterval(() => {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        const activeId = p?.state?.activeId;
+        if (!activeId) return;
+        // فقط وقتی activeId تغییر کرد (assessment جدید ساخته شد)
+        if (activeId !== lastActiveId) {
+          lastActiveId = activeId;
+          // تلاش برای patch
+          if (patchActiveAssessment()) {
+            // فعال‌سازی name guard برای حفاظت دائمی
+            if (!nameGuardStarted) {
+              startNameGuard();
+              nameGuardStarted = true;
+            }
+          }
+        } else {
+          // activeId همان است — پچ مجدد برای حفاظت از overwrite و همچنین پچ session
+          patchActiveAssessment();
+        }
+        // تزریق نام به input‌های پرسشنامه (در صورت وجود)
+        if (realName && realName.fullName) {
+          injectNameIntoQuestionnaireFields();
+        }
+      } catch(e) {}
+    }, 500);
+
+    // تابع تزریق نام به input‌های پرسشنامه (hh-responderName و hh-headName اگر قابل ویرایش باشد)
+    function injectNameIntoQuestionnaireFields() {
+      try {
+        const targets = [
+          { id: 'hh-responderName', value: realName.fullName },
+        ];
+        for (const t of targets) {
+          const el = document.getElementById(t.id);
+          if (el && el.value !== t.value && !el.readOnly && !el.disabled) {
+            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set ||
+                           Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+            if (setter) setter.call(el, t.value);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('[Bridge] Injected name into', t.id, '=', t.value);
+          }
+        }
+      } catch(e) {}
+    }
+
     console.log('[Bridge] Ready');
   });
 
