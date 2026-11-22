@@ -576,8 +576,10 @@
   }
 
   // ─── اجرا ───
-  // اگر داده ثبت‌نام از فرم اولیه دریافت شده، آن را به‌جای نمونه‌های نمایشی در store قرار بده
-  function seedRegistrationAssessment() {
+  // اگر داده ثبت‌نام از فرم اولیه دریافت شده، فقط نام و نام خانوادگی assessment فعال
+  // را با نام واردشده جایگزین می‌کند — سایر فیلدها (کد ملی، کد پست، تاریخ تولد و...)
+  // دست‌نخورده باقی می‌مانند و کاربر در پرسشنامه تکمیل می‌کند.
+  function patchRegistrationName() {
     const reg = window.BRIDGE_REG_DATA;
     if (!reg || (!reg.name && !reg.family)) {
       console.log('[Bridge] No registration data — using defaults');
@@ -586,100 +588,85 @@
     const fullName = `${reg.name} ${reg.family}`.trim();
     const nid = reg.nid || '';
 
-    // ساخت assessment جدید با داده‌های واردشده
-    const newId = 'REG-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-    const now = new Date().toISOString();
-    const ruleSetVersion = 'EM-MPI-RF-1.0.0-demo';
-
-    const assessment = {
-      id: newId,
-      createdAt: now,
-      updatedAt: now,
-      ruleSetVersion: ruleSetVersion,
-      status: 'draft',
-      demo: false,  // نمونه نیست — واقعی
-      requestTypes: [],
-      household: {
-        responderName: fullName,
-        responderRelation: 'سرپرست',
-        headName: fullName,
-        headNationalIdStatus: nid ? 'has' : 'missing',
-        headNationalId: nid || undefined,
-      },
-      members: [{
-        id: 'm-' + Date.now().toString(36),
-        memberType: 'registry',
-        firstName: reg.name,
-        relation: 'سرپرست',
-      }],
-      answers: {},
-      incomeSources: [],
-      flags: [],
-      qualityIssues: [],
-      referrals: [],
-      reviews: [],
-      corrections: [],
-      audit: [{
-        id: 'aud-' + Date.now().toString(36),
-        at: now,
-        actor: 'نیازمند',
-        role: 'household',
-        action: 'ثبت‌نام اولیه',
-        detail: `ثبت‌نام توسط ${fullName}`,
-      }],
-      changeStatements: [],
-      webServices: {},
-      documents: [],
-    };
-
-    // پاک‌سازی samples نمایشی و قرار دادن assessment واقعی به‌عنوان فعال
-    let storeData;
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      storeData = raw ? JSON.parse(raw) : {state: {assessments: {}}, version: 0};
-    } catch {
-      storeData = {state: {assessments: {}}, version: 0};
-    }
-    if (!storeData.state) storeData.state = {assessments: {}};
-    if (!storeData.state.assessments) storeData.state.assessments = {};
-
-    // حذف نمونه‌های نمایشی قبلی (demo: true) — فقط رکوردهای غیر demo باقی بمانند
-    const cleaned = {};
-    for (const [k, v] of Object.entries(storeData.state.assessments)) {
-      if (v && v.demo) continue;  // نمونه‌ها حذف
-      cleaned[k] = v;
-    }
-    cleaned[newId] = assessment;
-
-    storeData.state.assessments = cleaned;
-    storeData.state.activeId = newId;
-    storeData.state.view = 'wizard';
-    storeData.state.wizardStep = 1;
-    storeData.version = 0;
-
-    localStorage.setItem(STORE_KEY, JSON.stringify(storeData));
-    console.log('[Bridge] Seeded registration assessment:', newId, '— name:', fullName);
-
-    // پس از load شدن پرسشنامه، wizard را به‌جای لیست نمونه‌ها باز کن
-    setTimeout(function ensureWizardOpen() {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return;
+    // تلاش مکرر برای patch کردن assessment فعال
+    let attempts = 0;
+    const maxAttempts = 25;  // ۲۵ تلاش × ۴۰۰ms = ۱۰ ثانیه
+    const timer = setInterval(() => {
+      attempts++;
       try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
         const p = JSON.parse(raw);
-        if (p?.state?.activeId !== newId || p?.state?.view !== 'wizard') {
-          p.state.activeId = newId;
-          p.state.view = 'wizard';
-          p.state.wizardStep = 1;
-          localStorage.setItem(STORE_KEY, JSON.stringify(p));
-          console.log('[Bridge] Ensured wizard open for:', newId);
+        const activeId = p?.state?.activeId;
+        if (!activeId) return;
+        const a = p?.state?.assessments?.[activeId];
+        if (!a) return;
+        // اطمینان از وجود household
+        if (!a.household) a.household = {};
+
+        // فقط جایگزینی نام‌ها — سایر فیلدها (کد ملی، کد پست، تاریخ تولد، استان، شهر...)
+        // باقی می‌مانند تا کاربر در پرسشنامه تکمیل کند.
+        a.household.responderName = fullName;
+        a.household.headName = fullName;
+        // کد ملی از فرم ثبت‌نام فقط در صورتی که در household خالی باشد set می‌شود
+        // تا مقدار قبلی (اگر کاربر قبلاً وارد کرده) overwrite نشود
+        if (nid && !a.household.headNationalId) {
+          a.household.headNationalId = nid;
+          if (!a.household.headNationalIdStatus || a.household.headNationalIdStatus === 'missing') {
+            a.household.headNationalIdStatus = 'has';
+          }
         }
-      } catch {}
-    }, 1500);
+        // نسبت پاسخ‌گو پیش‌فرض
+        if (!a.household.responderRelation) {
+          a.household.responderRelation = 'سرپرست';
+        }
+
+        p.state.assessments[activeId] = a;
+        localStorage.setItem(STORE_KEY, JSON.stringify(p));
+        console.log('[Bridge] Patched active assessment name to:', fullName, '(attempt', attempts + ')');
+        clearInterval(timer);
+
+        // تلاش برای به‌روزرسانی DOM اگر فرم نمایش داده شده است
+        setTimeout(() => updateNameInputs(fullName), 800);
+      } catch(e) {
+        console.warn('[Bridge] Patch attempt', attempts, 'failed:', e);
+      }
+      if (attempts >= maxAttempts) {
+        clearInterval(timer);
+        console.warn('[Bridge] Patch gave up after', maxAttempts, 'attempts');
+      }
+    }, 400);
   }
 
-  // اجرای seed قبل از loadFromFlask تا پرسشنامه داده درست را ببیند
+  // به‌روزرسانی input‌های نام در DOM (اگر کاربر در حال تماشای فرم است)
+  function updateNameInputs(fullName) {
+    // جستجوی input‌هایی که با responderName یا headName مرتبط‌اند
+    // روش ساده: input‌ها با label «نام فرد پاسخ‌گو» یا «نام سرپرست»
+    const labels = document.querySelectorAll('label');
+    let updated = 0;
+    labels.forEach(label => {
+      const text = (label.textContent || '').trim();
+      const input = document.getElementById(label.getAttribute('for')) ||
+                    label.parentElement?.querySelector('input, textarea');
+      if (!input) return;
+      if ((text.includes('پاسخ‌گو') || text.includes('سرپرست')) && !input.value.trim()) {
+        input.value = fullName;
+        // تریگ event برای React
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+        if (setter) setter.call(input, fullName);
+        input.dispatchEvent(new Event('input', {bubbles: true}));
+        input.dispatchEvent(new Event('change', {bubbles: true}));
+        updated++;
+      }
+    });
+    if (updated > 0) {
+      console.log('[Bridge] Updated', updated, 'name input(s) to:', fullName);
+    }
+  }
+
+  // اجرای patch قبل از loadFromFlask تا پرسشنامه نام درست را در store ببیند
   if (window.BRIDGE_ACTION === 'register' && window.BRIDGE_REG_DATA) {
-    seedRegistrationAssessment();
+    patchRegistrationName();
   }
 
   loadFromFlask().then(() => {
