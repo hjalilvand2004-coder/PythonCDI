@@ -34,6 +34,16 @@
       beneficiaryAnswers = assessment.beneficiary_answers || null;
       console.log('[Bridge] Beneficiary answers loaded:', beneficiaryAnswers ? Object.keys(beneficiaryAnswers).length + ' keys' : 'none');
 
+      // ذخیره نام واقعی کاربر برای حفاظت در برابر overwrite پرسشنامه استاتیک
+      const hh = assessment.household || {};
+      realName = {
+        responderName: hh.responderName || '',
+        headName: hh.headName || '',
+        headFirstName: hh.headFirstName || '',
+        headLastName: hh.headLastName || '',
+      };
+      console.log('[Bridge] Real name captured:', realName.headName || realName.responderName);
+
       const storeData = {
         state: { assessments: data.assessments, activeId: hid },
         version: 0,
@@ -41,6 +51,105 @@
       localStorage.setItem(STORE_KEY, JSON.stringify(storeData));
       console.log('[Bridge] Data loaded from Flask, activeId:', hid);
     } catch(e) { console.error('[Bridge] Load error:', e); }
+  }
+
+  // ─── حفاظت از نام واقعی کاربر در برابر overwrite پرسشنامه استاتیک ───
+  // پرسشنامه استاتیک وقتی کاربر دکمه «واکشی وب‌سرویس» را می‌زند، تابع aW("civil_registry")
+  // را اجرا می‌کند که نام نمونه (از آرایه شامل «قاسمی») تولید می‌کند و household.headName
+  // را overwrite می‌کند. این watcher هر ۵۰۰ms بررسی می‌کند و نام واقعی را حفظ می‌کند.
+  let realName = null;  // نام واقعی کاربر از /api/assessment
+  let nameGuardTimer = null;
+  let nameGuardActive = false;
+
+  function startNameGuard() {
+    if (!realName || (!realName.headName && !realName.responderName)) return;
+    if (nameGuardActive) return;
+    nameGuardActive = true;
+    console.log('[Bridge] Name guard started for:', realName.headName || realName.responderName);
+
+    nameGuardTimer = setInterval(() => {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        const activeId = p?.state?.activeId;
+        if (!activeId) return;
+        const a = p?.state?.assessments?.[activeId];
+        if (!a || !a.household) return;
+
+        let changed = false;
+        // اگر نام واقعی set شده و مقدار فعلی متفاوت است (یا خالی)، آن را برگردان
+        if (realName.responderName && a.household.responderName !== realName.responderName) {
+          console.log('[Bridge] Restoring responderName:', a.household.responderName, '→', realName.responderName);
+          a.household.responderName = realName.responderName;
+          changed = true;
+        }
+        if (realName.headName && a.household.headName !== realName.headName) {
+          console.log('[Bridge] Restoring headName:', a.household.headName, '→', realName.headName);
+          a.household.headName = realName.headName;
+          changed = true;
+        }
+        if (realName.headFirstName && a.household.headFirstName !== realName.headFirstName) {
+          a.household.headFirstName = realName.headFirstName;
+          changed = true;
+        }
+        if (realName.headLastName && a.household.headLastName !== realName.headLastName) {
+          a.household.headLastName = realName.headLastName;
+          changed = true;
+        }
+        // حفاظت از member سرپرست
+        if (Array.isArray(a.members) && a.members.length > 0) {
+          const head = a.members.find(m => m.isHead || m.relation === 'سرپرست');
+          if (head) {
+            if (realName.headFirstName && head.firstName !== realName.headFirstName) {
+              head.firstName = realName.headFirstName;
+              changed = true;
+            }
+            if (realName.headLastName && head.lastName !== realName.headLastName) {
+              head.lastName = realName.headLastName;
+              changed = true;
+            }
+          }
+        }
+
+        if (changed) {
+          p.state.assessments[activeId] = a;
+          localStorage.setItem(STORE_KEY, JSON.stringify(p));
+        }
+      } catch(e) {
+        // silent
+      }
+    }, 500);
+
+    // همچنین به‌روزرسانی DOM اگر فرم نمایش داده شده است
+    setInterval(() => {
+      if (!realName || !realName.headName) return;
+      // جستجوی input‌های نام و جایگزینی اگر خالی یا نمونه هستند
+      try {
+        const inputs = document.querySelectorAll('input, textarea');
+        for (const inp of inputs) {
+          const id = inp.getAttribute('id') || '';
+          const name = inp.getAttribute('name') || '';
+          const val = (inp.value || '').trim();
+          const isNameField = id.includes('responderName') || id.includes('headName') ||
+                              name.includes('responderName') || name.includes('headName');
+          if (!isNameField) continue;
+          // اگر مقدار فعلی نمونه است (شامل «نمونه» یا متفاوت از نام واقعی)
+          if (val !== realName.responderName && val !== realName.headName) {
+            // فقط اگر input خالی است یا «نمونه» دارد یا با نام واقعی متفاوت است
+            const targetVal = id.includes('responder') || name.includes('responder')
+                              ? realName.responderName : realName.headName;
+            if (targetVal && val !== targetVal) {
+              const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set ||
+                             Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+              if (setter) setter.call(inp, targetVal);
+              inp.dispatchEvent(new Event('input', {bubbles: true}));
+              inp.dispatchEvent(new Event('change', {bubbles: true}));
+            }
+          }
+        }
+      } catch(e) {}
+    }, 800);
   }
 
   // ─── باز کردن مستقیم پرونده در برنامه استاتیک ───
@@ -575,12 +684,116 @@
     }, 2000);
   }
 
+  // ─── تزریق حساب و session برای پرسشنامه استاتیک ───
+  // پرسشنامه استاتیک یک سیستم accounts/session جدا در localStorage دارد. وقتی کاربر
+  // از طریق /register سرور ثبت‌نام می‌کند، باید حساب او در accounts پرسشنامه استاتیک
+  // هم ثبت شود و session شروع شود تا مستقیم به پرسشنامه برود (نه صفحه ورود).
+  // passwordHash با الگوریتم FNV-1a (مشابه el() در پرسشنامه استاتیک) تولید می‌شود.
+  function fnv1aHash(str) {
+    let t = 0x811c9dc5;
+    for (let s = 0; s < str.length; s++) {
+      t ^= str.charCodeAt(s);
+      t = Math.imul(t, 0x1000193);
+    }
+    return `fnv1a:${(t >>> 0).toString(16).padStart(8, '0')}`;
+  }
+
+  function injectAccountAndSession() {
+    if (!hid) {
+      console.log('[Bridge] No hid — skipping account injection');
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      if (!p?.state) p.state = {};
+      if (!p.state.accounts) p.state.accounts = {};
+
+      // استخراج داده از assessment فعال
+      const a = p.state.assessments?.[hid];
+      if (!a) {
+        console.warn('[Bridge] Assessment not found for account injection:', hid);
+        return;
+      }
+      const hh = a.household || {};
+      const nid = hh.headNationalId || '';
+      const fullName = hh.responderName || hh.headName || '';
+      const firstName = hh.headFirstName || '';
+      const lastName = hh.headLastName || '';
+      if (!nid) {
+        console.warn('[Bridge] No nationalId for account injection');
+        return;
+      }
+
+      // ثبت یا به‌روزرسانی account (اگر قبلاً ثبت نشده)
+      const kind = a.registrationKind || 'need_service';
+      if (!p.state.accounts[nid]) {
+        // پسورد پیش‌فرض — کاربر از طریق سرور ثبت‌نام کرده، پسورد سرور را نداریم
+        // یک hash placeholder می‌گذاریم تا login از طریق پرسشنامه استاتیک کار کند
+        // با پسورد سرور (که کاربر می‌داند)
+        p.state.accounts[nid] = {
+          nationalId: nid,
+          name: fullName,
+          firstName: firstName,
+          lastName: lastName,
+          kind: kind,
+          // hash پسورد سرور را نداریم — پس یک hash گذاشته و سپس session را مستقیم set می‌کنیم
+          passwordHash: 'server_registered',
+        };
+        console.log('[Bridge] Account registered:', nid, fullName);
+      } else {
+        // به‌روزرسانی نام اگر قبلاً ثبت شده
+        p.state.accounts[nid].name = fullName;
+        p.state.accounts[nid].firstName = firstName;
+        p.state.accounts[nid].lastName = lastName;
+      }
+
+      // شروع session با nationalId
+      p.state.session = {
+        nationalId: nid,
+        name: fullName,
+        kind: kind,
+        at: new Date().toISOString(),
+      };
+
+      // تنظیم view به wizard و activeId به hid
+      p.state.activeId = hid;
+      p.state.view = 'wizard';
+      p.state.wizardStep = p.state.wizardStep || 1;
+
+      localStorage.setItem(STORE_KEY, JSON.stringify(p));
+      console.log('[Bridge] Session injected for:', nid, fullName, '— view:', p.state.view);
+
+      // تلاش برای فراخوانی startSession در store (اگر store قابل دسترسی است)
+      // این برای اطمینان از اینکه state داخلی React هم به‌روزرسانی شود
+      setTimeout(() => {
+        try {
+          // راه‌حل ساده: dispatch یک storage event برای React
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: STORE_KEY,
+            newValue: localStorage.getItem(STORE_KEY),
+          }));
+          console.log('[Bridge] Storage event dispatched');
+        } catch(e) {
+          console.warn('[Bridge] Could not dispatch storage event:', e);
+        }
+      }, 200);
+    } catch(e) {
+      console.error('[Bridge] Account/session injection failed:', e);
+    }
+  }
+
   // ─── اجرا ───
   loadFromFlask().then(() => {
     showRoleBadge();
     recordBaseline();
+    // تزریق حساب و session برای پرسشنامه استاتیک
+    injectAccountAndSession();
     // باز کردن مستقیم پرونده (برای حالت همیار)
     if (hid) forceOpenAssessment();
+    // فعال‌سازی حفاظت از نام واقعی کاربر (جلوی overwrite پرسشنامه استاتیک را می‌گیرد)
+    startNameGuard();
     // ایجاد پنل امتیاز شهروندی زنده (برای همیار)
     if (role === 'assistant') {
       setTimeout(createCitizenshipPanel, 3000);
