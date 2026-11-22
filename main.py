@@ -1015,7 +1015,8 @@ def questionnaire_new():
     base_tag = '<base href="/static/porsesh/">'
     html = html.replace('<head>', '<head>' + base_tag, 1)
     # بدون hid → حالت ثبت‌نام جدید
-    bridge = f'<script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script><script src="/static/bridge.js"></script>'
+    # cache-bust: query string برای جلوگیری از cache مرورگر روی bridge.js
+    bridge = f'<script>window.BRIDGE_HID="";window.BRIDGE_ROLE="{role}";</script><script src="/static/bridge.js?v=92"></script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
 
@@ -1048,7 +1049,7 @@ def questionnaire_app(hid):
         return "فایل پرسشنامه یافت نشد", 500
     base_tag = '<base href="/static/porsesh/">'
     html = html.replace('<head>', '<head>' + base_tag, 1)
-    bridge = f'<script>window.BRIDGE_HID="{hid}";window.BRIDGE_ROLE="{role}";</script><script src="/static/bridge.js"></script>'
+    bridge = f'<script>window.BRIDGE_HID="{hid}";window.BRIDGE_ROLE="{role}";</script><script src="/static/bridge.js?v=92"></script>'
     html = html.replace('</body>', bridge + '</body>')
     return html
 

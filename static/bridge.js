@@ -855,6 +855,20 @@
       }
     }, 500);
 
+    // ── MutationObserver برای تزریق فوری‌تر فیلدها ──
+    // هر بار DOM تغییر می‌کند (مثلاً modal باز می‌شود)، فوراً تزریق را امتحان می‌کنیم
+    // تا فیلدها بدون تأخیر 500ms ظاهر شوند
+    try {
+      const observer = new MutationObserver(() => {
+        // اگر reg-nid وجود دارد ولی reg-firstName هنوز تزریق نشده، فوراً تزریق کن
+        if (document.getElementById('reg-nid') && !document.getElementById('reg-firstName')) {
+          injectNameFieldsIntoModal();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      console.log('[Bridge] MutationObserver installed');
+    } catch(e) { console.error('[Bridge] MutationObserver error:', e); }
+
     // ── watcher برای patch کردن assessment پس از ساخته شدن ──
     // وقتی کاربر submit می‌زند، پرسشنامه استاتیک assessment را در localStorage می‌سازد.
     // این watcher نام واقعی را به assessment، accounts و session اعمال می‌کند و نام را به DOM تزریق می‌کند.
